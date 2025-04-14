@@ -1,0 +1,209 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateRoutesFileContent > should generate correct route file content for a User model 1`] = `
+"import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import type { Context } from 'hono';
+import { UserSchema, createUserSchema, updateUserSchema } from './user.schema';
+import { Role } from '@prisma/client';
+
+
+
+// --- Service Function Placeholders (to be replaced by imports) ---
+// In a real scenario, these would be imported from the service file
+const findManyUsers = async (c: Context) => {
+  console.log('findMany User placeholder');
+  // TODO: Call actual service: await service.findMany()
+  return c.json([]); 
+};
+const findUserById = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  console.log('findById User placeholder with id: ', id);
+  // TODO: Call actual service: await service.findById(id)
+  return c.json(null); 
+};
+const createUser = async (c: Context) => {
+  const data = c.req.valid('json');
+  console.log('create User placeholder with data:', data);
+  // TODO: Call actual service: await service.create(data)
+  return c.json({ id: 'new', ...data }, 201);
+};
+const updateUser = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  const data = c.req.valid('json');
+  console.log('update User placeholder with id: ', id, ' data:', data);
+  // TODO: Call actual service: await service.update(id, data)
+  return c.json({ id, ...data });
+};
+const deleteUser = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  console.log('delete User placeholder with id: ', id);
+  // TODO: Call actual service: await service.delete(id)
+  return c.json({ id });
+};
+
+// --- Route Definitions ---
+
+// GET /users
+const listUserRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['User'],
+  summary: 'List all users',
+  responses: {
+    200: {
+      description: 'Returns a list of users',
+      content: {
+        'application/json': {
+          schema: z.array(UserSchema),
+        },
+      },
+    },
+    // TODO: Define 500 error response
+  },
+});
+
+// GET /users/{id}
+const getUserByIdRoute = createRoute({
+  method: 'get',
+  path: '/{id}',
+  tags: ['User'],
+  summary: 'Get a user by ID',
+  request: {
+    params: z.object({
+      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Returns the user',
+      content: {
+        'application/json': {
+          schema: UserSchema,
+        },
+      },
+    },
+    404: {
+      description: 'User not found',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 400, 500 error responses
+  },
+});
+
+// POST /users
+const createUserRoute = createRoute({
+  method: 'post',
+  path: '/',
+  tags: ['User'],
+  summary: 'Create a new user',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: createUserSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Returns the created user',
+      content: {
+        'application/json': {
+          schema: UserSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 500 error response
+  },
+});
+
+// PATCH /users/{id}
+const updateUserRoute = createRoute({
+  method: 'patch',
+  path: '/{id}',
+  tags: ['User'],
+  summary: 'Update a user by ID',
+  request: {
+    params: z.object({
+      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: updateUserSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Returns the updated user',
+      content: {
+        'application/json': {
+          schema: UserSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      // TODO: Define standard error schema
+    },
+    404: {
+      description: 'User not found',
+      // TODO: Define standard error schema
+    },
+     // TODO: Define 500 error response
+  },
+});
+
+// DELETE /users/{id}
+const deleteUserRoute = createRoute({
+  method: 'delete',
+  path: '/{id}',
+  tags: ['User'],
+  summary: 'Delete a user by ID',
+  request: {
+    params: z.object({
+      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
+    }),
+  },
+  responses: {
+    200: { // Consider 204 No Content if not returning the object
+      description: 'User deleted successfully',
+      content: {
+        'application/json': {
+            // Optional: Return the deleted object's ID or a success message
+            schema: z.object({ id: z.number() }) // Correct usage of idZodType
+        },
+      },
+    },
+    404: {
+      description: 'User not found',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 400, 500 error responses
+  },
+});
+
+
+
+
+// --- Hono App Setup ---
+const userRoutes = new OpenAPIHono();
+
+userRoutes.openapi(listUserRoute, findManyUsers);
+userRoutes.openapi(getUserByIdRoute, findUserById);
+userRoutes.openapi(createUserRoute, createUser);
+userRoutes.openapi(updateUserRoute, updateUser);
+userRoutes.openapi(deleteUserRoute, deleteUser);
+
+export default userRoutes;
+"
+`;
+
+exports[`generateRoutesFileContent > should return an error string if model has no ID field 1`] = `"// Error: Model LogEntry has no ID field. Cannot generate standard CRUD routes."`;

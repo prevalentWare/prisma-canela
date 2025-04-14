@@ -1,23 +1,33 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import fs from "node:fs/promises";
 // --- Adjusted import path ---
 import { parsePrismaSchema } from "../index";
 // --- Adjusted import path ---
 import type { ParsedSchema } from "../types";
 
-// Mock the fs.readFile function
-vi.mock("node:fs/promises", () => ({
-  default: {
-    readFile: vi.fn(),
-  },
-}));
+// Mock the fs.readFile function - moved inside beforeEach
+// vi.mock("node:fs/promises", () => ({
+//   default: {
+//     readFile: vi.fn(),
+//   },
+// }));
 
 // Helper to set mock implementation for readFile
 const mockReadFile = (content: string) => {
+  // We use mockResolvedValue because readFile returns a Promise
   vi.mocked(fs.readFile).mockResolvedValue(content);
 };
 
 describe("Prisma Schema Parser", () => {
+  // Set up the mock before each test in this suite
+  beforeEach(() => {
+    vi.mock("node:fs/promises", () => ({
+      default: {
+        readFile: vi.fn(),
+      },
+    }));
+  });
+
   afterEach(() => {
     vi.restoreAllMocks(); // Restore mocks after each test
   });

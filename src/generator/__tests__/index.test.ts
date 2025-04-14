@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 // We need to export generateZodSchema and mapFieldTypeToZodType for testing
 // For now, let's test generateZodSchema which uses the mapper internally.
 // We might need to adjust the generator file to export helpers if needed.
-import { generateZodSchema } from "../index"; // Placeholder, need exported helpers
+import { generateZodSchema } from "../generateZod"; // Placeholder, need exported helpers
 import type { ParsedModel, ParsedEnum, ParsedField } from "../../parser/types"; // Adjust path
 
 // --- Mocking generateApi to access helper functions ---
@@ -100,7 +100,7 @@ describe("Zod Schema Generation", () => {
           enumName: undefined,
           isList: false,
           isRequired: true,
-          isUnique: true,
+          isUnique: false,
           isId: true,
           hasDefaultValue: true,
           relationInfo: undefined,
@@ -150,7 +150,7 @@ describe("Zod Schema Generation", () => {
           isRequired: true,
           isUnique: false,
           isId: false,
-          hasDefaultValue: false,
+          hasDefaultValue: true,
           relationInfo: undefined,
         },
         {
@@ -198,23 +198,44 @@ describe("Zod Schema Generation", () => {
     const expectedSchema = `
 import { z } from 'zod';
 
-export const postSchema = z.object({
+// Base schema for Post (matches Prisma model structure)
+export const PostSchema = z.object({
   id: z.string(),
   title: z.string(),
-  content: z.string().optional(),
+  content: z.string().optional().nullable(),
   likes: z.number(),
   published: z.boolean(),
-  meta: z.record(z.any()).optional(),
-  publishedAt: z.date().optional()
+  meta: z.record(z.any()).optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable()
 });
 
-export type Post = z.infer<typeof postSchema>;
-`;
+// Schema for creating a Post (omit ID, defaults, timestamps)
+export const createPostSchema = z.object({
+  title: z.string(),
+  content: z.string().optional().nullable(),
+  meta: z.record(z.any()).optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable()
+});
 
-    const generatedSchema = generateZodSchema(simpleModel, []);
+// Schema for updating a Post (all fields optional, omit ID, timestamps)
+export const updatePostSchema = z.object({
+  title: z.string().optional().nullable(),
+  content: z.string().optional().nullable(),
+  likes: z.number().optional().nullable(),
+  published: z.boolean().optional().nullable(),
+  meta: z.record(z.any()).optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable()
+});
+
+// Infer the TypeScript type from the base schema
+export type Post = z.infer<typeof PostSchema>;
+    `;
+
+    // Access the content property
+    const { content: generatedContent } = generateZodSchema(simpleModel, []);
 
     // Normalize whitespace for comparison
-    expect(generatedSchema.trim()).toEqual(expectedSchema.trim());
+    expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 
   // --- Added test case for enums ---
@@ -232,7 +253,7 @@ export type Post = z.infer<typeof postSchema>;
           isRequired: true,
           isUnique: false,
           isId: true,
-          hasDefaultValue: false,
+          hasDefaultValue: true,
           relationInfo: undefined,
         },
         {
@@ -269,16 +290,30 @@ export type Post = z.infer<typeof postSchema>;
 import { z } from 'zod';
 import { Enum_Role, Enum_Status } from '@prisma/client';
 
-export const userSchema = z.object({
+// Base schema for User (matches Prisma model structure)
+export const UserSchema = z.object({
   id: z.string(),
   role: z.nativeEnum(Enum_Role),
-  status: z.nativeEnum(Enum_Status).optional()
+  status: z.nativeEnum(Enum_Status).optional().nullable()
 });
 
-export type User = z.infer<typeof userSchema>;
-`;
-    const generatedSchema = generateZodSchema(enumModel, enums);
-    expect(generatedSchema.trim()).toEqual(expectedSchema.trim());
+// Schema for creating a User (omit ID, defaults, timestamps)
+export const createUserSchema = z.object({
+  status: z.nativeEnum(Enum_Status).optional().nullable()
+});
+
+// Schema for updating a User (all fields optional, omit ID, timestamps)
+export const updateUserSchema = z.object({
+  role: z.nativeEnum(Enum_Role).optional().nullable(),
+  status: z.nativeEnum(Enum_Status).optional().nullable()
+});
+
+// Infer the TypeScript type from the base schema
+export type User = z.infer<typeof UserSchema>;
+    `;
+    // Access the content property
+    const { content: generatedContent } = generateZodSchema(enumModel, enums);
+    expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 
   // --- Added test case for list/array fields ---
@@ -296,7 +331,7 @@ export type User = z.infer<typeof userSchema>;
           isRequired: true,
           isUnique: false,
           isId: true,
-          hasDefaultValue: false,
+          hasDefaultValue: true,
           relationInfo: undefined,
         },
         {
@@ -344,16 +379,33 @@ export type User = z.infer<typeof userSchema>;
 import { z } from 'zod';
 import { Enum_Perms } from '@prisma/client';
 
-export const configSchema = z.object({
+// Base schema for Config (matches Prisma model structure)
+export const ConfigSchema = z.object({
   id: z.number(),
   tags: z.array(z.string()),
-  values: z.array(z.number()).optional(),
+  values: z.array(z.number()).optional().nullable(),
   permissions: z.array(z.nativeEnum(Enum_Perms))
 });
 
-export type Config = z.infer<typeof configSchema>;
-`;
-    const generatedSchema = generateZodSchema(listModel, enums);
-    expect(generatedSchema.trim()).toEqual(expectedSchema.trim());
+// Schema for creating a Config (omit ID, defaults, timestamps)
+export const createConfigSchema = z.object({
+  tags: z.array(z.string()),
+  values: z.array(z.number()).optional().nullable(),
+  permissions: z.array(z.nativeEnum(Enum_Perms))
+});
+
+// Schema for updating a Config (all fields optional, omit ID, timestamps)
+export const updateConfigSchema = z.object({
+  tags: z.array(z.string()).optional().nullable(),
+  values: z.array(z.number()).optional().nullable(),
+  permissions: z.array(z.nativeEnum(Enum_Perms)).optional().nullable()
+});
+
+// Infer the TypeScript type from the base schema
+export type Config = z.infer<typeof ConfigSchema>;
+    `;
+    // Access the content property
+    const { content: generatedContent } = generateZodSchema(listModel, enums);
+    expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 });

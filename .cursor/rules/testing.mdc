@@ -23,11 +23,12 @@ alwaysApply: false
 ## Mocking Practices
 - Mock external dependencies explicitly
 - Reset mocks between tests using `beforeEach`
-- Use Jest mock functions for tracking calls
+- Use vitest mock functions for tracking calls
 - Avoid excessive mocking that doesn't represent real usage
 - Mock at the import level rather than injecting mocks as props
 
 ## Test Structure
+- Run the tests with `bun run test` instead of `bun test`
 - Follow the Arrange-Act-Assert pattern
 - Keep tests focused and single-purpose
 - Limit test setup complexity

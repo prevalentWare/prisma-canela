@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.12.0",
-    "@hono/zod-openapi": "^0.10.1",
+    "@hono/swagger-ui": "^0.5.1",
+    "@hono/zod-openapi": "^0.19.4",
     "@prisma/client": "^5.17.0",
     "commander": "^12.1.0",
     "hono": "^4.5.3",
