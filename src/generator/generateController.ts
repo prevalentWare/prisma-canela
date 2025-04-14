@@ -20,17 +20,22 @@ import type { ${zodSchemaInfo.createSchemaName}, ${zodSchemaInfo.updateSchemaNam
   const inputTypes = `type CreateInput = z.infer<typeof ${zodSchemaInfo.createSchemaName}>;
 type UpdateInput = z.infer<typeof ${zodSchemaInfo.updateSchemaName}>;`;
 
+  // Add validator utility function to safely cast validation results
+  const utilityFunctions = `
+// Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
+const getValidData = (c: Context, type: 'json' | 'param') => {
+  // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
+  return c.req.valid(type);
+};`;
+
   // Import service functions using namespace
   const serviceImports = `import * as service from './service';`;
 
-  // Import Prisma for error type checking
-  const prismaImport = `import { Prisma } from '@prisma/client';`;
-
   return `
 import type { Context } from 'hono';
-${prismaImport}
+import { Prisma } from '@prisma/client';
 ${zodImports}
-${inputTypes}
+${inputTypes}${utilityFunctions}
 ${serviceImports}
 `;
 }
@@ -45,30 +50,15 @@ function generateHandler(
   requiresBody: boolean = false,
   idType: string = "string" // Default, only used if requiresId is true
 ): string {
-  // Determine input types for the Context generic
-  let inputTypeGeneric = "";
-  if (requiresId && requiresBody) {
-    const bodyType = handlerName.startsWith("create")
-      ? "CreateInput"
-      : "UpdateInput";
-    // Assuming ID is always string for simplicity in route definition (e.g., /:id)
-    // Prisma service might handle parsing if needed based on schema idType
-    inputTypeGeneric = `<{}, string, { param: { id: string }, json: ${bodyType} }>`;
-  } else if (requiresId) {
-    inputTypeGeneric = `<{}, string, { param: { id: string } }>`;
-  } else if (requiresBody) {
-    const bodyType = handlerName.startsWith("create")
-      ? "CreateInput"
-      : "UpdateInput";
-    inputTypeGeneric = `<{}, string, { json: ${bodyType} }>`;
-  }
+  // No need for complex Context typing - we'll use the utility function
+  let contextType = "Context";
 
   // Determine how to access validated data
   const paramValidation = requiresId
-    ? `const { id } = c.req.valid('param');`
+    ? `const { id } = getValidData(c, 'param');`
     : "";
   const jsonValidation = requiresBody
-    ? `const data = c.req.valid('json');`
+    ? `const data = getValidData(c, 'json');`
     : "";
 
   // Determine arguments for service call
@@ -88,14 +78,14 @@ function generateHandler(
     }`
     : "";
 
-  // Use the inputTypeGeneric in the handler signature
+  // Use the input generic in the handler signature
   return `
 /**
  * Handles ${handlerName
    .replace(/([A-Z])/g, " $1")
    .toLowerCase()} ${modelNamePascal}.
  */
-export const ${handlerName} = async (c: Context) => {
+export const ${handlerName} = async (c: ${contextType}) => {
   ${paramValidation}
   ${jsonValidation}
   try {

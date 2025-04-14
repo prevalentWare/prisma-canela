@@ -216,7 +216,7 @@ describe("generateControllerFileContent", () => {
     expect(result).toContain("await service.deleteUser(id);");
 
     // Check basic ID retrieval (string ID)
-    expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring
+    expect(result).toContain("const { id } = getValidData(c, 'param');"); // Updated assertion for param destructuring
 
     // Check error handling for Prisma known request errors (e.g., P2025)
     expect(result).toContain(
@@ -273,7 +273,7 @@ describe("generateControllerFileContent", () => {
     expect(result).toContain("await service.deleteProduct(id);");
 
     // Check numeric ID retrieval - relaxed check
-    expect(result).toContain("const { id } = c.req.valid('param');"); // Type is handled by route validation
+    expect(result).toContain("const { id } = getValidData(c, 'param');"); // Type is handled by route validation
 
     // Check error handling
     expect(result).toContain(
