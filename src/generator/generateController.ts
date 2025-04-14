@@ -45,14 +45,30 @@ function generateHandler(
   requiresBody: boolean = false,
   idType: string = "string" // Default, only used if requiresId is true
 ): string {
-  // Determine input types based on requirements
+  // Determine input types for the Context generic
+  let inputTypeGeneric = "";
+  if (requiresId && requiresBody) {
+    const bodyType = handlerName.startsWith("create")
+      ? "CreateInput"
+      : "UpdateInput";
+    // Assuming ID is always string for simplicity in route definition (e.g., /:id)
+    // Prisma service might handle parsing if needed based on schema idType
+    inputTypeGeneric = `<{}, string, { param: { id: string }, json: ${bodyType} }>`;
+  } else if (requiresId) {
+    inputTypeGeneric = `<{}, string, { param: { id: string } }>`;
+  } else if (requiresBody) {
+    const bodyType = handlerName.startsWith("create")
+      ? "CreateInput"
+      : "UpdateInput";
+    inputTypeGeneric = `<{}, string, { json: ${bodyType} }>`;
+  }
+
+  // Determine how to access validated data
   const paramValidation = requiresId
-    ? `const { id } = c.req.valid('param'); // Assume param validation is set up in routes`
+    ? `const { id } = c.req.valid('param');`
     : "";
   const jsonValidation = requiresBody
-    ? `const data = c.req.valid('json') as ${
-        handlerName.startsWith("create") ? "CreateInput" : "UpdateInput"
-      }; // Assume json validation is set up in routes`
+    ? `const data = c.req.valid('json');`
     : "";
 
   // Determine arguments for service call
@@ -61,25 +77,25 @@ function generateHandler(
   if (requiresBody) args.push("data");
   const serviceCallArgs = args.join(", ");
 
-  const logId = requiresId ? ` \${id}` : "";
+  const logId = requiresId ? ` \\\${id}` : "";
   const isIdNotFoundCheck = requiresId && !handlerName.startsWith("list"); // Check for P2025 on ID routes
 
   // Specific check for findById returning null
   const getByIdNotFound = handlerName.startsWith("get")
     ? `
     if (!item) {
-      return c.json({ error: '${modelNamePascal} not found' }, 404);
+      return c.json({ error: \'${modelNamePascal} not found\' }, 404);
     }`
     : "";
 
-  // Return type is now Context => Promise<Response | TypedResponse<...>> via c.json()
+  // Use the inputTypeGeneric in the handler signature
   return `
 /**
  * Handles ${handlerName
    .replace(/([A-Z])/g, " $1")
    .toLowerCase()} ${modelNamePascal}.
  */
-export const ${handlerName} = async (c: Context) => {
+export const ${handlerName} = async (c: Context${inputTypeGeneric || ""}) => {
   ${paramValidation}
   ${jsonValidation}
   try {

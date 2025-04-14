@@ -85,22 +85,25 @@ describe("generateRoutesFileContent", () => {
     expect(result).toContain("const createUserRoute = createRoute");
     expect(result).toContain("const updateUserRoute = createRoute");
     expect(result).toContain("const deleteUserRoute = createRoute");
-    // Check routes are mapped to controller functions
-    expect(result).toContain(
-      "userRoutes.openapi(listUserRoute, controller.listUser);"
+    // Check routes are mapped to controller functions using standard Hono methods and validator
+    expect(result).toMatch(/userRoutes\.get\(\s*'\/',\s*controller\.listUser/);
+    expect(result).toMatch(
+      /userRoutes\.post\(\s*'\/',\s*validator\('json'/ // Check POST starts correctly
     );
-    expect(result).toContain(
-      "userRoutes.openapi(createUserRoute, controller.createUser);"
+    expect(result).toMatch(/\s*controller\.createUser/); // Check controller follows validator
+    expect(result).toMatch(
+      /userRoutes\.get\(\s*'\/{id}',\s*validator\('param'/ // Check GET by ID starts correctly
     );
-    expect(result).toContain(
-      "userRoutes.openapi(getUserByIdRoute, controller.getUserById);"
+    expect(result).toMatch(/\s*controller\.getUserById/); // Check controller follows validator
+    expect(result).toMatch(
+      /userRoutes\.patch\(\s*'\/{id}',\s*validator\('param'/ // Check PATCH starts correctly
     );
-    expect(result).toContain(
-      "userRoutes.openapi(updateUserRoute, controller.updateUser);"
+    expect(result).toMatch(/\s*validator\('json'/); // Check PATCH includes json validator
+    expect(result).toMatch(/\s*controller\.updateUser/); // Check controller follows validators
+    expect(result).toMatch(
+      /userRoutes\.delete\(\s*'\/{id}',\s*validator\('param'/ // Check DELETE starts correctly
     );
-    expect(result).toContain(
-      "userRoutes.openapi(deleteUserRoute, controller.deleteUser);"
-    );
+    expect(result).toMatch(/\s*controller\.deleteUser/); // Check controller follows validator
 
     expect(result).toMatchSnapshot();
   });
@@ -149,13 +152,14 @@ describe("generateRoutesFileContent", () => {
     // Check LIST and CREATE routes ARE defined
     expect(result).toContain("const listLogEntryRoute = createRoute");
     expect(result).toContain("const createLogEntryRoute = createRoute");
-    // Check LIST and CREATE routes ARE mapped
-    expect(result).toContain(
-      "logEntryRoutes.openapi(listLogEntryRoute, controller.listLogEntry);"
+    // Check LIST and CREATE routes ARE mapped using standard Hono methods
+    expect(result).toMatch(
+      /logEntryRoutes\.get\(\s*'\/',\s*controller\.listLogEntry/ // Check GET list
     );
-    expect(result).toContain(
-      "logEntryRoutes.openapi(createLogEntryRoute, controller.createLogEntry);"
+    expect(result).toMatch(
+      /logEntryRoutes\.post\(\s*'\/',\s*validator\('json'/ // Check POST create with validator
     );
+    expect(result).toMatch(/\s*controller\.createLogEntry/); // Check controller follows validator
 
     // Check ID-based routes are NOT defined
     expect(result).not.toContain("const getLogEntryByIdRoute = createRoute");

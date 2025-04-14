@@ -203,10 +203,18 @@ describe("generateControllerFileContent", () => {
 
     // Check function definitions
     expect(result).toContain("export const listUser = async (c: Context)");
-    expect(result).toContain("export const createUser = async (c: Context)");
-    expect(result).toContain("export const getUserById = async (c: Context)");
-    expect(result).toContain("export const updateUser = async (c: Context)");
-    expect(result).toContain("export const deleteUser = async (c: Context)");
+    expect(result).toContain(
+      "export const createUser = async (c: Context<{}, string, { json: CreateInput }>) => {"
+    );
+    expect(result).toContain(
+      "export const getUserById = async (c: Context<{}, string, { param: { id: string } }>) => {"
+    );
+    expect(result).toContain(
+      "export const updateUser = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {"
+    );
+    expect(result).toContain(
+      "export const deleteUser = async (c: Context<{}, string, { param: { id: string } }>) => {"
+    );
 
     // Check service function calls within handlers
     expect(result).toContain("await service.findManyUsers();"); // Updated
@@ -258,12 +266,18 @@ describe("generateControllerFileContent", () => {
 
     // Check function definitions
     expect(result).toContain("export const listProduct = async (c: Context)");
-    expect(result).toContain("export const createProduct = async (c: Context)");
     expect(result).toContain(
-      "export const getProductById = async (c: Context)"
+      "export const createProduct = async (c: Context<{}, string, { json: CreateInput }>) => {"
     );
-    expect(result).toContain("export const updateProduct = async (c: Context)");
-    expect(result).toContain("export const deleteProduct = async (c: Context)");
+    expect(result).toContain(
+      "export const getProductById = async (c: Context<{}, string, { param: { id: string } }>) => {"
+    );
+    expect(result).toContain(
+      "export const updateProduct = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {"
+    );
+    expect(result).toContain(
+      "export const deleteProduct = async (c: Context<{}, string, { param: { id: string } }>) => {"
+    );
 
     // Check service function calls
     expect(result).toContain("await service.findManyProducts();"); // Updated
@@ -307,7 +321,7 @@ describe("generateControllerFileContent", () => {
     // Check that only list and create functions are defined
     expect(result).toContain("export const listLogEntry = async (c: Context)");
     expect(result).toContain(
-      "export const createLogEntry = async (c: Context)"
+      "export const createLogEntry = async (c: Context<{}, string, { json: CreateInput }>) => {"
     );
 
     // Check service function calls

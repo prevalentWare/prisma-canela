@@ -31,9 +31,9 @@ export const listProduct = async (c: Context) => {
 /**
  * Handles create product Product.
  */
-export const createProduct = async (c: Context) => {
+export const createProduct = async (c: Context<{}, string, { json: CreateInput }>) => {
   
-  const data = c.req.valid('json') as CreateInput; // Assume json validation is set up in routes
+  const data = c.req.valid('json');
   try {
     const item = await service.createProduct(data); // Use service namespace and correct args
     
@@ -49,8 +49,8 @@ export const createProduct = async (c: Context) => {
 /**
  * Handles get product by id Product.
  */
-export const getProductById = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
+export const getProductById = async (c: Context<{}, string, { param: { id: string } }>) => {
+  const { id } = c.req.valid('param');
   
   try {
     const item = await service.findProductById(id); // Use service namespace and correct args
@@ -62,12 +62,12 @@ export const getProductById = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error get product by iding Product \${id}: Record not found\`;
+      const message = \`Error get product by iding Product \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'Product not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error get product by iding Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error get product by iding Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to get Product\` }, 500);
   }
@@ -76,9 +76,9 @@ export const getProductById = async (c: Context) => {
 /**
  * Handles update product Product.
  */
-export const updateProduct = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
-  const data = c.req.valid('json') as UpdateInput; // Assume json validation is set up in routes
+export const updateProduct = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {
+  const { id } = c.req.valid('param');
+  const data = c.req.valid('json');
   try {
     const item = await service.updateProduct(id, data); // Use service namespace and correct args
     
@@ -86,12 +86,12 @@ export const updateProduct = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error update producting Product \${id}: Record not found\`;
+      const message = \`Error update producting Product \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'Product not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error update producting Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error update producting Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to update Product\` }, 500);
   }
@@ -100,8 +100,8 @@ export const updateProduct = async (c: Context) => {
 /**
  * Handles delete product Product.
  */
-export const deleteProduct = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
+export const deleteProduct = async (c: Context<{}, string, { param: { id: string } }>) => {
+  const { id } = c.req.valid('param');
   
   try {
     const item = await service.deleteProduct(id); // Use service namespace and correct args
@@ -110,12 +110,12 @@ export const deleteProduct = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error delete producting Product \${id}: Record not found\`;
+      const message = \`Error delete producting Product \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'Product not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error delete producting Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error delete producting Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to delete Product\` }, 500);
   }
@@ -154,9 +154,9 @@ export const listLogEntry = async (c: Context) => {
 /**
  * Handles create log entry LogEntry.
  */
-export const createLogEntry = async (c: Context) => {
+export const createLogEntry = async (c: Context<{}, string, { json: CreateInput }>) => {
   
-  const data = c.req.valid('json') as CreateInput; // Assume json validation is set up in routes
+  const data = c.req.valid('json');
   try {
     const item = await service.createLogEntry(data); // Use service namespace and correct args
     
@@ -202,9 +202,9 @@ export const listUser = async (c: Context) => {
 /**
  * Handles create user User.
  */
-export const createUser = async (c: Context) => {
+export const createUser = async (c: Context<{}, string, { json: CreateInput }>) => {
   
-  const data = c.req.valid('json') as CreateInput; // Assume json validation is set up in routes
+  const data = c.req.valid('json');
   try {
     const item = await service.createUser(data); // Use service namespace and correct args
     
@@ -220,8 +220,8 @@ export const createUser = async (c: Context) => {
 /**
  * Handles get user by id User.
  */
-export const getUserById = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
+export const getUserById = async (c: Context<{}, string, { param: { id: string } }>) => {
+  const { id } = c.req.valid('param');
   
   try {
     const item = await service.findUserById(id); // Use service namespace and correct args
@@ -233,12 +233,12 @@ export const getUserById = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error get user by iding User \${id}: Record not found\`;
+      const message = \`Error get user by iding User \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'User not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error get user by iding User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error get user by iding User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to get User\` }, 500);
   }
@@ -247,9 +247,9 @@ export const getUserById = async (c: Context) => {
 /**
  * Handles update user User.
  */
-export const updateUser = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
-  const data = c.req.valid('json') as UpdateInput; // Assume json validation is set up in routes
+export const updateUser = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {
+  const { id } = c.req.valid('param');
+  const data = c.req.valid('json');
   try {
     const item = await service.updateUser(id, data); // Use service namespace and correct args
     
@@ -257,12 +257,12 @@ export const updateUser = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error update usering User \${id}: Record not found\`;
+      const message = \`Error update usering User \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'User not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error update usering User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error update usering User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to update User\` }, 500);
   }
@@ -271,8 +271,8 @@ export const updateUser = async (c: Context) => {
 /**
  * Handles delete user User.
  */
-export const deleteUser = async (c: Context) => {
-  const { id } = c.req.valid('param'); // Assume param validation is set up in routes
+export const deleteUser = async (c: Context<{}, string, { param: { id: string } }>) => {
+  const { id } = c.req.valid('param');
   
   try {
     const item = await service.deleteUser(id); // Use service namespace and correct args
@@ -281,12 +281,12 @@ export const deleteUser = async (c: Context) => {
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
-      const message = \`Error delete usering User \${id}: Record not found\`;
+      const message = \`Error delete usering User \\\${id}: Record not found\`;
       console.error(message, error);
       return c.json({ error: 'User not found' }, 404);
     }
     // Generic error handling for other cases
-    const message = \`Error delete usering User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    const message = \`Error delete usering User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
     console.error(message, error); // Log the detailed error
     return c.json({ error: \`Failed to delete User\` }, 500);
   }

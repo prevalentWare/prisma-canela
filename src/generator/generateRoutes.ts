@@ -31,6 +31,7 @@ export function generateRoutesFileContent(
   // Updated imports: Remove service imports, add controller import
   const imports = [
     `import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';`,
+    `import { validator } from 'hono/validator';`,
     // `import type { Context } from 'hono';` // Context likely not needed directly here anymore
     ...zodSchemaInfo.imports, // Zod schema imports are still needed for createRoute
     `import * as controller from './controller';`, // Import controller functions
@@ -194,25 +195,86 @@ const create${modelNamePascal}Route = createRoute({
 });
 `;
 
-  // Handler definitions are removed
-
-  // Updated app setup: Map routes to controller functions
+  // Updated app setup: Map routes to controller functions using standard Hono methods
   const appSetup = `
 // --- Hono App Setup ---
-const ${modelNameCamel}Routes = new OpenAPIHono();
+// Using standard Hono methods for clearer middleware application
+const ${modelNameCamel}Routes = new OpenAPIHono(); // Keep OpenAPIHono for potential doc gen later
 
-// Register routes with their corresponding controller handlers
-${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, controller.list${modelNamePascal});
-${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, controller.create${modelNamePascal});
+// GET /${modelNamePluralLower} (List)
+${modelNameCamel}Routes.get(
+  '/',
+  controller.list${modelNamePascal}
+);
+
+// POST /${modelNamePluralLower} (Create)
+${modelNameCamel}Routes.post(
+  '/',
+  validator('json', (value, c) => {
+    // Reuse the schema defined in createRoute for validation
+    const parsed = create${modelNamePascal}Route.request.body.content['application/json'].schema.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data; // Make validated data available via c.req.valid('json')
+  }),
+  controller.create${modelNamePascal}
+);
+
 ${
   idField
     ? `
-${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, controller.get${modelNamePascal}ById);
-${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, controller.update${modelNamePascal});
-${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, controller.delete${modelNamePascal});
+// GET /${modelNamePluralLower}/{id}
+${modelNameCamel}Routes.get(
+  '/{id}',
+  validator('param', (value, c) => {
+    const parsed = get${modelNamePascal}ByIdRoute.request.params.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data;
+  }),
+  controller.get${modelNamePascal}ById
+);
+
+// PATCH /${modelNamePluralLower}/{id}
+${modelNameCamel}Routes.patch(
+  '/{id}',
+  validator('param', (value, c) => {
+    const parsed = update${modelNamePascal}Route.request.params.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data;
+  }),
+  validator('json', (value, c) => {
+    const parsed = update${modelNamePascal}Route.request.body.content['application/json'].schema.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data;
+  }),
+  controller.update${modelNamePascal}
+);
+
+// DELETE /${modelNamePluralLower}/{id}
+${modelNameCamel}Routes.delete(
+  '/{id}',
+  validator('param', (value, c) => {
+    const parsed = delete${modelNamePascal}Route.request.params.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data;
+  }),
+  controller.delete${modelNamePascal}
+);
 `
     : ""
 } // Conditionally register ID-based routes
+
+// TODO: Optionally re-attach OpenAPI route definitions for documentation generation if needed
+// Example: ${modelNameCamel}Routes.doc('/path', list${modelNamePascal}Route.getOpenAPIMetadata());
 
 export default ${modelNameCamel}Routes;
 `;

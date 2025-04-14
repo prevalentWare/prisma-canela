@@ -74,27 +74,41 @@ export function generateZodSchema(
     })
     .join(",\n");
 
-  // --- Generate Create Schema --- REMOVED OLD LOGIC
-  // Omit fields that are typically generated or shouldn't be provided on creation
+  // --- Generate Create Schema ---
   const fieldsToOmitOnCreate: string[] = [];
+  model.fields.forEach((field) => {
+    // Omit ID only if it has a default value (e.g., @default(uuid()), @default(autoincrement()))
+    // Or omit if it's a createdAt/updatedAt timestamp managed by Prisma/DB
+    if (
+      (field.isId && field.hasDefaultValue) ||
+      field.name === "createdAt" ||
+      field.name === "updatedAt"
+    ) {
+      fieldsToOmitOnCreate.push(`"${field.name}"`);
+    } else if (field.hasDefaultValue && !field.isRequired) {
+      // Omit optional fields with default values as Prisma handles them
+      // Keep required fields even if they have defaults, allows overriding
+      fieldsToOmitOnCreate.push(`"${field.name}"`);
+    }
+  });
+  // We no longer omit all fields with defaults, only specific ones above.
+  const createSchemaOmit =
+    fieldsToOmitOnCreate.length > 0
+      ? `.omit({ ${fieldsToOmitOnCreate.join(": true, ")}: true })`
+      : "";
+
+  // --- Generate Update Schema ---
+  // Update schema: partial, omit ID, createdAt, updatedAt
+  const fieldsToOmitOnUpdate: string[] = [];
   model.fields.forEach((field) => {
     if (
       field.isId ||
       field.name === "createdAt" ||
       field.name === "updatedAt"
     ) {
-      fieldsToOmitOnCreate.push(`"${field.name}"`);
+      fieldsToOmitOnUpdate.push(`"${field.name}"`);
     }
-    // We could potentially add fields with @default here too, but Prisma handles defaults well
   });
-  const createSchemaOmit =
-    fieldsToOmitOnCreate.length > 0
-      ? `.omit({ ${fieldsToOmitOnCreate.join(": true, ")}: true })`
-      : "";
-
-  // --- Generate Update Schema --- REMOVED OLD LOGIC
-  // Make all fields optional (partial) and omit ID/timestamps for updates
-  const fieldsToOmitOnUpdate = fieldsToOmitOnCreate; // Usually the same fields as create
   const updateSchemaOmit =
     fieldsToOmitOnUpdate.length > 0
       ? `.omit({ ${fieldsToOmitOnUpdate.join(": true, ")}: true })`
