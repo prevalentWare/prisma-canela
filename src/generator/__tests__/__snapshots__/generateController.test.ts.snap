@@ -1,0 +1,280 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateControllerFileContent > should generate correct controller content for a model with numeric ID (Product) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client'; // For error handling
+// Import types inferred from Zod schemas for strong typing in handlers
+import type { Product as ProductType } from '@prisma/client'; // Import the actual Prisma type
+import type { z } from 'zod';
+import type { createProductSchema, updateProductSchema } from './schema';
+
+// Define types based on Zod schemas for handler inputs
+type CreateInput = z.infer<typeof createProductSchema>;
+type UpdateInput = z.infer<typeof updateProductSchema>;
+
+// Import service functions
+import {
+  findManyProducts,
+  findProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct
+} from './service';
+
+/**
+ * Handles listing all Product records.
+ */
+export const listProduct = async (c: Context): Promise<Response> => {
+  try {
+    const items = await findManyProducts();
+    return c.json(items);
+  } catch (error: unknown) { // Use unknown for better type safety
+    console.error(\`Error listing Products:\`, error);
+    // Consider a more structured error response
+    return c.json({ error: 'Failed to list items', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles creating a new Product record.
+ */
+export const createProduct = async (c: Context): Promise<Response> => {
+  // Type assertion is okay here because the route middleware did the validation
+  const data = c.req.valid('json') as CreateInput;
+  try {
+    const newItem = await createProduct(data);
+    return c.json(newItem, 201); // 201 Created
+  } catch (error: unknown) {
+    console.error(\`Error creating Product:\`, error);
+    return c.json({ error: 'Failed to create item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles retrieving a Product by ID.
+ */
+export const getProductById = async (c: Context): Promise<Response> => {
+  // Type assertion okay due to route validation
+  const id = c.req.valid('param').id as number;
+  try {
+    const item = await findProductById(id);
+    if (!item) {
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    return c.json(item);
+  } catch (error: unknown) {
+    console.error(\`Error fetching Product by ID \${id}:\`, error);
+    return c.json({ error: 'Failed to fetch item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles updating a Product by ID.
+ */
+export const updateProduct = async (c: Context): Promise<Response> => {
+  const id = c.req.valid('param').id as number;
+  const data = c.req.valid('json') as UpdateInput;
+  try {
+    // The service function should handle the 'not found' case if using update directly
+    const updatedItem = await updateProduct(id, data);
+    return c.json(updatedItem);
+  } catch (error: unknown) {
+    // Check specifically for Prisma's 'Record to update not found' error
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    console.error(\`Error updating Product \${id}:\`, error);
+    return c.json({ error: 'Failed to update item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles deleting a Product by ID.
+ */
+export const deleteProduct = async (c: Context): Promise<Response> => {
+  const id = c.req.valid('param').id as number;
+  try {
+    // The service function should handle the 'not found' case if using delete directly
+    const deletedItem = await deleteProduct(id);
+    // Return the deleted item or just a success status (e.g., 204 No Content)
+    // Returning the item is often useful.
+    return c.json(deletedItem);
+    // return c.body(null, 204); // Alternative: return 204 No Content
+  } catch (error: unknown) {
+     // Check specifically for Prisma's 'Record to delete not found' error
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+       return c.json({ error: 'Product not found' }, 404);
+    }
+    console.error(\`Error deleting Product \${id}:\`, error);
+    return c.json({ error: 'Failed to delete item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+"
+`;
+
+exports[`generateControllerFileContent > should generate correct controller content for a model without an ID (LogEntry) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client'; // For error handling
+// Import types inferred from Zod schemas for strong typing in handlers
+import type { LogEntry as LogEntryType } from '@prisma/client'; // Import the actual Prisma type
+import type { z } from 'zod';
+import type { createLogEntrySchema, updateLogEntrySchema } from './schema';
+
+// Define types based on Zod schemas for handler inputs
+type CreateInput = z.infer<typeof createLogEntrySchema>;
+type UpdateInput = z.infer<typeof updateLogEntrySchema>;
+
+// Import service functions
+import {
+  findManyLogEntries,
+  
+  createLogEntry,
+  
+  
+} from './service';
+
+/**
+ * Handles listing all LogEntry records.
+ */
+export const listLogEntry = async (c: Context): Promise<Response> => {
+  try {
+    const items = await findManyLogEntries();
+    return c.json(items);
+  } catch (error: unknown) { // Use unknown for better type safety
+    console.error(\`Error listing LogEntrys:\`, error);
+    // Consider a more structured error response
+    return c.json({ error: 'Failed to list items', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles creating a new LogEntry record.
+ */
+export const createLogEntry = async (c: Context): Promise<Response> => {
+  // Type assertion is okay here because the route middleware did the validation
+  const data = c.req.valid('json') as CreateInput;
+  try {
+    const newItem = await createLogEntry(data);
+    return c.json(newItem, 201); // 201 Created
+  } catch (error: unknown) {
+    console.error(\`Error creating LogEntry:\`, error);
+    return c.json({ error: 'Failed to create item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+"
+`;
+
+exports[`generateControllerFileContent > should generate correct controller content for a standard model (User) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client'; // For error handling
+// Import types inferred from Zod schemas for strong typing in handlers
+import type { User as UserType } from '@prisma/client'; // Import the actual Prisma type
+import type { z } from 'zod';
+import type { createUserSchema, updateUserSchema } from './schema';
+
+// Define types based on Zod schemas for handler inputs
+type CreateInput = z.infer<typeof createUserSchema>;
+type UpdateInput = z.infer<typeof updateUserSchema>;
+
+// Import service functions
+import {
+  findManyUsers,
+  findUserById,
+  createUser,
+  updateUser,
+  deleteUser
+} from './service';
+
+/**
+ * Handles listing all User records.
+ */
+export const listUser = async (c: Context): Promise<Response> => {
+  try {
+    const items = await findManyUsers();
+    return c.json(items);
+  } catch (error: unknown) { // Use unknown for better type safety
+    console.error(\`Error listing Users:\`, error);
+    // Consider a more structured error response
+    return c.json({ error: 'Failed to list items', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles creating a new User record.
+ */
+export const createUser = async (c: Context): Promise<Response> => {
+  // Type assertion is okay here because the route middleware did the validation
+  const data = c.req.valid('json') as CreateInput;
+  try {
+    const newItem = await createUser(data);
+    return c.json(newItem, 201); // 201 Created
+  } catch (error: unknown) {
+    console.error(\`Error creating User:\`, error);
+    return c.json({ error: 'Failed to create item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles retrieving a User by ID.
+ */
+export const getUserById = async (c: Context): Promise<Response> => {
+  // Type assertion okay due to route validation
+  const id = c.req.valid('param').id as string;
+  try {
+    const item = await findUserById(id);
+    if (!item) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    return c.json(item);
+  } catch (error: unknown) {
+    console.error(\`Error fetching User by ID \${id}:\`, error);
+    return c.json({ error: 'Failed to fetch item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles updating a User by ID.
+ */
+export const updateUser = async (c: Context): Promise<Response> => {
+  const id = c.req.valid('param').id as string;
+  const data = c.req.valid('json') as UpdateInput;
+  try {
+    // The service function should handle the 'not found' case if using update directly
+    const updatedItem = await updateUser(id, data);
+    return c.json(updatedItem);
+  } catch (error: unknown) {
+    // Check specifically for Prisma's 'Record to update not found' error
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    console.error(\`Error updating User \${id}:\`, error);
+    return c.json({ error: 'Failed to update item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+
+/**
+ * Handles deleting a User by ID.
+ */
+export const deleteUser = async (c: Context): Promise<Response> => {
+  const id = c.req.valid('param').id as string;
+  try {
+    // The service function should handle the 'not found' case if using delete directly
+    const deletedItem = await deleteUser(id);
+    // Return the deleted item or just a success status (e.g., 204 No Content)
+    // Returning the item is often useful.
+    return c.json(deletedItem);
+    // return c.body(null, 204); // Alternative: return 204 No Content
+  } catch (error: unknown) {
+     // Check specifically for Prisma's 'Record to delete not found' error
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+       return c.json({ error: 'User not found' }, 404);
+    }
+    console.error(\`Error deleting User \${id}:\`, error);
+    return c.json({ error: 'Failed to delete item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
+  }
+};
+"
+`;

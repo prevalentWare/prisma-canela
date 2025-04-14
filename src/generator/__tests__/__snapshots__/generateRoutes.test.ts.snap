@@ -1,23 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generateRoutesFileContent > should generate correct route file content for a User model 1`] = `
+exports[`generateRoutesFileContent > should generate correct refactored route file content for a User model 1`] = `
 "import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import type { Context } from 'hono';
-import { UserSchema, createUserSchema, updateUserSchema } from './user.schema';
+import { UserSchema, createUserSchema, updateUserSchema } from './schema';
 import { Role } from '@prisma/client';
-import { 
-  findManyUsers, 
-  findUserById, 
-  createUser, 
-  updateUser, 
-  deleteUser 
-} from './service';
+import * as controller from './controller';
 
 
 
 // --- Route Definitions ---
-// NOTE: Placeholder handlers are removed. We now use imported service functions directly.
-
 // GET /users
 const listUserRoute = createRoute({
   method: 'get',
@@ -36,6 +27,8 @@ const listUserRoute = createRoute({
     // TODO: Define 500 error response
   },
 });
+
+// Define ID-based routes only if idField exists
 
 // GET /users/{id}
 const getUserByIdRoute = createRoute({
@@ -62,38 +55,6 @@ const getUserByIdRoute = createRoute({
       // TODO: Define standard error schema
     },
     // TODO: Define 400, 500 error responses
-  },
-});
-
-// POST /users
-const createUserRoute = createRoute({
-  method: 'post',
-  path: '/',
-  tags: ['User'],
-  summary: 'Create a new user',
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: createUserSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: 'Returns the created user',
-      content: {
-        'application/json': {
-          schema: UserSchema,
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 500 error response
   },
 });
 
@@ -153,7 +114,7 @@ const deleteUserRoute = createRoute({
       content: {
         'application/json': {
             // Optional: Return the deleted object's ID or a success message
-            schema: z.object({ id: z.number() }) // Correct usage of idZodType
+            schema: z.object({ id: z.number() }) // Use actual ID field name
         },
       },
     },
@@ -164,54 +125,39 @@ const deleteUserRoute = createRoute({
     // TODO: Define 400, 500 error responses
   },
 });
+ // End of conditional ID routes
 
-
-
-
-// --- Route Handlers ---
-
-// GET /
-const handleListUser = async (c: Context) => {
-  // TODO: Add error handling (try/catch)
-  const results = await findManyUsers();
-  return c.json(results);
-};
-
-// GET /:id
-const handleGetUserById = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  // TODO: Add error handling (try/catch, check for null)
-  const result = await findUserById(id);
-  if (!result) {
-    return c.json({ error: 'User not found' }, 404);
-  }
-  return c.json(result);
-};
-
-// POST /
-const handleCreateUser = async (c: Context) => {
-  const data = c.req.valid('json');
-  // TODO: Add error handling (try/catch)
-  const newItem = await createUser(data);
-  return c.json(newItem, 201);
-};
-
-// PATCH /:id
-const handleUpdateUser = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  const data = c.req.valid('json');
-   // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
-  const updatedItem = await updateUser(id, data);
-  return c.json(updatedItem);
-};
-
-// DELETE /:id
-const handleDeleteUser = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
-  const deletedItem = await deleteUser(id);
-  return c.json(deletedItem);
-};
+// POST /users - Always defined
+const createUserRoute = createRoute({
+  method: 'post',
+  path: '/',
+  tags: ['User'],
+  summary: 'Create a new user',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: createUserSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Returns the created user',
+      content: {
+        'application/json': {
+          schema: UserSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 500 error response
+  },
+});
 
 
 
@@ -219,15 +165,92 @@ const handleDeleteUser = async (c: Context) => {
 // --- Hono App Setup ---
 const userRoutes = new OpenAPIHono();
 
-// Register routes with their handlers
-userRoutes.openapi(listUserRoute, handleListUser);
-userRoutes.openapi(getUserByIdRoute, handleGetUserById);
-userRoutes.openapi(createUserRoute, handleCreateUser);
-userRoutes.openapi(updateUserRoute, handleUpdateUser);
-userRoutes.openapi(deleteUserRoute, handleDeleteUser);
+// Register routes with their corresponding controller handlers
+userRoutes.openapi(listUserRoute, controller.listUser);
+userRoutes.openapi(createUserRoute, controller.createUser);
+
+userRoutes.openapi(getUserByIdRoute, controller.getUserById);
+userRoutes.openapi(updateUserRoute, controller.updateUser);
+userRoutes.openapi(deleteUserRoute, controller.deleteUser);
+ // Conditionally register ID-based routes
 
 export default userRoutes;
 "
 `;
 
-exports[`generateRoutesFileContent > should return an error string if model has no ID field 1`] = `"// Error: Model LogEntry has no ID field. Cannot generate standard CRUD routes."`;
+exports[`generateRoutesFileContent > should generate only non-ID routes if model has no ID field 1`] = `
+"import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { LogEntrySchema, createLogEntrySchema, updateLogEntrySchema } from './schema';
+import * as controller from './controller';
+
+
+
+// --- Route Definitions ---
+// GET /logentrys
+const listLogEntryRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['LogEntry'],
+  summary: 'List all logentrys',
+  responses: {
+    200: {
+      description: 'Returns a list of logentrys',
+      content: {
+        'application/json': {
+          schema: z.array(LogEntrySchema),
+        },
+      },
+    },
+    // TODO: Define 500 error response
+  },
+});
+
+// Define ID-based routes only if idField exists
+ // End of conditional ID routes
+
+// POST /logentrys - Always defined
+const createLogEntryRoute = createRoute({
+  method: 'post',
+  path: '/',
+  tags: ['LogEntry'],
+  summary: 'Create a new logentry',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: createLogEntrySchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Returns the created logentry',
+      content: {
+        'application/json': {
+          schema: LogEntrySchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 500 error response
+  },
+});
+
+
+
+
+// --- Hono App Setup ---
+const logEntryRoutes = new OpenAPIHono();
+
+// Register routes with their corresponding controller handlers
+logEntryRoutes.openapi(listLogEntryRoute, controller.listLogEntry);
+logEntryRoutes.openapi(createLogEntryRoute, controller.createLogEntry);
+ // Conditionally register ID-based routes
+
+export default logEntryRoutes;
+"
+`;

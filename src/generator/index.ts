@@ -10,9 +10,11 @@ import fs from "node:fs/promises";
 import { generateRoutesFileContent } from "./generateRoutes";
 import { generateZodSchema } from "./generateZod"; // Import from new file
 import { generateServiceFileContent } from "./generateService"; // Import service generator
+import { generateControllerFileContent } from "./generateController"; // Import controller generator
 // import { generateServerFileContent } from "./generateServer"; // Removed import
 import { pascalCase } from "../utils/pascalCase";
 import { camelCase } from "../utils/camelCase";
+import type { ZodSchemaDetails, ServiceFunctionNames } from "./types"; // Import shared types
 
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
@@ -60,7 +62,7 @@ export async function generateApi(
       await fs.writeFile(schemaFilePath, zodSchemaContent);
 
       // Prepare info for route generation - update import path
-      const zodSchemaInfo = {
+      const zodSchemaInfo: ZodSchemaDetails = {
         imports: [
           `import { ${modelNamePascal}Schema, create${modelNamePascal}Schema, update${modelNamePascal}Schema } from './schema';`,
           ...zodSchemaImports,
@@ -70,7 +72,7 @@ export async function generateApi(
         updateSchemaName: `update${modelNamePascal}Schema`,
       };
 
-      const serviceFunctionNames = {
+      const serviceFunctionNames: ServiceFunctionNames = {
         findMany: `findMany${modelNamePascal}`,
         findById: `find${modelNamePascal}ById`,
         create: `create${modelNamePascal}`,
@@ -80,19 +82,25 @@ export async function generateApi(
 
       // Generate routes file with simplified name
       console.log(`  - Generating routes file: routes.ts`);
-      const routesContent = generateRoutesFileContent(
-        model,
-        zodSchemaInfo,
-        serviceFunctionNames
-      );
+      const routesContent = generateRoutesFileContent(model, zodSchemaInfo);
       const routesFilePath = path.join(modelDir, "routes.ts");
       await fs.writeFile(routesFilePath, routesContent);
 
       // Generate service file (INLINED LOGIC)
       console.log(`  - Generating service file: service.ts`);
-      const serviceContent = generateServiceFileContent_Inline(model); // Call inlined function
+      const serviceContent = generateServiceFileContent(model); // Call inlined function
       const serviceFilePath = path.join(modelDir, "service.ts");
       await fs.writeFile(serviceFilePath, serviceContent);
+
+      // Generate controller file
+      console.log(`  - Generating controller file: controller.ts`);
+      const controllerContent = generateControllerFileContent(
+        model,
+        zodSchemaInfo,
+        serviceFunctionNames
+      );
+      const controllerFilePath = path.join(modelDir, "controller.ts");
+      await fs.writeFile(controllerFilePath, controllerContent);
     }
 
     // REMOVED server file generation block
@@ -110,7 +118,7 @@ export async function generateApi(
       `\nAPI generation completed successfully. Files written to ${outputDir}`
     );
     console.log(
-      "\nNext steps: Import the generated modules (schemas, routes, services) into your existing Hono application."
+      "\nNext steps: Refactor route generation (Step 7), assemble the API (Step 10)."
     );
   } catch (error) {
     console.error("Error during API generation:", error);

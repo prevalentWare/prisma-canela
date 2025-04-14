@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { ParsedModel } from "../../parser/types"; // Adjusted import path
 import { generateRoutesFileContent } from "../generateRoutes"; // Adjusted import path
-import type { DMMF } from "@prisma/generator-helper";
+import type { ZodSchemaDetails } from "../types"; // Import from shared types
 
 // Mock Data
 const mockUserModel: ParsedModel = {
@@ -53,9 +53,9 @@ const mockUserModel: ParsedModel = {
   ],
 };
 
-const mockZodSchemaInfo = {
+const mockZodSchemaInfo: ZodSchemaDetails = {
   imports: [
-    `import { UserSchema, createUserSchema, updateUserSchema } from './user.schema';`, // Path relative to generated file, not test file
+    `import { UserSchema, createUserSchema, updateUserSchema } from './schema';`,
     `import { Role } from '@prisma/client';`, // Assuming enum comes from prisma client
   ],
   modelSchemaName: "UserSchema",
@@ -63,26 +63,49 @@ const mockZodSchemaInfo = {
   updateSchemaName: "updateUserSchema",
 };
 
-const mockServiceFunctionNames = {
-  findMany: "findManyUsers",
-  findById: "findUserById",
-  create: "createUser",
-  update: "updateUser",
-  delete: "deleteUser",
-};
-
 describe("generateRoutesFileContent", () => {
-  it("should generate correct route file content for a User model", () => {
-    const result = generateRoutesFileContent(
-      mockUserModel,
-      mockZodSchemaInfo,
-      mockServiceFunctionNames
+  it("should generate correct refactored route file content for a User model", () => {
+    const result = generateRoutesFileContent(mockUserModel, mockZodSchemaInfo);
+
+    // Check for controller import
+    expect(result).toContain("import * as controller from './controller';");
+    // Check Zod/Hono imports still exist
+    expect(result).toContain(
+      "import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';"
     );
-    // Use snapshot testing to compare the output
+    expect(result).toContain("from './schema';");
+    // Check service import is REMOVED
+    expect(result).not.toContain("from './service';");
+    // Check handler definitions are REMOVED
+    expect(result).not.toContain("const handleListUser = async");
+    expect(result).not.toContain("const handleGetUserById = async");
+    // Check route definitions still exist
+    expect(result).toContain("const listUserRoute = createRoute");
+    expect(result).toContain("const getUserByIdRoute = createRoute");
+    expect(result).toContain("const createUserRoute = createRoute");
+    expect(result).toContain("const updateUserRoute = createRoute");
+    expect(result).toContain("const deleteUserRoute = createRoute");
+    // Check routes are mapped to controller functions
+    expect(result).toContain(
+      "userRoutes.openapi(listUserRoute, controller.listUser);"
+    );
+    expect(result).toContain(
+      "userRoutes.openapi(createUserRoute, controller.createUser);"
+    );
+    expect(result).toContain(
+      "userRoutes.openapi(getUserByIdRoute, controller.getUserById);"
+    );
+    expect(result).toContain(
+      "userRoutes.openapi(updateUserRoute, controller.updateUser);"
+    );
+    expect(result).toContain(
+      "userRoutes.openapi(deleteUserRoute, controller.deleteUser);"
+    );
+
     expect(result).toMatchSnapshot();
   });
 
-  it("should return an error string if model has no ID field", () => {
+  it("should generate only non-ID routes if model has no ID field", () => {
     const modelWithoutId: ParsedModel = {
       name: "LogEntry",
       dbName: null,
@@ -109,12 +132,40 @@ describe("generateRoutesFileContent", () => {
         },
       ],
     };
-    const result = generateRoutesFileContent(
-      modelWithoutId,
-      mockZodSchemaInfo, // Schemas might not be relevant here but needed by function signature
-      mockServiceFunctionNames
+    // Provide necessary Zod info even if updateSchema isn't used in routes
+    const logEntryZodInfo: ZodSchemaDetails = {
+      imports: [
+        `import { LogEntrySchema, createLogEntrySchema, updateLogEntrySchema } from './schema';`,
+      ],
+      modelSchemaName: "LogEntrySchema",
+      createSchemaName: "createLogEntrySchema",
+      updateSchemaName: "updateLogEntrySchema",
+    };
+
+    const result = generateRoutesFileContent(modelWithoutId, logEntryZodInfo);
+
+    // Check controller import is present
+    expect(result).toContain("import * as controller from './controller';");
+    // Check LIST and CREATE routes ARE defined
+    expect(result).toContain("const listLogEntryRoute = createRoute");
+    expect(result).toContain("const createLogEntryRoute = createRoute");
+    // Check LIST and CREATE routes ARE mapped
+    expect(result).toContain(
+      "logEntryRoutes.openapi(listLogEntryRoute, controller.listLogEntry);"
     );
-    expect(result).toContain("Error: Model LogEntry has no ID field");
-    expect(result).toMatchSnapshot(); // Snapshot the error message
+    expect(result).toContain(
+      "logEntryRoutes.openapi(createLogEntryRoute, controller.createLogEntry);"
+    );
+
+    // Check ID-based routes are NOT defined
+    expect(result).not.toContain("const getLogEntryByIdRoute = createRoute");
+    expect(result).not.toContain("const updateLogEntryRoute = createRoute");
+    expect(result).not.toContain("const deleteLogEntryRoute = createRoute");
+    // Check ID-based routes are NOT mapped
+    expect(result).not.toContain("openapi(getLogEntryByIdRoute");
+    expect(result).not.toContain("openapi(updateLogEntryRoute");
+    expect(result).not.toContain("openapi(deleteLogEntryRoute");
+
+    expect(result).toMatchSnapshot();
   });
 });

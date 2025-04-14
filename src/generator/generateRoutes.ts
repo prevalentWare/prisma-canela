@@ -2,62 +2,43 @@ import type { ParsedModel } from "../parser/types";
 import { pascalCase } from "../utils/pascalCase";
 import { camelCase } from "../utils/camelCase";
 import type { Context } from "hono";
+import type { ZodSchemaDetails } from "./types";
 
-// Simplified placeholder for Zod Schema details
-interface ZodSchemaDetails {
-  imports: string[];
-  modelSchemaName: string;
-  createSchemaName: string;
-  updateSchemaName: string;
-}
-
-// Simplified placeholder for Service Function details (just names)
-interface ServiceFunctionNames {
-  findMany: string;
-  findById: string;
-  create: string;
-  update: string;
-  delete: string;
-}
-
-// Generates the content for a {modelName}.routes.ts file
+/**
+ * Generates the content for a {modelName}.routes.ts file.
+ * This file now only defines the OpenAPI routes and maps them to controller functions.
+ */
 export function generateRoutesFileContent(
   model: ParsedModel,
-  zodSchemaInfo: ZodSchemaDetails,
-  serviceFunctionNames: ServiceFunctionNames
+  zodSchemaInfo: ZodSchemaDetails
 ): string {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
   const modelNameLower = model.name.toLowerCase();
-  // Basic pluralization - consider a library for more complex cases
   const modelNamePluralLower = `${modelNameLower}s`;
 
   const idField = model.fields.find((f) => f.isId);
-  if (!idField) {
-    console.warn(`Model ${model.name} does not have an ID field defined.`);
-    return `// Error: Model ${model.name} has no ID field. Cannot generate standard CRUD routes.`;
-  }
-  const idTypeIsNumber = idField.type === "number";
-  // Only add coercion pipe if ID is a number
+  // No longer need to return early, routes can be defined even if controller/service handles no-ID case.
+  // The controller generation should handle not generating ID-based functions.
+
+  // We still need ID info for route parameter definitions
+  const idTypeIsNumber = idField?.type === "number";
   const idZodCoercionPipe = idTypeIsNumber
     ? `.pipe(z.coerce.number().int({ message: "Invalid ID format"}))`
-    : ""; // Empty string if no coercion needed
+    : "";
   const idZodType = idTypeIsNumber ? "number" : "string";
 
-  // Import actual service functions
-  const serviceImports = `import { \n  ${serviceFunctionNames.findMany}, \n  ${serviceFunctionNames.findById}, \n  ${serviceFunctionNames.create}, \n  ${serviceFunctionNames.update}, \n  ${serviceFunctionNames.delete} \n} from \'./service\';`;
-
+  // Updated imports: Remove service imports, add controller import
   const imports = [
     `import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';`,
-    `import type { Context } from 'hono';`,
-    ...zodSchemaInfo.imports,
-    serviceImports, // Add the service function imports
+    // `import type { Context } from 'hono';` // Context likely not needed directly here anymore
+    ...zodSchemaInfo.imports, // Zod schema imports are still needed for createRoute
+    `import * as controller from './controller';`, // Import controller functions
   ].join("\n");
 
+  // Route definitions remain largely the same
   const routeDefinitions = `
 // --- Route Definitions ---
-// NOTE: Placeholder handlers are removed. We now use imported service functions directly.
-
 // GET /${modelNamePluralLower}
 const list${modelNamePascal}Route = createRoute({
   method: 'get',
@@ -77,6 +58,10 @@ const list${modelNamePascal}Route = createRoute({
   },
 });
 
+// Define ID-based routes only if idField exists
+${
+  idField
+    ? `
 // GET /${modelNamePluralLower}/{id}
 const get${modelNamePascal}ByIdRoute = createRoute({
   method: 'get',
@@ -102,38 +87,6 @@ const get${modelNamePascal}ByIdRoute = createRoute({
       // TODO: Define standard error schema
     },
     // TODO: Define 400, 500 error responses
-  },
-});
-
-// POST /${modelNamePluralLower}
-const create${modelNamePascal}Route = createRoute({
-  method: 'post',
-  path: '/',
-  tags: ['${modelNamePascal}'],
-  summary: 'Create a new ${modelNameLower}',
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: ${zodSchemaInfo.createSchemaName},
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: 'Returns the created ${modelNameLower}',
-      content: {
-        'application/json': {
-          schema: ${zodSchemaInfo.modelSchemaName},
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 500 error response
   },
 });
 
@@ -193,7 +146,7 @@ const delete${modelNamePascal}Route = createRoute({
       content: {
         'application/json': {
             // Optional: Return the deleted object's ID or a success message
-            schema: z.object({ id: z.${idZodType}() }) // Correct usage of idZodType
+            schema: z.object({ ${idField.name}: z.${idZodType}() }) // Use actual ID field name
         },
       },
     },
@@ -204,78 +157,73 @@ const delete${modelNamePascal}Route = createRoute({
     // TODO: Define 400, 500 error responses
   },
 });
+`
+    : ""
+} // End of conditional ID routes
+
+// POST /${modelNamePluralLower} - Always defined
+const create${modelNamePascal}Route = createRoute({
+  method: 'post',
+  path: '/',
+  tags: ['${modelNamePascal}'],
+  summary: 'Create a new ${modelNameLower}',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: ${zodSchemaInfo.createSchemaName},
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: 'Returns the created ${modelNameLower}',
+      content: {
+        'application/json': {
+          schema: ${zodSchemaInfo.modelSchemaName},
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      // TODO: Define standard error schema
+    },
+    // TODO: Define 500 error response
+  },
+});
 `;
 
-  // Define handlers that call the imported service functions
-  // These now correctly align with the route definitions and expected types
-  const handlers = `
-// --- Route Handlers ---
+  // Handler definitions are removed
 
-// GET /
-const handleList${modelNamePascal} = async (c: Context) => {
-  // TODO: Add error handling (try/catch)
-  const results = await ${serviceFunctionNames.findMany}();
-  return c.json(results);
-};
-
-// GET /:id
-const handleGet${modelNamePascal}ById = async (c: Context) => {
-  const id = c.req.valid(\'param\').id;
-  // TODO: Add error handling (try/catch, check for null)
-  const result = await ${serviceFunctionNames.findById}(id);
-  if (!result) {
-    return c.json({ error: \'${modelNamePascal} not found\' }, 404);
-  }
-  return c.json(result);
-};
-
-// POST /
-const handleCreate${modelNamePascal} = async (c: Context) => {
-  const data = c.req.valid(\'json\');
-  // TODO: Add error handling (try/catch)
-  const newItem = await ${serviceFunctionNames.create}(data);
-  return c.json(newItem, 201);
-};
-
-// PATCH /:id
-const handleUpdate${modelNamePascal} = async (c: Context) => {
-  const id = c.req.valid(\'param\').id;
-  const data = c.req.valid(\'json\');
-   // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
-  const updatedItem = await ${serviceFunctionNames.update}(id, data);
-  return c.json(updatedItem);
-};
-
-// DELETE /:id
-const handleDelete${modelNamePascal} = async (c: Context) => {
-  const id = c.req.valid(\'param\').id;
-  // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
-  const deletedItem = await ${serviceFunctionNames.delete}(id);
-  return c.json(deletedItem);
-};
-`;
-
+  // Updated app setup: Map routes to controller functions
   const appSetup = `
 // --- Hono App Setup ---
 const ${modelNameCamel}Routes = new OpenAPIHono();
 
-// Register routes with their handlers
-${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, handleList${modelNamePascal});
-${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, handleGet${modelNamePascal}ById);
-${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, handleCreate${modelNamePascal});
-${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, handleUpdate${modelNamePascal});
-${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, handleDelete${modelNamePascal});
+// Register routes with their corresponding controller handlers
+${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, controller.list${modelNamePascal});
+${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, controller.create${modelNamePascal});
+${
+  idField
+    ? `
+${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, controller.get${modelNamePascal}ById);
+${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, controller.update${modelNamePascal});
+${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, controller.delete${modelNamePascal});
+`
+    : ""
+} // Conditionally register ID-based routes
 
 export default ${modelNameCamel}Routes;
 `;
 
+  // Return only imports, route definitions, and app setup
   return [
     imports,
     "\n",
-    routeDefinitions, // Route definitions first
+    routeDefinitions,
+    // handlers variable removed
     "\n",
-    handlers, // Then handlers
-    "\n",
-    appSetup, // Finally app setup
+    appSetup,
   ].join("\n");
 }
