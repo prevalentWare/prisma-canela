@@ -1,0 +1,41 @@
+---
+description: General coding standards and best practices for maintainable code
+globs: *.*
+alwaysApply: true
+---
+# Coding Standards
+
+## Environment Handling
+- Account for different environments: dev, test, and prod
+- Use environment variables for configuration
+- Don't hardcode environment-specific values
+- No mocking data in production code
+- No stubbing or fake data patterns in dev or prod
+
+## Code Cleanliness
+- Avoid duplication of code
+- Reuse existing functionality when possible
+- Remove commented-out code
+- Keep functions small and focused
+- Use meaningful variable and function names
+
+## Error Handling
+- Implement proper error boundaries
+- Use try/catch blocks appropriately
+- Log errors properly
+- Handle edge cases
+- Provide user-friendly error messages
+
+
+## Refactoring Guidelines
+- Avoid introducing new patterns without exhausting existing options
+- Remove old implementations when introducing new patterns
+- Keep the codebase clean and organized
+- Document complex logic
+
+## Security Practices
+- Validate user inputs
+- Implement proper authentication and authorization
+- Protect against common vulnerabilities
+- Don't expose sensitive information
+- Follow security best practices

@@ -1,0 +1,25 @@
+---
+description: ESLint rules and code style conventions for the project
+globs: *.tsx,*.ts,*.js,*.jsx,*.mjs
+alwaysApply: true
+---
+# ESLint and Code Style Rules
+
+## Import Rules
+- No relative imports using `..` (use absolute imports instead)
+- Prefer named exports over default exports
+- Default exports only allowed in page files
+
+## Code Style
+- Use destructuring where possible
+- No nested ternary operators
+- No console statements
+- Use strict equality (`===` and `!==`)
+- Prefer arrow functions
+- Use function expressions over function declarations
+- Enforce Prettier formatting rules
+
+## Code Quality
+- Max complexity of 10
+- No default exports except on the main entry point
+- Files should not exceed 300 lines

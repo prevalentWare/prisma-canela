@@ -1,0 +1,48 @@
+---
+description: Guidelines for AI-assisted development workflow
+globs: *.*
+alwaysApply: true
+---
+# AI-Assisted Development
+
+## Workflow Guidelines
+- Always do one step at a time
+- Ask for validation before continuing with the next step
+- Make small, incremental changes
+- Follow a clear plan for implementation
+
+## Planning
+- Always follow a structured plan
+- If no plan is provided, remind the user to create one
+- Plans should be structured in the `/plans` folder
+- Each plan should include both a plan document and a checklist
+
+## Testing
+- Always test your code
+- Add unit tests for new code
+- Run unit tests after finishing your work
+- Run the eslint check after finishing your work
+- Ensure no previous features are broken by your changes
+- Follow the instructions in [TESTING.md](mdc:TESTING.md)
+
+## Code Review
+- Document your changes clearly
+- Explain the reasoning behind implementation choices
+- Note any architectural decisions
+- Highlight potential areas for future improvement
+
+## Best Practices
+- Document complex functions and components
+- Verify changes against requirements
+- Consider edge cases
+- Include error handling
+- Focus on maintainability
+- Consider performance implications
+- Follow security best practices
+- Use bun as the package manager and to run the app, linter and the tests.
+
+## Communication
+- Be clear and concise in your explanations
+- Ask clarifying questions when requirements are ambiguous
+- Provide options when multiple approaches are viable
+- Explain trade-offs between different solutions 

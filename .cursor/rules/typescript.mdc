@@ -1,0 +1,33 @@
+---
+description: TypeScript best practices and type definitions for Next.js projects
+globs: *.tsx,*.ts
+alwaysApply: false
+---
+# TypeScript Rules
+
+## TypeScript Best Practices
+- Use strict mode (`strict: true`)
+- No implicit any (`noImplicitAny: true`)
+- Strict null checks (`strictNullChecks: true`)
+- Strict function types (`strictFunctionTypes: true`)
+- No unused variables (`noUnusedLocals: true`)
+- No unused parameters (`noUnusedParameters: true`)
+
+## Naming Conventions
+- Interfaces: PascalCase (e.g., `UserProfile`)
+- Types: PascalCase (e.g., `UserRole`)
+- Enums: PascalCase with a leading Enum_ (e.g., `Enum_UserStatus`)
+- Constants: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_COUNT`)
+- Functions: camelCase (e.g., `getUserData`)
+
+## Component Patterns
+- Props interface: `ComponentNameProps`
+- State interface: `ComponentNameState`
+- Use explicit return types for functions when not obvious
+
+## Type Definitions
+- Prefer interfaces over type aliases
+- Use explicit type annotations
+- Avoid type assertions unless absolutely necessary
+- Use proper type guards
+- Leverage utility types (Partial, Pick, Omit, etc.)

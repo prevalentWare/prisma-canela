@@ -1,0 +1,35 @@
+---
+description: Testing best practices and guidelines for Jest and React Testing Library
+globs: *.test.ts,*.test.tsx
+alwaysApply: false
+---
+# Testing Guidelines
+
+## Test File Organization
+- Place test files in `__tests__` folders next to the implementation
+- Name test files after the component/function they test (e.g., `function.test.tsx`)
+- Group related tests using `describe` blocks
+- Use clear, descriptive test names with `it` or `test`
+
+## Test Coverage Expectations
+- Target minimum 90% code coverage
+- Cover all critical flows
+- Test edge cases and error states
+- Include tests for both happy and unhappy paths
+- Verify accessibility requirements
+- Always run all the tests before adding a new test to confirm everything works
+- If a file is called index, don't name the file index.test.tsx. Please find a better name using the folder structure.
+
+## Mocking Practices
+- Mock external dependencies explicitly
+- Reset mocks between tests using `beforeEach`
+- Use Jest mock functions for tracking calls
+- Avoid excessive mocking that doesn't represent real usage
+- Mock at the import level rather than injecting mocks as props
+
+## Test Structure
+- Follow the Arrange-Act-Assert pattern
+- Keep tests focused and single-purpose
+- Limit test setup complexity
+- Avoid test interdependencies
+- Create helper functions for common test patterns
