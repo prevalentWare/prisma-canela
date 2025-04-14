@@ -56,6 +56,36 @@ Each resource supports the following operations:
 - `PATCH /{id}`: Update a resource by ID
 - `DELETE /{id}`: Delete a resource by ID
 
+## Prisma Middleware Usage
+
+The example server demonstrates how to use the generated Prisma middleware:
+
+```typescript
+import {
+  createPrismaMiddleware,
+  disconnectPrisma,
+} from "../src/generated/middleware/prismaMiddleware";
+
+// Create a Prisma client
+const prisma = new PrismaClient();
+
+// Add the middleware to your Hono app
+app.use("*", createPrismaMiddleware(prisma));
+
+// Handle graceful shutdown
+process.on("SIGTERM", async () => {
+  await disconnectPrisma();
+  process.exit(0);
+});
+```
+
+The middleware:
+
+1. Injects the Prisma client into the Hono context
+2. Makes it available to all route handlers
+3. Handles error cases when the client is missing
+4. Provides proper cleanup on application shutdown
+
 ## Modular Route Import Examples
 
 The server demonstrates two ways to import and use the generated routes:

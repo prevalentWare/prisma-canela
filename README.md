@@ -150,26 +150,41 @@ The example server demonstrates how to:
 
 #### Prisma Client from Context
 
-Soon, Canela will support extracting the Prisma client from the Hono context instead of creating a new one in each service:
+Canela supports extracting the Prisma client from the Hono context instead of creating a new one in each service:
 
 ```typescript
-// Example of providing Prisma client to routes
+// Example of providing Prisma client to routes using the generated middleware
 import { PrismaClient } from "@prisma/client";
 import { Hono } from "hono";
-import userRoutes from "./generated/user/routes";
+import {
+  createPrismaMiddleware,
+  disconnectPrisma,
+} from "./generated/middleware/prismaMiddleware";
+import { userRoutes } from "./generated";
 
 const prisma = new PrismaClient();
 const app = new Hono();
 
-// Middleware to inject Prisma client into context
-app.use("*", async (c, next) => {
-  c.set("prisma", prisma);
-  await next();
-});
+// Use the generated middleware to inject Prisma client into context
+app.use("*", createPrismaMiddleware(prisma));
 
 // Mount routes that will use the Prisma client from context
 app.route("/api/users", userRoutes);
+
+// Handle shutdown gracefully
+process.on("SIGTERM", async () => {
+  await disconnectPrisma();
+  process.exit(0);
+});
 ```
+
+The generated middleware provides:
+
+- A factory function `createPrismaMiddleware(prismaClient?)` that accepts an optional Prisma client instance
+- A default middleware instance `prismaMiddleware` that creates its own singleton client
+- A utility function `disconnectPrisma()` for proper cleanup when your application shuts down
+
+All generated service functions extract the Prisma client from the Hono context, with proper error handling for cases when the client is not available.
 
 #### Multi-file Prisma Schema Support
 

@@ -12,6 +12,12 @@ import { userRoutes, roleRoutes, pageRoutes } from "../src/generated";
 // Alternative: import all routes as a module
 import * as api from "../src/generated";
 
+// Import the generated prismaMiddleware
+import {
+  createPrismaMiddleware,
+  disconnectPrisma,
+} from "../src/generated/middleware/prismaMiddleware";
+
 // Create Prisma client
 const prisma = new PrismaClient();
 
@@ -22,11 +28,9 @@ const app = new Hono();
 app.use("*", logger());
 app.use("*", prettyJSON());
 
-// Add middleware to inject Prisma client into context
-app.use("*", async (c, next) => {
-  c.set("prisma", prisma);
-  await next();
-});
+// Add middleware to inject Prisma client into context using the generated middleware
+// Pass the Prisma client instance to the middleware factory
+app.use("*", createPrismaMiddleware(prisma));
 
 // Build OpenAPI app with generated routes
 const openApiApp = new OpenAPIHono();
@@ -76,12 +80,12 @@ serve({
 // Handle shutdown gracefully
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
-  await prisma.$disconnect();
+  await disconnectPrisma(); // Use the generated disconnect function instead
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully");
-  await prisma.$disconnect();
+  await disconnectPrisma(); // Use the generated disconnect function instead
   process.exit(0);
 });
