@@ -44,49 +44,19 @@ export function generateRoutesFileContent(
     : ""; // Empty string if no coercion needed
   const idZodType = idTypeIsNumber ? "number" : "string";
 
+  // Import actual service functions
+  const serviceImports = `import { \n  ${serviceFunctionNames.findMany}, \n  ${serviceFunctionNames.findById}, \n  ${serviceFunctionNames.create}, \n  ${serviceFunctionNames.update}, \n  ${serviceFunctionNames.delete} \n} from \'./service\';`;
+
   const imports = [
     `import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';`,
     `import type { Context } from 'hono';`,
     ...zodSchemaInfo.imports,
-    // Service imports will be added here in Step 8
-    // e.g., `import { ${Object.values(serviceFunctionNames).join(', ')} } from './${modelNameCamel}.service';`
+    serviceImports, // Add the service function imports
   ].join("\n");
 
   const routeDefinitions = `
-// --- Service Function Placeholders (to be replaced by imports) ---
-// In a real scenario, these would be imported from the service file
-const ${serviceFunctionNames.findMany} = async (c: Context) => {
-  console.log('findMany ${model.name} placeholder');
-  // TODO: Call actual service: await service.findMany()
-  return c.json([]); 
-};
-const ${serviceFunctionNames.findById} = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  console.log('findById ${model.name} placeholder with id: ', id);
-  // TODO: Call actual service: await service.findById(id)
-  return c.json(null); 
-};
-const ${serviceFunctionNames.create} = async (c: Context) => {
-  const data = c.req.valid('json');
-  console.log('create ${model.name} placeholder with data:', data);
-  // TODO: Call actual service: await service.create(data)
-  return c.json({ id: 'new', ...data }, 201);
-};
-const ${serviceFunctionNames.update} = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  const data = c.req.valid('json');
-  console.log('update ${model.name} placeholder with id: ', id, ' data:', data);
-  // TODO: Call actual service: await service.update(id, data)
-  return c.json({ id, ...data });
-};
-const ${serviceFunctionNames.delete} = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  console.log('delete ${model.name} placeholder with id: ', id);
-  // TODO: Call actual service: await service.delete(id)
-  return c.json({ id });
-};
-
 // --- Route Definitions ---
+// NOTE: Placeholder handlers are removed. We now use imported service functions directly.
 
 // GET /${modelNamePluralLower}
 const list${modelNamePascal}Route = createRoute({
@@ -236,18 +206,76 @@ const delete${modelNamePascal}Route = createRoute({
 });
 `;
 
+  // Define handlers that call the imported service functions
+  // These now correctly align with the route definitions and expected types
+  const handlers = `
+// --- Route Handlers ---
+
+// GET /
+const handleList${modelNamePascal} = async (c: Context) => {
+  // TODO: Add error handling (try/catch)
+  const results = await ${serviceFunctionNames.findMany}();
+  return c.json(results);
+};
+
+// GET /:id
+const handleGet${modelNamePascal}ById = async (c: Context) => {
+  const id = c.req.valid(\'param\').id;
+  // TODO: Add error handling (try/catch, check for null)
+  const result = await ${serviceFunctionNames.findById}(id);
+  if (!result) {
+    return c.json({ error: \'${modelNamePascal} not found\' }, 404);
+  }
+  return c.json(result);
+};
+
+// POST /
+const handleCreate${modelNamePascal} = async (c: Context) => {
+  const data = c.req.valid(\'json\');
+  // TODO: Add error handling (try/catch)
+  const newItem = await ${serviceFunctionNames.create}(data);
+  return c.json(newItem, 201);
+};
+
+// PATCH /:id
+const handleUpdate${modelNamePascal} = async (c: Context) => {
+  const id = c.req.valid(\'param\').id;
+  const data = c.req.valid(\'json\');
+   // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
+  const updatedItem = await ${serviceFunctionNames.update}(id, data);
+  return c.json(updatedItem);
+};
+
+// DELETE /:id
+const handleDelete${modelNamePascal} = async (c: Context) => {
+  const id = c.req.valid(\'param\').id;
+  // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
+  const deletedItem = await ${serviceFunctionNames.delete}(id);
+  return c.json(deletedItem);
+};
+`;
+
   const appSetup = `
 // --- Hono App Setup ---
 const ${modelNameCamel}Routes = new OpenAPIHono();
 
-${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, ${serviceFunctionNames.findMany});
-${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, ${serviceFunctionNames.findById});
-${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, ${serviceFunctionNames.create});
-${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, ${serviceFunctionNames.update});
-${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, ${serviceFunctionNames.delete});
+// Register routes with their handlers
+${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, handleList${modelNamePascal});
+${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, handleGet${modelNamePascal}ById);
+${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, handleCreate${modelNamePascal});
+${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, handleUpdate${modelNamePascal});
+${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, handleDelete${modelNamePascal});
 
 export default ${modelNameCamel}Routes;
 `;
 
-  return [imports, "\n", routeDefinitions, "\n", appSetup].join("\n");
+  return [
+    imports,
+    "\n",
+    routeDefinitions, // Route definitions first
+    "\n",
+    handlers, // Then handlers
+    "\n",
+    appSetup, // Finally app setup
+  ].join("\n");
 }

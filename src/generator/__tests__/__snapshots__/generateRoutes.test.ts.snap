@@ -5,43 +5,18 @@ exports[`generateRoutesFileContent > should generate correct route file content 
 import type { Context } from 'hono';
 import { UserSchema, createUserSchema, updateUserSchema } from './user.schema';
 import { Role } from '@prisma/client';
+import { 
+  findManyUsers, 
+  findUserById, 
+  createUser, 
+  updateUser, 
+  deleteUser 
+} from './service';
 
 
-
-// --- Service Function Placeholders (to be replaced by imports) ---
-// In a real scenario, these would be imported from the service file
-const findManyUsers = async (c: Context) => {
-  console.log('findMany User placeholder');
-  // TODO: Call actual service: await service.findMany()
-  return c.json([]); 
-};
-const findUserById = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  console.log('findById User placeholder with id: ', id);
-  // TODO: Call actual service: await service.findById(id)
-  return c.json(null); 
-};
-const createUser = async (c: Context) => {
-  const data = c.req.valid('json');
-  console.log('create User placeholder with data:', data);
-  // TODO: Call actual service: await service.create(data)
-  return c.json({ id: 'new', ...data }, 201);
-};
-const updateUser = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  const data = c.req.valid('json');
-  console.log('update User placeholder with id: ', id, ' data:', data);
-  // TODO: Call actual service: await service.update(id, data)
-  return c.json({ id, ...data });
-};
-const deleteUser = async (c: Context) => {
-  const id = c.req.valid('param').id;
-  console.log('delete User placeholder with id: ', id);
-  // TODO: Call actual service: await service.delete(id)
-  return c.json({ id });
-};
 
 // --- Route Definitions ---
+// NOTE: Placeholder handlers are removed. We now use imported service functions directly.
 
 // GET /users
 const listUserRoute = createRoute({
@@ -193,14 +168,63 @@ const deleteUserRoute = createRoute({
 
 
 
+// --- Route Handlers ---
+
+// GET /
+const handleListUser = async (c: Context) => {
+  // TODO: Add error handling (try/catch)
+  const results = await findManyUsers();
+  return c.json(results);
+};
+
+// GET /:id
+const handleGetUserById = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  // TODO: Add error handling (try/catch, check for null)
+  const result = await findUserById(id);
+  if (!result) {
+    return c.json({ error: 'User not found' }, 404);
+  }
+  return c.json(result);
+};
+
+// POST /
+const handleCreateUser = async (c: Context) => {
+  const data = c.req.valid('json');
+  // TODO: Add error handling (try/catch)
+  const newItem = await createUser(data);
+  return c.json(newItem, 201);
+};
+
+// PATCH /:id
+const handleUpdateUser = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  const data = c.req.valid('json');
+   // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
+  const updatedItem = await updateUser(id, data);
+  return c.json(updatedItem);
+};
+
+// DELETE /:id
+const handleDeleteUser = async (c: Context) => {
+  const id = c.req.valid('param').id;
+  // TODO: Add error handling (try/catch, handle Prisma P2025 error for 404)
+  const deletedItem = await deleteUser(id);
+  return c.json(deletedItem);
+};
+
+
+
+
 // --- Hono App Setup ---
 const userRoutes = new OpenAPIHono();
 
-userRoutes.openapi(listUserRoute, findManyUsers);
-userRoutes.openapi(getUserByIdRoute, findUserById);
-userRoutes.openapi(createUserRoute, createUser);
-userRoutes.openapi(updateUserRoute, updateUser);
-userRoutes.openapi(deleteUserRoute, deleteUser);
+// Register routes with their handlers
+userRoutes.openapi(listUserRoute, handleListUser);
+userRoutes.openapi(getUserByIdRoute, handleGetUserById);
+userRoutes.openapi(createUserRoute, handleCreateUser);
+userRoutes.openapi(updateUserRoute, handleUpdateUser);
+userRoutes.openapi(deleteUserRoute, handleDeleteUser);
 
 export default userRoutes;
 "

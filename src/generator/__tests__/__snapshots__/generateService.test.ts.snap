@@ -1,0 +1,353 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateServiceFileContent > should generate correct service file content for a User model 1`] = `
+"
+import { PrismaClient, User as UserType } from '@prisma/client';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createUserSchema, updateUserSchema } from './schema';
+import { z } from 'zod';
+
+// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
+const prisma = new PrismaClient();
+
+// Define types inferred from Zod schemas for input validation
+type CreateUserInput = z.infer<typeof createUserSchema>;
+type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+/**
+ * Finds multiple User records.
+ * @returns A promise resolving to an array of User records.
+ */
+export async function findManyUser(): Promise<UserType[]> {
+  try {
+    return await prisma.user.findMany();
+  } catch (error) {
+    console.error('Error fetching Users:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch Users');
+  }
+}
+
+/**
+ * Creates a new User record.
+ * @param data The data for the new User.
+ * @returns A promise resolving to the created User record.
+ */
+export async function createUser(data: CreateUserInput): Promise<UserType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.create({ data });
+  } catch (error) {
+    console.error('Error creating User:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create User');
+  }
+}
+
+/**
+ * Finds a single User record by its ID.
+ * @param id The ID of the User to find.
+ * @returns A promise resolving to the User record or null if not found.
+ */
+export async function findUserById(id: string): Promise<UserType | null> {
+  try {
+    return await prisma.user.findUnique({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(\`Error fetching User by ID \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch User by ID');
+  }
+}
+
+/**
+ * Updates a User record by its ID.
+ * @param id The ID of the User to update.
+ * @param data The data to update the User with.
+ * @returns A promise resolving to the updated User record.
+ */
+export async function updateUser(id: string, data: UpdateUserInput): Promise<UserType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.update({
+      where: { id: id },
+      data,
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error updating User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not update User');
+  }
+}
+
+/**
+ * Deletes a User record by its ID.
+ * @param id The ID of the User to delete.
+ * @returns A promise resolving to the deleted User record.
+ */
+export async function deleteUser(id: string): Promise<UserType> {
+  try {
+    return await prisma.user.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error deleting User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not delete User');
+  }
+}
+"
+`;
+
+exports[`generateServiceFileContent > should generate service file content for a model without an ID 1`] = `
+"
+import { PrismaClient, LogEntry as LogEntryType } from '@prisma/client';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createLogEntrySchema, updateLogEntrySchema } from './schema';
+import { z } from 'zod';
+
+// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
+const prisma = new PrismaClient();
+
+// Define types inferred from Zod schemas for input validation
+type CreateLogEntryInput = z.infer<typeof createLogEntrySchema>;
+type UpdateLogEntryInput = z.infer<typeof updateLogEntrySchema>;
+
+/**
+ * Finds multiple LogEntry records.
+ * @returns A promise resolving to an array of LogEntry records.
+ */
+export async function findManyLogEntry(): Promise<LogEntryType[]> {
+  try {
+    return await prisma.logEntry.findMany();
+  } catch (error) {
+    console.error('Error fetching LogEntrys:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch LogEntrys');
+  }
+}
+
+/**
+ * Creates a new LogEntry record.
+ * @param data The data for the new LogEntry.
+ * @returns A promise resolving to the created LogEntry record.
+ */
+export async function createLogEntry(data: CreateLogEntryInput): Promise<LogEntryType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.logEntry.create({ data });
+  } catch (error) {
+    console.error('Error creating LogEntry:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create LogEntry');
+  }
+}
+"
+`;
+
+exports[`generateServiceFileContent > should generate service file content with a custom prisma client path 1`] = `
+"
+import { PrismaClient, User as UserType } from '../../libs/prisma';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createUserSchema, updateUserSchema } from './schema';
+import { z } from 'zod';
+
+// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
+const prisma = new PrismaClient();
+
+// Define types inferred from Zod schemas for input validation
+type CreateUserInput = z.infer<typeof createUserSchema>;
+type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+/**
+ * Finds multiple User records.
+ * @returns A promise resolving to an array of User records.
+ */
+export async function findManyUser(): Promise<UserType[]> {
+  try {
+    return await prisma.user.findMany();
+  } catch (error) {
+    console.error('Error fetching Users:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch Users');
+  }
+}
+
+/**
+ * Creates a new User record.
+ * @param data The data for the new User.
+ * @returns A promise resolving to the created User record.
+ */
+export async function createUser(data: CreateUserInput): Promise<UserType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.create({ data });
+  } catch (error) {
+    console.error('Error creating User:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create User');
+  }
+}
+
+/**
+ * Finds a single User record by its ID.
+ * @param id The ID of the User to find.
+ * @returns A promise resolving to the User record or null if not found.
+ */
+export async function findUserById(id: string): Promise<UserType | null> {
+  try {
+    return await prisma.user.findUnique({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(\`Error fetching User by ID \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch User by ID');
+  }
+}
+
+/**
+ * Updates a User record by its ID.
+ * @param id The ID of the User to update.
+ * @param data The data to update the User with.
+ * @returns A promise resolving to the updated User record.
+ */
+export async function updateUser(id: string, data: UpdateUserInput): Promise<UserType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.update({
+      where: { id: id },
+      data,
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error updating User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not update User');
+  }
+}
+
+/**
+ * Deletes a User record by its ID.
+ * @param id The ID of the User to delete.
+ * @returns A promise resolving to the deleted User record.
+ */
+export async function deleteUser(id: string): Promise<UserType> {
+  try {
+    return await prisma.user.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error deleting User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not delete User');
+  }
+}
+"
+`;
+
+exports[`generateServiceFileContent > should use number type for ID if the id field type is number 1`] = `
+"
+import { PrismaClient, UserWithNumericId as UserWithNumericIdType } from '@prisma/client';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createUserWithNumericIdSchema, updateUserWithNumericIdSchema } from './schema';
+import { z } from 'zod';
+
+// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
+const prisma = new PrismaClient();
+
+// Define types inferred from Zod schemas for input validation
+type CreateUserWithNumericIdInput = z.infer<typeof createUserWithNumericIdSchema>;
+type UpdateUserWithNumericIdInput = z.infer<typeof updateUserWithNumericIdSchema>;
+
+/**
+ * Finds multiple UserWithNumericId records.
+ * @returns A promise resolving to an array of UserWithNumericId records.
+ */
+export async function findManyUserWithNumericId(): Promise<UserWithNumericIdType[]> {
+  try {
+    return await prisma.userWithNumericId.findMany();
+  } catch (error) {
+    console.error('Error fetching UserWithNumericIds:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch UserWithNumericIds');
+  }
+}
+
+/**
+ * Creates a new UserWithNumericId record.
+ * @param data The data for the new UserWithNumericId.
+ * @returns A promise resolving to the created UserWithNumericId record.
+ */
+export async function createUserWithNumericId(data: CreateUserWithNumericIdInput): Promise<UserWithNumericIdType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.userWithNumericId.create({ data });
+  } catch (error) {
+    console.error('Error creating UserWithNumericId:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create UserWithNumericId');
+  }
+}
+
+/**
+ * Finds a single UserWithNumericId record by its ID.
+ * @param id The ID of the UserWithNumericId to find.
+ * @returns A promise resolving to the UserWithNumericId record or null if not found.
+ */
+export async function findUserWithNumericIdById(id: number): Promise<UserWithNumericIdType | null> {
+  try {
+    return await prisma.userWithNumericId.findUnique({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(\`Error fetching UserWithNumericId by ID \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch UserWithNumericId by ID');
+  }
+}
+
+/**
+ * Updates a UserWithNumericId record by its ID.
+ * @param id The ID of the UserWithNumericId to update.
+ * @param data The data to update the UserWithNumericId with.
+ * @returns A promise resolving to the updated UserWithNumericId record.
+ */
+export async function updateUserWithNumericId(id: number, data: UpdateUserWithNumericIdInput): Promise<UserWithNumericIdType> {
+  try {
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.userWithNumericId.update({
+      where: { id: id },
+      data,
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error updating UserWithNumericId \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not update UserWithNumericId');
+  }
+}
+
+/**
+ * Deletes a UserWithNumericId record by its ID.
+ * @param id The ID of the UserWithNumericId to delete.
+ * @returns A promise resolving to the deleted UserWithNumericId record.
+ */
+export async function deleteUserWithNumericId(id: number): Promise<UserWithNumericIdType> {
+  try {
+    return await prisma.userWithNumericId.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error deleting UserWithNumericId \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not delete UserWithNumericId');
+  }
+}
+"
+`;
