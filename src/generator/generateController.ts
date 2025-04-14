@@ -61,8 +61,8 @@ function generateHandler(
     ? `const data = getValidData(c, 'json');`
     : "";
 
-  // Determine arguments for service call
-  const args = [];
+  // Determine arguments for service call with context as first parameter
+  const args = ["c"]; // Always pass context first
   if (requiresId) args.push("id");
   if (requiresBody) args.push("data");
   const serviceCallArgs = args.join(", ");
@@ -89,7 +89,7 @@ export const ${handlerName} = async (c: ${contextType}) => {
   ${paramValidation}
   ${jsonValidation}
   try {
-    const item = await service.${serviceFunctionName}(${serviceCallArgs}); // Use service namespace and correct args
+    const item = await service.${serviceFunctionName}(${serviceCallArgs}); // Pass context first, then other args
     ${getByIdNotFound}
     // Always return status code explicitly for better type matching with openapi()
     return c.json(item, ${successStatusCode});
@@ -106,6 +106,12 @@ export const ${handlerName} = async (c: ${contextType}) => {
     }`
       : ""
   }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
     // Generic error handling for other cases
     const message = \`Error ${handlerName
       .replace(/([A-Z])/g, " $1")

@@ -20,6 +20,7 @@ import {
 import { pascalCase } from "../utils/pascalCase";
 import { camelCase } from "../utils/camelCase";
 import type { ZodSchemaDetails, ServiceFunctionNames } from "./types"; // Import shared types
+import { generatePrismaMiddlewareFileContent } from "./generatePrismaMiddleware";
 
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
@@ -50,6 +51,25 @@ export async function generateApi(
     // Ensure base output directory exists after cleaning
     await fs.mkdir(outputDir, { recursive: true });
     console.log(`Output directory created: ${outputDir}`);
+
+    // Create middleware directory
+    const middlewareDir = path.join(outputDir, "middleware");
+    await fs.mkdir(middlewareDir, { recursive: true });
+
+    // Generate Prisma middleware
+    console.log(`- Generating Prisma middleware: prismaMiddleware.ts`);
+    const prismaMiddlewareContent = generatePrismaMiddlewareFileContent();
+    const prismaMiddlewareFilePath = path.join(
+      middlewareDir,
+      "prismaMiddleware.ts"
+    );
+    await fs.writeFile(prismaMiddlewareFilePath, prismaMiddlewareContent);
+
+    // Generate index file for middleware
+    console.log(`- Generating middleware index: index.ts`);
+    const middlewareIndexContent = `export * from './prismaMiddleware';`;
+    const middlewareIndexFilePath = path.join(middlewareDir, "index.ts");
+    await fs.writeFile(middlewareIndexFilePath, middlewareIndexContent);
 
     for (const model of parsedSchema.models) {
       const modelNamePascal = pascalCase(model.name);
@@ -130,7 +150,7 @@ export async function generateApi(
       `\nAPI generation completed successfully. Files written to ${outputDir}`
     );
     console.log(
-      "\nNext steps: Create a manual Hono server for testing the generated routes."
+      "\nRemember to use the prismaMiddleware in your application to provide the Prisma client to the routes."
     );
   } catch (error) {
     console.error("Error during API generation:", error);

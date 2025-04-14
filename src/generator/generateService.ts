@@ -4,7 +4,8 @@ import { camelCase } from "../utils/camelCase";
 
 /**
  * Generates the content for a model-specific service file (service.ts).
- * This file contains functions that interact with Prisma Client for CRUD operations.
+ * This file contains functions that interact with Prisma Client for CRUD operations,
+ * extracting the client from the Hono context.
  *
  * @param model The parsed model definition.
  * @param prismaClientImportPath Optional path for Prisma Client import.
@@ -29,19 +30,27 @@ export function generateServiceFileContent(
 
   // --- Generate Import Statements ---
   const imports = `
-import { PrismaClient } from '${prismaClientImportPath}';
+import type { PrismaClient } from '${prismaClientImportPath}';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
 import type { ${model.name} as ${modelNamePascal}Type } from '${prismaClientImportPath}';
 // Import input types from Zod schemas (adjust path if necessary)
 import { create${modelNamePascal}Schema, update${modelNamePascal}Schema } from './schema';
 import { z } from 'zod';
-
-// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
-const prisma = new PrismaClient();
+import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
 type Create${modelNamePascal}Input = z.infer<typeof create${modelNamePascal}Schema>;
 type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePascal}Schema>;
+
+/**
+ * Helper function to extract Prisma client from context with error handling
+ */
+function getPrismaClient(c: Context): PrismaClient {
+  if (!c.prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return c.prisma;
+}
 `;
 
   // --- Generate Core Service Functions (FindMany, Create) ---
@@ -49,10 +58,12 @@ type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePascal}Sche
   let functions = `
 /**
  * Finds multiple ${modelNamePascal} records.
+ * @param c The Hono context containing the Prisma client.
  * @returns A promise resolving to an array of ${modelNamePascal} records.
  */
-export async function findMany${modelNamePascal}(): Promise<${modelNamePascal}Type[]> {
+export async function findMany${modelNamePascal}(c: Context): Promise<${modelNamePascal}Type[]> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.findMany();
   } catch (error) {
     console.error('Error fetching ${modelNamePascal}s:', error);
@@ -63,11 +74,13 @@ export async function findMany${modelNamePascal}(): Promise<${modelNamePascal}Ty
 
 /**
  * Creates a new ${modelNamePascal} record.
+ * @param c The Hono context containing the Prisma client.
  * @param data The data for the new ${modelNamePascal}.
  * @returns A promise resolving to the created ${modelNamePascal} record.
  */
-export async function create${modelNamePascal}(data: Create${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
+export async function create${modelNamePascal}(c: Context, data: Create${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.${prismaModelAccessor}.create({ data });
   } catch (error) {
@@ -84,11 +97,13 @@ export async function create${modelNamePascal}(data: Create${modelNamePascal}Inp
     functions += `
 /**
  * Finds a single ${modelNamePascal} record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the ${modelNamePascal} to find.
  * @returns A promise resolving to the ${modelNamePascal} record or null if not found.
  */
-export async function find${modelNamePascal}ById(id: ${idType}): Promise<${modelNamePascal}Type | null> {
+export async function find${modelNamePascal}ById(c: Context, id: ${idType}): Promise<${modelNamePascal}Type | null> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.findUnique({
       where: { ${idFieldName}: id },
     });
@@ -101,12 +116,14 @@ export async function find${modelNamePascal}ById(id: ${idType}): Promise<${model
 
 /**
  * Updates a ${modelNamePascal} record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the ${modelNamePascal} to update.
  * @param data The data to update the ${modelNamePascal} with.
  * @returns A promise resolving to the updated ${modelNamePascal} record.
  */
-export async function update${modelNamePascal}(id: ${idType}, data: Update${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
+export async function update${modelNamePascal}(c: Context, id: ${idType}, data: Update${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.${prismaModelAccessor}.update({
       where: { ${idFieldName}: id },
@@ -122,11 +139,13 @@ export async function update${modelNamePascal}(id: ${idType}, data: Update${mode
 
 /**
  * Deletes a ${modelNamePascal} record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the ${modelNamePascal} to delete.
  * @returns A promise resolving to the deleted ${modelNamePascal} record.
  */
-export async function delete${modelNamePascal}(id: ${idType}): Promise<${modelNamePascal}Type> {
+export async function delete${modelNamePascal}(c: Context, id: ${idType}): Promise<${modelNamePascal}Type> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.delete({
       where: { ${idFieldName}: id },
     });

@@ -2,26 +2,36 @@
 
 exports[`generateServiceFileContent > should generate correct service file content for a User model 1`] = `
 "
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
 import type { User as UserType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserSchema, updateUserSchema } from './schema';
 import { z } from 'zod';
-
-// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
-const prisma = new PrismaClient();
+import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
 type CreateUserInput = z.infer<typeof createUserSchema>;
 type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 /**
+ * Helper function to extract Prisma client from context with error handling
+ */
+function getPrismaClient(c: Context): PrismaClient {
+  if (!c.prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return c.prisma;
+}
+
+/**
  * Finds multiple User records.
+ * @param c The Hono context containing the Prisma client.
  * @returns A promise resolving to an array of User records.
  */
-export async function findManyUser(): Promise<UserType[]> {
+export async function findManyUser(c: Context): Promise<UserType[]> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.findMany();
   } catch (error) {
     console.error('Error fetching Users:', error);
@@ -32,11 +42,13 @@ export async function findManyUser(): Promise<UserType[]> {
 
 /**
  * Creates a new User record.
+ * @param c The Hono context containing the Prisma client.
  * @param data The data for the new User.
  * @returns A promise resolving to the created User record.
  */
-export async function createUser(data: CreateUserInput): Promise<UserType> {
+export async function createUser(c: Context, data: CreateUserInput): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.user.create({ data });
   } catch (error) {
@@ -48,11 +60,13 @@ export async function createUser(data: CreateUserInput): Promise<UserType> {
 
 /**
  * Finds a single User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to find.
  * @returns A promise resolving to the User record or null if not found.
  */
-export async function findUserById(id: string): Promise<UserType | null> {
+export async function findUserById(c: Context, id: string): Promise<UserType | null> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.findUnique({
       where: { id: id },
     });
@@ -65,12 +79,14 @@ export async function findUserById(id: string): Promise<UserType | null> {
 
 /**
  * Updates a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to update.
  * @param data The data to update the User with.
  * @returns A promise resolving to the updated User record.
  */
-export async function updateUser(id: string, data: UpdateUserInput): Promise<UserType> {
+export async function updateUser(c: Context, id: string, data: UpdateUserInput): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.user.update({
       where: { id: id },
@@ -86,11 +102,13 @@ export async function updateUser(id: string, data: UpdateUserInput): Promise<Use
 
 /**
  * Deletes a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to delete.
  * @returns A promise resolving to the deleted User record.
  */
-export async function deleteUser(id: string): Promise<UserType> {
+export async function deleteUser(c: Context, id: string): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.delete({
       where: { id: id },
     });
@@ -106,26 +124,36 @@ export async function deleteUser(id: string): Promise<UserType> {
 
 exports[`generateServiceFileContent > should generate service file content for a model without an ID 1`] = `
 "
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
 import type { LogEntry as LogEntryType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createLogEntrySchema, updateLogEntrySchema } from './schema';
 import { z } from 'zod';
-
-// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
-const prisma = new PrismaClient();
+import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
 type CreateLogEntryInput = z.infer<typeof createLogEntrySchema>;
 type UpdateLogEntryInput = z.infer<typeof updateLogEntrySchema>;
 
 /**
+ * Helper function to extract Prisma client from context with error handling
+ */
+function getPrismaClient(c: Context): PrismaClient {
+  if (!c.prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return c.prisma;
+}
+
+/**
  * Finds multiple LogEntry records.
+ * @param c The Hono context containing the Prisma client.
  * @returns A promise resolving to an array of LogEntry records.
  */
-export async function findManyLogEntry(): Promise<LogEntryType[]> {
+export async function findManyLogEntry(c: Context): Promise<LogEntryType[]> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.logEntry.findMany();
   } catch (error) {
     console.error('Error fetching LogEntrys:', error);
@@ -136,11 +164,13 @@ export async function findManyLogEntry(): Promise<LogEntryType[]> {
 
 /**
  * Creates a new LogEntry record.
+ * @param c The Hono context containing the Prisma client.
  * @param data The data for the new LogEntry.
  * @returns A promise resolving to the created LogEntry record.
  */
-export async function createLogEntry(data: CreateLogEntryInput): Promise<LogEntryType> {
+export async function createLogEntry(c: Context, data: CreateLogEntryInput): Promise<LogEntryType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.logEntry.create({ data });
   } catch (error) {
@@ -154,26 +184,36 @@ export async function createLogEntry(data: CreateLogEntryInput): Promise<LogEntr
 
 exports[`generateServiceFileContent > should generate service file content with a custom prisma client path 1`] = `
 "
-import { PrismaClient } from '../../libs/prisma';
+import type { PrismaClient } from '../../libs/prisma';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
 import type { User as UserType } from '../../libs/prisma';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserSchema, updateUserSchema } from './schema';
 import { z } from 'zod';
-
-// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
-const prisma = new PrismaClient();
+import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
 type CreateUserInput = z.infer<typeof createUserSchema>;
 type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 /**
+ * Helper function to extract Prisma client from context with error handling
+ */
+function getPrismaClient(c: Context): PrismaClient {
+  if (!c.prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return c.prisma;
+}
+
+/**
  * Finds multiple User records.
+ * @param c The Hono context containing the Prisma client.
  * @returns A promise resolving to an array of User records.
  */
-export async function findManyUser(): Promise<UserType[]> {
+export async function findManyUser(c: Context): Promise<UserType[]> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.findMany();
   } catch (error) {
     console.error('Error fetching Users:', error);
@@ -184,11 +224,13 @@ export async function findManyUser(): Promise<UserType[]> {
 
 /**
  * Creates a new User record.
+ * @param c The Hono context containing the Prisma client.
  * @param data The data for the new User.
  * @returns A promise resolving to the created User record.
  */
-export async function createUser(data: CreateUserInput): Promise<UserType> {
+export async function createUser(c: Context, data: CreateUserInput): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.user.create({ data });
   } catch (error) {
@@ -200,11 +242,13 @@ export async function createUser(data: CreateUserInput): Promise<UserType> {
 
 /**
  * Finds a single User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to find.
  * @returns A promise resolving to the User record or null if not found.
  */
-export async function findUserById(id: string): Promise<UserType | null> {
+export async function findUserById(c: Context, id: string): Promise<UserType | null> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.findUnique({
       where: { id: id },
     });
@@ -217,12 +261,14 @@ export async function findUserById(id: string): Promise<UserType | null> {
 
 /**
  * Updates a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to update.
  * @param data The data to update the User with.
  * @returns A promise resolving to the updated User record.
  */
-export async function updateUser(id: string, data: UpdateUserInput): Promise<UserType> {
+export async function updateUser(c: Context, id: string, data: UpdateUserInput): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
     return await prisma.user.update({
       where: { id: id },
@@ -238,11 +284,13 @@ export async function updateUser(id: string, data: UpdateUserInput): Promise<Use
 
 /**
  * Deletes a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
  * @param id The ID of the User to delete.
  * @returns A promise resolving to the deleted User record.
  */
-export async function deleteUser(id: string): Promise<UserType> {
+export async function deleteUser(c: Context, id: string): Promise<UserType> {
   try {
+    const prisma = getPrismaClient(c);
     return await prisma.user.delete({
       where: { id: id },
     });
@@ -258,103 +306,121 @@ export async function deleteUser(id: string): Promise<UserType> {
 
 exports[`generateServiceFileContent > should use number type for ID if the id field type is number 1`] = `
 "
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
-import type { UserWithNumericId as UserWithNumericIdType } from '@prisma/client';
+import type { Product as ProductType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
-import { createUserWithNumericIdSchema, updateUserWithNumericIdSchema } from './schema';
+import { createProductSchema, updateProductSchema } from './schema';
 import { z } from 'zod';
-
-// TODO: Initialize Prisma Client properly (e.g., using a singleton or dependency injection)
-const prisma = new PrismaClient();
+import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
-type CreateUserWithNumericIdInput = z.infer<typeof createUserWithNumericIdSchema>;
-type UpdateUserWithNumericIdInput = z.infer<typeof updateUserWithNumericIdSchema>;
+type CreateProductInput = z.infer<typeof createProductSchema>;
+type UpdateProductInput = z.infer<typeof updateProductSchema>;
 
 /**
- * Finds multiple UserWithNumericId records.
- * @returns A promise resolving to an array of UserWithNumericId records.
+ * Helper function to extract Prisma client from context with error handling
  */
-export async function findManyUserWithNumericId(): Promise<UserWithNumericIdType[]> {
+function getPrismaClient(c: Context): PrismaClient {
+  if (!c.prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return c.prisma;
+}
+
+/**
+ * Finds multiple Product records.
+ * @param c The Hono context containing the Prisma client.
+ * @returns A promise resolving to an array of Product records.
+ */
+export async function findManyProduct(c: Context): Promise<ProductType[]> {
   try {
-    return await prisma.userWithNumericId.findMany();
+    const prisma = getPrismaClient(c);
+    return await prisma.product.findMany();
   } catch (error) {
-    console.error('Error fetching UserWithNumericIds:', error);
+    console.error('Error fetching Products:', error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not fetch UserWithNumericIds');
+    throw new Error('Could not fetch Products');
   }
 }
 
 /**
- * Creates a new UserWithNumericId record.
- * @param data The data for the new UserWithNumericId.
- * @returns A promise resolving to the created UserWithNumericId record.
+ * Creates a new Product record.
+ * @param c The Hono context containing the Prisma client.
+ * @param data The data for the new Product.
+ * @returns A promise resolving to the created Product record.
  */
-export async function createUserWithNumericId(data: CreateUserWithNumericIdInput): Promise<UserWithNumericIdType> {
+export async function createProduct(c: Context, data: CreateProductInput): Promise<ProductType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.userWithNumericId.create({ data });
+    return await prisma.product.create({ data });
   } catch (error) {
-    console.error('Error creating UserWithNumericId:', error);
+    console.error('Error creating Product:', error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not create UserWithNumericId');
+    throw new Error('Could not create Product');
   }
 }
 
 /**
- * Finds a single UserWithNumericId record by its ID.
- * @param id The ID of the UserWithNumericId to find.
- * @returns A promise resolving to the UserWithNumericId record or null if not found.
+ * Finds a single Product record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the Product to find.
+ * @returns A promise resolving to the Product record or null if not found.
  */
-export async function findUserWithNumericIdById(id: number): Promise<UserWithNumericIdType | null> {
+export async function findProductById(c: Context, id: number): Promise<ProductType | null> {
   try {
-    return await prisma.userWithNumericId.findUnique({
+    const prisma = getPrismaClient(c);
+    return await prisma.product.findUnique({
       where: { id: id },
     });
   } catch (error) {
-    console.error(\`Error fetching UserWithNumericId by ID \${id}:\`, error);
+    console.error(\`Error fetching Product by ID \${id}:\`, error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not fetch UserWithNumericId by ID');
+    throw new Error('Could not fetch Product by ID');
   }
 }
 
 /**
- * Updates a UserWithNumericId record by its ID.
- * @param id The ID of the UserWithNumericId to update.
- * @param data The data to update the UserWithNumericId with.
- * @returns A promise resolving to the updated UserWithNumericId record.
+ * Updates a Product record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the Product to update.
+ * @param data The data to update the Product with.
+ * @returns A promise resolving to the updated Product record.
  */
-export async function updateUserWithNumericId(id: number, data: UpdateUserWithNumericIdInput): Promise<UserWithNumericIdType> {
+export async function updateProduct(c: Context, id: number, data: UpdateProductInput): Promise<ProductType> {
   try {
+    const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.userWithNumericId.update({
+    return await prisma.product.update({
       where: { id: id },
       data,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
-    console.error(\`Error updating UserWithNumericId \${id}:\`, error);
+    console.error(\`Error updating Product \${id}:\`, error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not update UserWithNumericId');
+    throw new Error('Could not update Product');
   }
 }
 
 /**
- * Deletes a UserWithNumericId record by its ID.
- * @param id The ID of the UserWithNumericId to delete.
- * @returns A promise resolving to the deleted UserWithNumericId record.
+ * Deletes a Product record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the Product to delete.
+ * @returns A promise resolving to the deleted Product record.
  */
-export async function deleteUserWithNumericId(id: number): Promise<UserWithNumericIdType> {
+export async function deleteProduct(c: Context, id: number): Promise<ProductType> {
   try {
-    return await prisma.userWithNumericId.delete({
+    const prisma = getPrismaClient(c);
+    return await prisma.product.delete({
       where: { id: id },
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
-    console.error(\`Error deleting UserWithNumericId \${id}:\`, error);
+    console.error(\`Error deleting Product \${id}:\`, error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not delete UserWithNumericId');
+    throw new Error('Could not delete Product');
   }
 }
 "

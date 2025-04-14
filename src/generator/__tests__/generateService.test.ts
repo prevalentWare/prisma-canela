@@ -117,7 +117,7 @@ describe("generateServiceFileContent", () => {
   it("should use number type for ID if the id field type is number", () => {
     const modelWithNumericId: ParsedModel = {
       ...userModel,
-      name: "UserWithNumericId",
+      name: "Product",
       dbName: null,
       fields: [
         {
@@ -137,9 +137,9 @@ describe("generateServiceFileContent", () => {
       modelWithNumericId,
       "@prisma/client"
     );
-    expect(result).toContain("findUserWithNumericIdById(id: number)");
-    expect(result).toContain("updateUserWithNumericId(id: number");
-    expect(result).toContain("deleteUserWithNumericId(id: number)");
+    expect(result).toContain("findProductById(c: Context, id: number)");
+    expect(result).toContain("updateProduct(c: Context, id: number");
+    expect(result).toContain("deleteProduct(c: Context, id: number)");
     expect(result).toMatchSnapshot();
   });
 });

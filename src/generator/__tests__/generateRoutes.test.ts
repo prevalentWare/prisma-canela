@@ -209,11 +209,11 @@ describe("generateControllerFileContent", () => {
     expect(result).toContain("export const deleteUser = async (c: Context)"); // Simplified check
 
     // Check service function calls within handlers
-    expect(result).toContain("await service.findManyUsers();");
-    expect(result).toContain("await service.createUser(data);");
-    expect(result).toContain("await service.findUserById(id);");
-    expect(result).toContain("await service.updateUser(id, data);");
-    expect(result).toContain("await service.deleteUser(id);");
+    expect(result).toContain("await service.findManyUsers(c);");
+    expect(result).toContain("await service.createUser(c, data);");
+    expect(result).toContain("await service.findUserById(c, id);");
+    expect(result).toContain("await service.updateUser(c, id, data);");
+    expect(result).toContain("await service.deleteUser(c, id);");
 
     // Check basic ID retrieval (string ID)
     expect(result).toContain("const { id } = getValidData(c, 'param');"); // Updated assertion for param destructuring
@@ -266,11 +266,11 @@ describe("generateControllerFileContent", () => {
     expect(result).toContain("export const deleteProduct = async (c: Context)"); // Simplified check
 
     // Check service function calls
-    expect(result).toContain("await service.findManyProducts();");
-    expect(result).toContain("await service.createProduct(data);");
-    expect(result).toContain("await service.findProductById(id);");
-    expect(result).toContain("await service.updateProduct(id, data);");
-    expect(result).toContain("await service.deleteProduct(id);");
+    expect(result).toContain("await service.findManyProducts(c);");
+    expect(result).toContain("await service.createProduct(c, data);");
+    expect(result).toContain("await service.findProductById(c, id);");
+    expect(result).toContain("await service.updateProduct(c, id, data);");
+    expect(result).toContain("await service.deleteProduct(c, id);");
 
     // Check numeric ID retrieval - relaxed check
     expect(result).toContain("const { id } = getValidData(c, 'param');"); // Type is handled by route validation
@@ -311,8 +311,8 @@ describe("generateControllerFileContent", () => {
     ); // Simplified check
 
     // Check service function calls
-    expect(result).toContain("await service.findManyLogEntries();");
-    expect(result).toContain("await service.createLogEntry(data);");
+    expect(result).toContain("await service.findManyLogEntries(c);");
+    expect(result).toContain("await service.createLogEntry(c, data);");
 
     // Check that ID-specific handlers are NOT present
     expect(result).not.toContain("export const getLogEntryById = async");
