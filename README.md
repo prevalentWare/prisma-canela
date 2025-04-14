@@ -19,6 +19,7 @@ Canela is a codegen tool that takes a Prisma schema and generates a fully typed 
 - **OpenAPI Ready:** Generates routes compatible with `OpenAPIHono` for easy Swagger/OpenAPI documentation.
 - **Type Inference:** Automatically generates TypeScript types from Zod schemas.
 - **Error Handling:** Built-in error handling for common Prisma errors and HTTP responses.
+- **Clean Modular Exports:** Easy to import and mount the generated routes in any Hono application.
 
 ## Technology Stack
 
@@ -64,12 +65,14 @@ For each model in your Prisma schema, Canela generates:
 
 ```
 src/generated/
+├── index.ts            # Root exports for all models
 └── modelName/
     ├── schema.ts      # Zod schemas for validation
     ├── types.ts       # TypeScript types derived from Zod schemas
     ├── controller.ts  # Request handlers
     ├── service.ts     # Database operations
-    └── routes.ts      # Hono routes with OpenAPI
+    ├── routes.ts      # Hono routes with OpenAPI
+    └── index.ts       # Exports for this model
 ```
 
 ### Using Generated API
@@ -77,8 +80,7 @@ src/generated/
 ```typescript
 // In your main app file
 import { Hono } from "hono";
-import userRoutes from "./generated/user/routes";
-import accountRoutes from "./generated/account/routes";
+import { userRoutes, accountRoutes } from "./generated";
 
 const app = new Hono();
 
@@ -92,6 +94,57 @@ app.get("/docs/*", swaggerUI({ url: "/api/docs" }));
 
 export default app;
 ```
+
+### Clean Modular Exports
+
+Canela provides clean, modular exports for easy integration with any Hono application:
+
+```typescript
+// Import specific routes
+import { userRoutes, accountRoutes } from "./generated";
+
+// Or import all routes as a module
+import * as api from "./generated";
+
+// Mount specific routes
+app.route("/api/users", userRoutes);
+
+// Or mount all routes dynamically
+Object.entries(api.routes).forEach(([name, routes]) => {
+  app.route(`/api/${name}s`, routes);
+});
+```
+
+You can also access the types generated for each model:
+
+```typescript
+import { userTypes } from "./generated/user";
+
+// Use the types in your application
+const createUserData: userTypes.CreateUserInput = {
+  email: "user@example.com",
+  name: "Test User",
+};
+```
+
+### Example Server
+
+You can find a working example of a Hono server using the generated routes in the `examples` directory.
+To run the example:
+
+```bash
+# Generate the API code first
+bun canela generate --schema ./prisma/schema.prisma --output ./src/generated
+
+# Run the example server
+bun examples/server.ts
+```
+
+The example server demonstrates how to:
+
+- Import and mount the generated routes
+- Set up Swagger UI for API documentation
+- Provide a Prisma client to the routes
 
 ### Upcoming Features
 
@@ -135,21 +188,6 @@ prisma/
     └── product.prisma   # Product-related models
 ```
 
-#### Clean Modular Exports
-
-Canela will provide clean, modular exports for easy integration with any Hono application:
-
-```typescript
-// Import specific routes or all routes
-import { userRoutes, accountRoutes } from "./generated/api";
-
-// Or import all routes as a module
-import * as api from "./generated/api";
-
-// Mount routes in your app
-app.route("/api/users", api.userRoutes);
-```
-
 ### Configuration Options
 
 _(Coming Soon)_
@@ -164,17 +202,16 @@ _(Coming Soon)_
 - ✅ Controller generation with error handling
 - ✅ OpenAPI route generation
 - ✅ Service layer for database operations
+- ✅ Modular route exports for seamless integration
 - ✅ Unit tests for core generation features
 
 ### In Progress
 
-- 🔄 API assembly and integration
+- 🔄 Use Prisma client from Hono context
 - 🔄 Additional unit tests
 
 ### Planned
 
-- 📝 Modular route exports for seamless integration
-- 📝 Use Prisma client from Hono context
 - 📝 Multi-file Prisma schema support
 - 📝 Relation handling in API
 - 📝 Configuration options

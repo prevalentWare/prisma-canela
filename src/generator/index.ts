@@ -13,6 +13,10 @@ import { generateServiceFileContent } from "./generateService"; // Import servic
 import { generateControllerFileContent } from "./generateController"; // Import controller generator
 // import { generateServerFileContent } from "./generateServer"; // Removed import
 import { generateTypesFileContent } from "./generateTypes"; // Import types generator
+import {
+  generateModelIndexFileContent,
+  generateRootIndexFileContent,
+} from "./generateIndex"; // Import index generators
 import { pascalCase } from "../utils/pascalCase";
 import { camelCase } from "../utils/camelCase";
 import type { ZodSchemaDetails, ServiceFunctionNames } from "./types"; // Import shared types
@@ -93,9 +97,9 @@ export async function generateApi(
       const routesFilePath = path.join(modelDir, "routes.ts");
       await fs.writeFile(routesFilePath, routesContent);
 
-      // Generate service file (INLINED LOGIC)
+      // Generate service file
       console.log(`  - Generating service file: service.ts`);
-      const serviceContent = generateServiceFileContent(model); // Call inlined function
+      const serviceContent = generateServiceFileContent(model);
       const serviceFilePath = path.join(modelDir, "service.ts");
       await fs.writeFile(serviceFilePath, serviceContent);
 
@@ -108,24 +112,25 @@ export async function generateApi(
       );
       const controllerFilePath = path.join(modelDir, "controller.ts");
       await fs.writeFile(controllerFilePath, controllerContent);
+
+      // Generate model-specific index file
+      console.log(`  - Generating model index file: index.ts`);
+      const modelIndexContent = generateModelIndexFileContent(model);
+      const modelIndexFilePath = path.join(modelDir, "index.ts");
+      await fs.writeFile(modelIndexFilePath, modelIndexContent);
     }
 
-    // REMOVED server file generation block
-    // console.log(`- Generating main server file: server.ts`);
-    // const serverContent = generateServerFileContent(
-    //   parsedSchema.models /*, apiBasePath (optional) */
-    // );
-    // const serverFilePath = path.join(outputDir, "server.ts");
-    // await fs.writeFile(serverFilePath, serverContent);
-
-    // REMOVED reference to common files (as server was the main one)
-    // TODO: Generate other common files if needed (e.g., Prisma client setup?)
+    // Generate root index file to export all routes
+    console.log(`- Generating root index file: index.ts`);
+    const rootIndexContent = generateRootIndexFileContent(parsedSchema.models);
+    const rootIndexFilePath = path.join(outputDir, "index.ts");
+    await fs.writeFile(rootIndexFilePath, rootIndexContent);
 
     console.log(
       `\nAPI generation completed successfully. Files written to ${outputDir}`
     );
     console.log(
-      "\nNext steps: Refactor route generation (Step 7), assemble the API (Step 10)."
+      "\nNext steps: Create a manual Hono server for testing the generated routes."
     );
   } catch (error) {
     console.error("Error during API generation:", error);
@@ -202,6 +207,7 @@ export async function create${modelNamePascal}(data: Create${modelNamePascal}Inp
 
 // Update
 export async function update${modelNamePascal}(id: ${idType}, data: Update${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
+   // Add check if ID field actually exists
    if (!idField) {
       throw new Error(\`Model ${modelNamePascal} does not have an ID field for update\`);
    }
@@ -218,6 +224,7 @@ export async function update${modelNamePascal}(id: ${idType}, data: Update${mode
 
 // Delete
 export async function delete${modelNamePascal}(id: ${idType}): Promise<${modelNamePascal}Type> {
+   // Add check if ID field actually exists
    if (!idField) {
       throw new Error(\`Model ${modelNamePascal} does not have an ID field for delete\`);
    }
