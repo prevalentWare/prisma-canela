@@ -1,23 +1,121 @@
 import type { ParsedModel } from "../parser/types";
 import type { Context } from "hono";
-import { Prisma } from "@prisma/client"; // Import Prisma for error types
+import { Prisma } from "@prisma/client"; // Import Prisma namespace
 import { pascalCase } from "../utils/pascalCase";
-import { camelCase } from "../utils/camelCase";
+// import { camelCase } from "../utils/camelCase"; // Not strictly needed here anymore
 import type { ServiceFunctionNames, ZodSchemaDetails } from "./types";
+
+// Helper function to generate controller imports
+function generateControllerImports(
+  model: ParsedModel,
+  zodSchemaInfo: ZodSchemaDetails
+): string {
+  const modelNamePascal = pascalCase(model.name);
+
+  // Import Zod types for inference
+  const zodImports = `import type { z } from 'zod';
+import type { ${zodSchemaInfo.createSchemaName}, ${zodSchemaInfo.updateSchemaName} } from './schema';`;
+
+  // Define input types based on Zod schemas
+  const inputTypes = `type CreateInput = z.infer<typeof ${zodSchemaInfo.createSchemaName}>;
+type UpdateInput = z.infer<typeof ${zodSchemaInfo.updateSchemaName}>;`;
+
+  // Import service functions using namespace
+  const serviceImports = `import * as service from './service';`;
+
+  // Import Prisma for error type checking
+  const prismaImport = `import { Prisma } from '@prisma/client';`;
+
+  return `
+import type { Context } from 'hono';
+${prismaImport}
+${zodImports}
+${inputTypes}
+${serviceImports}
+`;
+}
+
+// Helper function to generate handler logic
+function generateHandler(
+  modelNamePascal: string,
+  handlerName: string, // e.g., listUser, createUserById
+  serviceFunctionName: string, // e.g., findManyUsers, findUserById
+  successStatusCode: number = 200,
+  requiresId: boolean = false,
+  requiresBody: boolean = false,
+  idType: string = "string" // Default, only used if requiresId is true
+): string {
+  // Determine input types based on requirements
+  const paramValidation = requiresId
+    ? `const { id } = c.req.valid('param'); // Assume param validation is set up in routes`
+    : "";
+  const jsonValidation = requiresBody
+    ? `const data = c.req.valid('json') as ${
+        handlerName.startsWith("create") ? "CreateInput" : "UpdateInput"
+      }; // Assume json validation is set up in routes`
+    : "";
+
+  // Determine arguments for service call
+  const args = [];
+  if (requiresId) args.push("id");
+  if (requiresBody) args.push("data");
+  const serviceCallArgs = args.join(", ");
+
+  const logId = requiresId ? ` \${id}` : "";
+  const isIdNotFoundCheck = requiresId && !handlerName.startsWith("list"); // Check for P2025 on ID routes
+
+  // Specific check for findById returning null
+  const getByIdNotFound = handlerName.startsWith("get")
+    ? `
+    if (!item) {
+      return c.json({ error: '${modelNamePascal} not found' }, 404);
+    }`
+    : "";
+
+  // Return type is now Context => Promise<Response | TypedResponse<...>> via c.json()
+  return `
+/**
+ * Handles ${handlerName
+   .replace(/([A-Z])/g, " $1")
+   .toLowerCase()} ${modelNamePascal}.
+ */
+export const ${handlerName} = async (c: Context) => {
+  ${paramValidation}
+  ${jsonValidation}
+  try {
+    const item = await service.${serviceFunctionName}(${serviceCallArgs}); // Use service namespace and correct args
+    ${getByIdNotFound}
+    return c.json(item${
+      successStatusCode !== 200 ? `, ${successStatusCode}` : ""
+    });
+  } catch (error: unknown) {${
+    isIdNotFoundCheck
+      ? `
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error ${handlerName
+        .replace(/([A-Z])/g, " $1")
+        .toLowerCase()}ing ${modelNamePascal}${logId}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: '${modelNamePascal} not found' }, 404);
+    }`
+      : ""
+  }
+    // Generic error handling for other cases
+    const message = \`Error ${handlerName
+      .replace(/([A-Z])/g, " $1")
+      .toLowerCase()}ing ${modelNamePascal}${logId}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to ${handlerName
+      .split(/(?=[A-Z])/)[0]
+      .toLowerCase()} ${modelNamePascal}\` }, 500);
+  }
+};
+`;
+}
 
 /**
  * Generates the content for a controller file (controller.ts).
- *
- * This file contains the request handlers (controller functions) that:
- * 1. Validate request input (params, body) using Zod schemas (via route middleware).
- * 2. Call the corresponding service functions.
- * 3. Format the JSON response (data, status codes).
- * 4. Handle errors (e.g., Prisma not found, validation, generic).
- *
- * @param model The parsed model definition.
- * @param zodSchemaInfo Details about the generated Zod schemas (needed for type hints).
- * @param serviceNames Details about the generated service function names.
- * @returns The generated TypeScript code for the controller file as a string.
  */
 export function generateControllerFileContent(
   model: ParsedModel,
@@ -25,146 +123,65 @@ export function generateControllerFileContent(
   serviceNames: ServiceFunctionNames
 ): string {
   const modelNamePascal = pascalCase(model.name);
-  const modelNameCamel = camelCase(model.name); // Keep for potential future use, though prisma accessor is in service
   const idField = model.fields.find((f) => f.isId);
-  const idType = idField?.type === "number" ? "number" : "string"; // Based on simplified FieldType
-  // idFieldName is not strictly needed here as validation/extraction uses generic 'id' or 'json' keys
+  const idType = idField?.type === "number" ? "number" : "string";
 
-  // --- Generate Imports ---
-  // Note: We import Zod types mainly for type inference assistance in handlers,
-  // actual validation is expected to happen in the route definition.
-  const imports = `
-import type { Context } from 'hono';
-import { Prisma } from '@prisma/client'; // For error handling
-// Import types inferred from Zod schemas for strong typing in handlers
-import type { ${modelNamePascal} as ${modelNamePascal}Type } from '@prisma/client'; // Import the actual Prisma type
-import type { z } from 'zod';
-import type { ${zodSchemaInfo.createSchemaName}, ${
-    zodSchemaInfo.updateSchemaName
-  } } from './schema';
+  const imports = generateControllerImports(model, zodSchemaInfo);
 
-// Define types based on Zod schemas for handler inputs
-type CreateInput = z.infer<typeof ${zodSchemaInfo.createSchemaName}>;
-type UpdateInput = z.infer<typeof ${zodSchemaInfo.updateSchemaName}>;
-
-// Import service functions
-import {
-  ${serviceNames.findMany},
-  ${idField ? `${serviceNames.findById},` : ""}
-  ${serviceNames.create},
-  ${idField ? `${serviceNames.update},` : ""}
-  ${idField ? serviceNames.delete : ""}
-} from './service';
-`;
-
-  // --- Generate Handler Functions ---
   let handlers = "";
 
-  // Handler for GET /
-  handlers += `
-/**
- * Handles listing all ${modelNamePascal} records.
- */
-export const list${modelNamePascal} = async (c: Context): Promise<Response> => {
-  try {
-    const items = await ${serviceNames.findMany}();
-    return c.json(items);
-  } catch (error: unknown) { // Use unknown for better type safety
-    console.error(\`Error listing ${modelNamePascal}s:\`, error);
-    // Consider a more structured error response
-    return c.json({ error: 'Failed to list items', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
-  }
-};
-`;
+  // List
+  handlers += generateHandler(
+    modelNamePascal,
+    `list${modelNamePascal}`,
+    serviceNames.findMany,
+    200,
+    false, // requiresId
+    false // requiresBody
+  );
 
-  // Handler for POST /
-  handlers += `
-/**
- * Handles creating a new ${modelNamePascal} record.
- */
-export const create${modelNamePascal} = async (c: Context): Promise<Response> => {
-  // Type assertion is okay here because the route middleware did the validation
-  const data = c.req.valid('json') as CreateInput;
-  try {
-    const newItem = await ${serviceNames.create}(data);
-    return c.json(newItem, 201); // 201 Created
-  } catch (error: unknown) {
-    console.error(\`Error creating ${modelNamePascal}:\`, error);
-    return c.json({ error: 'Failed to create item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
-  }
-};
-`;
+  // Create
+  handlers += generateHandler(
+    modelNamePascal,
+    `create${modelNamePascal}`,
+    serviceNames.create,
+    201,
+    false, // requiresId
+    true // requiresBody
+  );
 
-  // Add handlers requiring ID only if idField exists
+  // ID-based routes
   if (idField) {
-    // Handler for GET /:id
-    handlers += `
-/**
- * Handles retrieving a ${modelNamePascal} by ID.
- */
-export const get${modelNamePascal}ById = async (c: Context): Promise<Response> => {
-  // Type assertion okay due to route validation
-  const id = c.req.valid('param').id as ${idType};
-  try {
-    const item = await ${serviceNames.findById}(id);
-    if (!item) {
-      return c.json({ error: '${modelNamePascal} not found' }, 404);
-    }
-    return c.json(item);
-  } catch (error: unknown) {
-    console.error(\`Error fetching ${modelNamePascal} by ID \${id}:\`, error);
-    return c.json({ error: 'Failed to fetch item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
-  }
-};
-`;
-
-    // Handler for PATCH /:id
-    handlers += `
-/**
- * Handles updating a ${modelNamePascal} by ID.
- */
-export const update${modelNamePascal} = async (c: Context): Promise<Response> => {
-  const id = c.req.valid('param').id as ${idType};
-  const data = c.req.valid('json') as UpdateInput;
-  try {
-    // The service function should handle the 'not found' case if using update directly
-    const updatedItem = await ${serviceNames.update}(id, data);
-    return c.json(updatedItem);
-  } catch (error: unknown) {
-    // Check specifically for Prisma's 'Record to update not found' error
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      return c.json({ error: '${modelNamePascal} not found' }, 404);
-    }
-    console.error(\`Error updating ${modelNamePascal} \${id}:\`, error);
-    return c.json({ error: 'Failed to update item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
-  }
-};
-`;
-
-    // Handler for DELETE /:id
-    handlers += `
-/**
- * Handles deleting a ${modelNamePascal} by ID.
- */
-export const delete${modelNamePascal} = async (c: Context): Promise<Response> => {
-  const id = c.req.valid('param').id as ${idType};
-  try {
-    // The service function should handle the 'not found' case if using delete directly
-    const deletedItem = await ${serviceNames.delete}(id);
-    // Return the deleted item or just a success status (e.g., 204 No Content)
-    // Returning the item is often useful.
-    return c.json(deletedItem);
-    // return c.body(null, 204); // Alternative: return 204 No Content
-  } catch (error: unknown) {
-     // Check specifically for Prisma's 'Record to delete not found' error
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-       return c.json({ error: '${modelNamePascal} not found' }, 404);
-    }
-    console.error(\`Error deleting ${modelNamePascal} \${id}:\`, error);
-    return c.json({ error: 'Failed to delete item', details: (error instanceof Error ? error.message : 'Unknown error') }, 500);
-  }
-};
-`;
+    // Get By ID
+    handlers += generateHandler(
+      modelNamePascal,
+      `get${modelNamePascal}ById`,
+      serviceNames.findById,
+      200,
+      true, // requiresId
+      false, // requiresBody
+      idType
+    );
+    // Update
+    handlers += generateHandler(
+      modelNamePascal,
+      `update${modelNamePascal}`,
+      serviceNames.update,
+      200,
+      true, // requiresId
+      true, // requiresBody
+      idType
+    );
+    // Delete
+    handlers += generateHandler(
+      modelNamePascal,
+      `delete${modelNamePascal}`,
+      serviceNames.delete,
+      200,
+      true, // requiresId
+      false, // requiresBody
+      idType
+    );
   }
 
   return imports + handlers;

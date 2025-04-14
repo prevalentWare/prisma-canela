@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { generateControllerFileContent } from "../generateController";
 import type { ParsedModel } from "../../parser/types";
 import type { ZodSchemaDetails, ServiceFunctionNames } from "../types";
+import * as z from "zod";
 
 // --- Mock Data ---
 
@@ -185,31 +186,53 @@ describe("generateControllerFileContent", () => {
       userZodSchemaInfo,
       userServiceNames
     );
-    // Basic checks
+    // --- Assertions ---
+    // Check imports
     expect(result).toContain("import type { Context } from 'hono';");
-    expect(result).toContain("import { Prisma } from '@prisma/client';");
-    expect(result).toContain("from './schema';");
-    expect(result).toContain("from './service';");
+    expect(result).toContain("import * as service from './service';"); // Check service import
+    expect(result).toContain(
+      "import type { createUserSchema, updateUserSchema } from './schema';"
+    );
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createUserSchema>;"
+    );
+    expect(result).toContain(
+      "type UpdateInput = z.infer<typeof updateUserSchema>;"
+    );
+    expect(result).toContain("import { Prisma } from '@prisma/client';"); // Check Prisma import for errors
+
+    // Check function definitions
     expect(result).toContain("export const listUser = async (c: Context)");
     expect(result).toContain("export const createUser = async (c: Context)");
     expect(result).toContain("export const getUserById = async (c: Context)");
     expect(result).toContain("export const updateUser = async (c: Context)");
     expect(result).toContain("export const deleteUser = async (c: Context)");
-    expect(result).toContain("await findManyUsers()");
-    expect(result).toContain("await createUser(data)");
-    expect(result).toContain("await findUserById(id)");
-    expect(result).toContain("await updateUser(id, data)");
-    expect(result).toContain("await deleteUser(id)");
-    expect(result).toContain("return c.json(items);");
-    expect(result).toContain("return c.json(newItem, 201);");
-    expect(result).toContain(
-      "return c.json({ error: 'User not found' }, 404);"
-    );
+
+    // Check service function calls within handlers
+    expect(result).toContain("await service.findManyUsers();"); // Updated
+    expect(result).toContain("await service.createUser(data);"); // Updated
+    expect(result).toContain("await service.findUserById(id);"); // Updated
+    expect(result).toContain("await service.updateUser(id, data);"); // Updated
+    expect(result).toContain("await service.deleteUser(id);"); // Updated
+
+    // Check basic ID retrieval (string ID)
+    expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring
+
+    // Check error handling for Prisma known request errors (e.g., P2025)
     expect(result).toContain(
       "if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')"
     );
-    // Snapshot
-    expect(result).toMatchSnapshot();
+    expect(result).toContain(
+      "return c.json({ error: 'User not found' }, 404);"
+    );
+
+    // Check generic error handling
+    expect(result).toContain(
+      "console.error(message, error); // Log the detailed error"
+    );
+    expect(result).toContain("return c.json({ error: `Failed to");
+
+    expect(result).toMatchSnapshot(); // Keep snapshot check
   });
 
   it("should generate correct controller content for a model with numeric ID (Product)", () => {
@@ -218,16 +241,48 @@ describe("generateControllerFileContent", () => {
       productZodSchemaInfo,
       productServiceNames
     );
+    // --- Assertions ---
+    // Check imports (similar to User, but with Product schemas)
+    expect(result).toContain("import type { Context } from 'hono';");
+    expect(result).toContain("import * as service from './service';");
+    expect(result).toContain(
+      "import type { createProductSchema, updateProductSchema } from './schema';"
+    );
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createProductSchema>;"
+    );
+    expect(result).toContain(
+      "type UpdateInput = z.infer<typeof updateProductSchema>;"
+    );
+    expect(result).toContain("import { Prisma } from '@prisma/client';");
+
+    // Check function definitions
+    expect(result).toContain("export const listProduct = async (c: Context)");
+    expect(result).toContain("export const createProduct = async (c: Context)");
     expect(result).toContain(
       "export const getProductById = async (c: Context)"
     );
-    expect(result).toContain("const id = c.req.valid('param').id as number;"); // Check for number type assertion
-    expect(result).toContain("await findProductById(id)");
-    expect(result).toContain("await updateProduct(id, data)");
-    expect(result).toContain("await deleteProduct(id)");
+    expect(result).toContain("export const updateProduct = async (c: Context)");
+    expect(result).toContain("export const deleteProduct = async (c: Context)");
+
+    // Check service function calls
+    expect(result).toContain("await service.findManyProducts();"); // Updated
+    expect(result).toContain("await service.createProduct(data);"); // Updated
+    expect(result).toContain("await service.findProductById(id);"); // Updated
+    expect(result).toContain("await service.updateProduct(id, data);"); // Updated
+    expect(result).toContain("await service.deleteProduct(id);"); // Updated
+
+    // Check numeric ID retrieval - relaxed check
+    expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring (type is handled by route validation)
+
+    // Check error handling
+    expect(result).toContain(
+      "if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')"
+    );
     expect(result).toContain(
       "return c.json({ error: 'Product not found' }, 404);"
     );
+
     expect(result).toMatchSnapshot();
   });
 
@@ -237,21 +292,36 @@ describe("generateControllerFileContent", () => {
       logEntryZodSchemaInfo,
       logEntryServiceNames
     );
-    // Check that base handlers are present
+    // --- Assertions ---
+    // Check imports
+    expect(result).toContain("import type { Context } from 'hono';");
+    expect(result).toContain("import * as service from './service';");
+    expect(result).toContain(
+      "import type { createLogEntrySchema, updateLogEntrySchema } from './schema';" // Still expect update schema import even if not used in controller
+    );
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createLogEntrySchema>;"
+    );
+    // No UpdateInput type needed if no update handler
+
+    // Check that only list and create functions are defined
     expect(result).toContain("export const listLogEntry = async (c: Context)");
     expect(result).toContain(
       "export const createLogEntry = async (c: Context)"
     );
-    expect(result).toContain("await findManyLogEntries()");
-    expect(result).toContain("await createLogEntry(data)");
+
+    // Check service function calls
+    expect(result).toContain("await service.findManyLogEntries();"); // Updated
+    expect(result).toContain("await service.createLogEntry(data);"); // Updated
+
     // Check that ID-specific handlers are NOT present
-    expect(result).not.toContain("export const getLogEntryById");
-    expect(result).not.toContain("export const updateLogEntry");
-    expect(result).not.toContain("export const deleteLogEntry");
-    // Check that ID-specific service calls are NOT present
-    expect(result).not.toContain("await findLogEntryById(id)");
-    expect(result).not.toContain("await updateLogEntry(id, data)");
-    expect(result).not.toContain("await deleteLogEntry(id)");
+    expect(result).not.toContain("export const getLogEntryById = async");
+    expect(result).not.toContain("export const updateLogEntry = async");
+    expect(result).not.toContain("export const deleteLogEntry = async");
+    expect(result).not.toContain("findLogEntryById(id)"); // Check no service calls for ID ops
+    expect(result).not.toContain("updateLogEntry(id, data)");
+    expect(result).not.toContain("deleteLogEntry(id)");
+
     expect(result).toMatchSnapshot();
   });
 });

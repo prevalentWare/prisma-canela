@@ -209,23 +209,13 @@ export const PostSchema = z.object({
   publishedAt: z.coerce.date().optional().nullable()
 });
 
-// Schema for creating a Post (omit ID, defaults, timestamps)
-export const createPostSchema = z.object({
-  title: z.string(),
-  content: z.string().optional().nullable(),
-  meta: z.record(z.any()).optional().nullable(),
-  publishedAt: z.coerce.date().optional().nullable()
-});
+// Schema for creating a Post
+// Based on the base schema, omitting generated fields.
+export const createPostSchema = PostSchema.omit({ "id": true });
 
-// Schema for updating a Post (all fields optional, omit ID, timestamps)
-export const updatePostSchema = z.object({
-  title: z.string().optional().nullable(),
-  content: z.string().optional().nullable(),
-  likes: z.number().optional().nullable(),
-  published: z.boolean().optional().nullable(),
-  meta: z.record(z.any()).optional().nullable(),
-  publishedAt: z.coerce.date().optional().nullable()
-});
+// Schema for updating a Post
+// Based on the base schema, making all fields optional and omitting generated fields.
+export const updatePostSchema = PostSchema.partial().omit({ "id": true });
 
 // Infer the TypeScript type from the base schema
 export type Post = z.infer<typeof PostSchema>;
@@ -297,16 +287,13 @@ export const UserSchema = z.object({
   status: z.nativeEnum(Enum_Status).optional().nullable()
 });
 
-// Schema for creating a User (omit ID, defaults, timestamps)
-export const createUserSchema = z.object({
-  status: z.nativeEnum(Enum_Status).optional().nullable()
-});
+// Schema for creating a User
+// Based on the base schema, omitting generated fields.
+export const createUserSchema = UserSchema.omit({ "id": true });
 
-// Schema for updating a User (all fields optional, omit ID, timestamps)
-export const updateUserSchema = z.object({
-  role: z.nativeEnum(Enum_Role).optional().nullable(),
-  status: z.nativeEnum(Enum_Status).optional().nullable()
-});
+// Schema for updating a User
+// Based on the base schema, making all fields optional and omitting generated fields.
+export const updateUserSchema = UserSchema.partial().omit({ "id": true });
 
 // Infer the TypeScript type from the base schema
 export type User = z.infer<typeof UserSchema>;
@@ -387,19 +374,13 @@ export const ConfigSchema = z.object({
   permissions: z.array(z.nativeEnum(Enum_Perms))
 });
 
-// Schema for creating a Config (omit ID, defaults, timestamps)
-export const createConfigSchema = z.object({
-  tags: z.array(z.string()),
-  values: z.array(z.number()).optional().nullable(),
-  permissions: z.array(z.nativeEnum(Enum_Perms))
-});
+// Schema for creating a Config
+// Based on the base schema, omitting generated fields.
+export const createConfigSchema = ConfigSchema.omit({ "id": true });
 
-// Schema for updating a Config (all fields optional, omit ID, timestamps)
-export const updateConfigSchema = z.object({
-  tags: z.array(z.string()).optional().nullable(),
-  values: z.array(z.number()).optional().nullable(),
-  permissions: z.array(z.nativeEnum(Enum_Perms)).optional().nullable()
-});
+// Schema for updating a Config
+// Based on the base schema, making all fields optional and omitting generated fields.
+export const updateConfigSchema = ConfigSchema.partial().omit({ "id": true });
 
 // Infer the TypeScript type from the base schema
 export type Config = z.infer<typeof ConfigSchema>;

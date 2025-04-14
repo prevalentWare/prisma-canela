@@ -2,7 +2,9 @@
 
 exports[`generateServiceFileContent > should generate correct service file content for a User model 1`] = `
 "
-import { PrismaClient, User as UserType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { User as UserType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserSchema, updateUserSchema } from './schema';
 import { z } from 'zod';
@@ -104,7 +106,9 @@ export async function deleteUser(id: string): Promise<UserType> {
 
 exports[`generateServiceFileContent > should generate service file content for a model without an ID 1`] = `
 "
-import { PrismaClient, LogEntry as LogEntryType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { LogEntry as LogEntryType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createLogEntrySchema, updateLogEntrySchema } from './schema';
 import { z } from 'zod';
@@ -150,7 +154,9 @@ export async function createLogEntry(data: CreateLogEntryInput): Promise<LogEntr
 
 exports[`generateServiceFileContent > should generate service file content with a custom prisma client path 1`] = `
 "
-import { PrismaClient, User as UserType } from '../../libs/prisma';
+import { PrismaClient } from '../../libs/prisma';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { User as UserType } from '../../libs/prisma';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserSchema, updateUserSchema } from './schema';
 import { z } from 'zod';
@@ -252,7 +258,9 @@ export async function deleteUser(id: string): Promise<UserType> {
 
 exports[`generateServiceFileContent > should use number type for ID if the id field type is number 1`] = `
 "
-import { PrismaClient, UserWithNumericId as UserWithNumericIdType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { UserWithNumericId as UserWithNumericIdType } from '@prisma/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserWithNumericIdSchema, updateUserWithNumericIdSchema } from './schema';
 import { z } from 'zod';

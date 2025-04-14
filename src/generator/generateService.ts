@@ -29,7 +29,9 @@ export function generateServiceFileContent(
 
   // --- Generate Import Statements ---
   const imports = `
-import { PrismaClient, ${model.name} as ${modelNamePascal}Type } from '${prismaClientImportPath}';
+import { PrismaClient } from '${prismaClientImportPath}';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { ${model.name} as ${modelNamePascal}Type } from '${prismaClientImportPath}';
 // Import input types from Zod schemas (adjust path if necessary)
 import { create${modelNamePascal}Schema, update${modelNamePascal}Schema } from './schema';
 import { z } from 'zod';

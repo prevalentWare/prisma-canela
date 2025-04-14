@@ -49,6 +49,16 @@ export function generateZodSchema(
     .map((field) => {
       const zodType = mapFieldTypeToZodType(field);
       let fieldDefinition = `  ${field.name}: ${zodType}`;
+
+      // Add common refinements based on field name or type (example: email)
+      if (
+        field.type === "string" &&
+        field.name.toLowerCase().includes("email")
+      ) {
+        fieldDefinition += '.email({ message: "Invalid email format" })';
+      }
+      // TODO: Add more refinements based on Prisma attributes (e.g., @length, @url) if needed
+
       // Handle optionality based on Prisma schema (`?`) and ID field status
       if (!field.isRequired && !field.isId) {
         fieldDefinition += ".optional().nullable()"; // Allow optional and null for non-required, non-ID fields
@@ -60,71 +70,37 @@ export function generateZodSchema(
         );
       }
 
-      // Add common refinements based on field name or type (example: email)
-      if (
-        field.type === "string" &&
-        field.name.toLowerCase().includes("email")
-      ) {
-        fieldDefinition += '.email({ message: "Invalid email format" })';
-      }
-      // TODO: Add more refinements based on Prisma attributes (e.g., @length, @url) if needed
-
       return fieldDefinition;
     })
     .join(",\n");
 
-  // Generate fields for the create schema (omit ID, createdAt, updatedAt, fields with defaults)
-  const createZodFields = fields
-    .filter(
-      (field) =>
-        field.kind !== "object" &&
-        !field.isId &&
-        !field.hasDefaultValue && // Fields with defaults are usually handled by Prisma
-        field.name !== "createdAt" && // Often managed by DB or ORM
-        field.name !== "updatedAt" // Often managed by DB or ORM
-    )
-    .map((field) => {
-      const zodType = mapFieldTypeToZodType(field);
-      let fieldDefinition = `  ${field.name}: ${zodType}`;
-      // Only make non-required fields optional in create schema
-      if (!field.isRequired) {
-        fieldDefinition += ".optional().nullable()";
-      }
-      // Add refinements (e.g., email)
-      if (
-        field.type === "string" &&
-        field.name.toLowerCase().includes("email")
-      ) {
-        fieldDefinition += '.email({ message: "Invalid email format" })';
-      }
-      return fieldDefinition;
-    })
-    .join(",\n");
+  // --- Generate Create Schema --- REMOVED OLD LOGIC
+  // Omit fields that are typically generated or shouldn't be provided on creation
+  const fieldsToOmitOnCreate: string[] = [];
+  model.fields.forEach((field) => {
+    if (
+      field.isId ||
+      field.name === "createdAt" ||
+      field.name === "updatedAt"
+    ) {
+      fieldsToOmitOnCreate.push(`"${field.name}"`);
+    }
+    // We could potentially add fields with @default here too, but Prisma handles defaults well
+  });
+  const createSchemaOmit =
+    fieldsToOmitOnCreate.length > 0
+      ? `.omit({ ${fieldsToOmitOnCreate.join(": true, ")}: true })`
+      : "";
 
-  // Generate fields for the update schema (all fields optional, omit ID)
-  const updateZodFields = fields
-    .filter(
-      (field) =>
-        field.kind !== "object" &&
-        !field.isId &&
-        field.name !== "createdAt" &&
-        field.name !== "updatedAt"
-    ) // Exclude ID and timestamps
-    .map((field) => {
-      const zodType = mapFieldTypeToZodType(field);
-      // Make all fields optional and nullable for PATCH updates
-      let fieldDefinition = `  ${field.name}: ${zodType}.optional().nullable()`;
-      // Add refinements (e.g., email)
-      if (
-        field.type === "string" &&
-        field.name.toLowerCase().includes("email")
-      ) {
-        fieldDefinition += '.email({ message: "Invalid email format" })';
-      }
-      return fieldDefinition;
-    })
-    .join(",\n");
+  // --- Generate Update Schema --- REMOVED OLD LOGIC
+  // Make all fields optional (partial) and omit ID/timestamps for updates
+  const fieldsToOmitOnUpdate = fieldsToOmitOnCreate; // Usually the same fields as create
+  const updateSchemaOmit =
+    fieldsToOmitOnUpdate.length > 0
+      ? `.omit({ ${fieldsToOmitOnUpdate.join(": true, ")}: true })`
+      : "";
 
+  // --- Assemble Schema Content ---
   const schemaContent = `
 import { z } from 'zod';
 ${requiredImports.length > 0 ? requiredImports.join("\n") + "\n" : ""}
@@ -133,15 +109,13 @@ export const ${modelNamePascal}Schema = z.object({
 ${zodFields}
 });
 
-// Schema for creating a ${modelNamePascal} (omit ID, defaults, timestamps)
-export const create${modelNamePascal}Schema = z.object({
-${createZodFields}
-});
+// Schema for creating a ${modelNamePascal}
+// Based on the base schema, omitting generated fields.
+export const create${modelNamePascal}Schema = ${modelNamePascal}Schema${createSchemaOmit};
 
-// Schema for updating a ${modelNamePascal} (all fields optional, omit ID, timestamps)
-export const update${modelNamePascal}Schema = z.object({
-${updateZodFields}
-});
+// Schema for updating a ${modelNamePascal}
+// Based on the base schema, making all fields optional and omitting generated fields.
+export const update${modelNamePascal}Schema = ${modelNamePascal}Schema.partial()${updateSchemaOmit};
 
 // Infer the TypeScript type from the base schema
 export type ${modelNamePascal} = z.infer<typeof ${modelNamePascal}Schema>;
