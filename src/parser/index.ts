@@ -29,6 +29,7 @@ export async function parsePrismaSchema(
     const schemaContent = await fs.readFile(absoluteSchemaPath, "utf-8");
     console.log("Successfully read schema file.");
 
+    // --- Reverted to using datamodel key as per type definitions ---
     const dmmf: DMMF.Document = await getDMMF({
       datamodel: schemaContent,
     });
@@ -155,6 +156,7 @@ function mapDmmfFieldToParsedField(field: DMMF.Field): ParsedField {
     name: field.name,
     type: mapPrismaTypeToFieldType(field.type, field.kind),
     kind: field.kind,
+    enumName: field.kind === "enum" ? field.type : undefined,
     isList: field.isList,
     isRequired: field.isRequired,
     isUnique: field.isUnique,

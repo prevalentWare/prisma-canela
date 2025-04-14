@@ -26,6 +26,7 @@ export interface ParsedField {
   name: string; // Original Prisma field name
   type: FieldType; // Simplified field type category
   kind: DMMF.FieldKind; // Prisma kind ('scalar', 'enum', 'object', or 'unsupported')
+  enumName?: string; // Original DMMF enum type name (e.g., "Enum_RoleName")
   isList: boolean;
   isRequired: boolean;
   isUnique: boolean;
