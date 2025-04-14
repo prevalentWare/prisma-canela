@@ -95,15 +95,14 @@ function generateHandler(
    .replace(/([A-Z])/g, " $1")
    .toLowerCase()} ${modelNamePascal}.
  */
-export const ${handlerName} = async (c: Context${inputTypeGeneric || ""}) => {
+export const ${handlerName} = async (c: Context) => {
   ${paramValidation}
   ${jsonValidation}
   try {
     const item = await service.${serviceFunctionName}(${serviceCallArgs}); // Use service namespace and correct args
     ${getByIdNotFound}
-    return c.json(item${
-      successStatusCode !== 200 ? `, ${successStatusCode}` : ""
-    });
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, ${successStatusCode});
   } catch (error: unknown) {${
     isIdNotFoundCheck
       ? `

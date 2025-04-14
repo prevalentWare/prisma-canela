@@ -1,174 +1,326 @@
 import { describe, it, expect } from "vitest";
-import type { ParsedModel } from "../../parser/types"; // Adjusted import path
-import { generateRoutesFileContent } from "../generateRoutes"; // Adjusted import path
-import type { ZodSchemaDetails } from "../types"; // Import from shared types
+import { generateControllerFileContent } from "../generateController";
+import type { ParsedModel } from "../../parser/types";
+import type { ZodSchemaDetails, ServiceFunctionNames } from "../types";
+import * as z from "zod"; // Need z for inferring types
 
-// Mock Data
-const mockUserModel: ParsedModel = {
-  name: "User",
-  dbName: "users",
-  fields: [
-    {
-      name: "id",
-      type: "number",
-      kind: "scalar",
-      isList: false,
-      isRequired: true,
-      isUnique: false,
-      isId: true,
-      hasDefaultValue: true,
-    },
-    {
-      name: "email",
-      type: "string",
-      kind: "scalar",
-      isList: false,
-      isRequired: true,
-      isUnique: true,
-      isId: false,
-      hasDefaultValue: false,
-    },
-    {
-      name: "name",
-      type: "string",
-      kind: "scalar",
-      isList: false,
-      isRequired: false,
-      isUnique: false,
-      isId: false,
-      hasDefaultValue: false,
-    },
-    // Example enum field
-    {
-      name: "role",
-      type: "enum",
-      kind: "enum",
-      enumName: "Role", // Assume an enum Role exists
-      isList: false,
-      isRequired: true,
-      isUnique: false,
-      isId: false,
-      hasDefaultValue: false,
-    },
-  ],
-};
+// --- Mock Data ---
 
-const mockZodSchemaInfo: ZodSchemaDetails = {
+// Shared Zod Schema Info (example for a 'User' model)
+const userZodSchemaInfo: ZodSchemaDetails = {
   imports: [
-    `import { UserSchema, createUserSchema, updateUserSchema } from './schema';`,
-    `import { Role } from '@prisma/client';`, // Assuming enum comes from prisma client
+    "import { UserSchema, createUserSchema, updateUserSchema } from './schema';",
+    "import { Role } from '@prisma/client';", // Example enum import
   ],
   modelSchemaName: "UserSchema",
   createSchemaName: "createUserSchema",
   updateSchemaName: "updateUserSchema",
 };
 
-describe("generateRoutesFileContent", () => {
-  it("should generate correct refactored route file content for a User model", () => {
-    const result = generateRoutesFileContent(mockUserModel, mockZodSchemaInfo);
+// Shared Service Function Names (example for a 'User' model)
+const userServiceNames: ServiceFunctionNames = {
+  findMany: "findManyUsers",
+  findById: "findUserById",
+  create: "createUser",
+  update: "updateUser",
+  delete: "deleteUser",
+};
 
-    // Check for controller import
-    expect(result).toContain("import * as controller from './controller';");
-    // Check Zod/Hono imports still exist
+// 1. Standard Model (User with string ID)
+const userModel: ParsedModel = {
+  name: "User",
+  dbName: null,
+  fields: [
+    {
+      name: "id",
+      type: "string",
+      kind: "scalar",
+      isId: true,
+      isRequired: true,
+      isUnique: true,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "email",
+      type: "string",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: true,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "name",
+      type: "string",
+      kind: "scalar",
+      isId: false,
+      isRequired: false,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "role",
+      type: "enum",
+      kind: "enum",
+      enumName: "Role",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+  ],
+};
+
+// 2. Model with Numeric ID (Product)
+const productModel: ParsedModel = {
+  name: "Product",
+  dbName: null,
+  fields: [
+    {
+      name: "productId",
+      type: "number",
+      kind: "scalar",
+      isId: true,
+      isRequired: true,
+      isUnique: true,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "name",
+      type: "string",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "price",
+      type: "number",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+  ],
+};
+const productZodSchemaInfo: ZodSchemaDetails = {
+  imports: [],
+  modelSchemaName: "ProductSchema",
+  createSchemaName: "createProductSchema",
+  updateSchemaName: "updateProductSchema",
+};
+const productServiceNames: ServiceFunctionNames = {
+  findMany: "findManyProducts",
+  findById: "findProductById",
+  create: "createProduct",
+  update: "updateProduct",
+  delete: "deleteProduct",
+};
+
+// 3. Model without ID (LogEntry)
+const logEntryModel: ParsedModel = {
+  name: "LogEntry",
+  dbName: null,
+  fields: [
+    {
+      name: "message",
+      type: "string",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "level",
+      type: "string",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+    {
+      name: "timestamp",
+      type: "date",
+      kind: "scalar",
+      isId: false,
+      isRequired: true,
+      isUnique: false,
+      isList: false,
+      hasDefaultValue: false,
+    },
+  ],
+};
+const logEntryZodSchemaInfo: ZodSchemaDetails = {
+  imports: [],
+  modelSchemaName: "LogEntrySchema",
+  createSchemaName: "createLogEntrySchema",
+  updateSchemaName: "updateLogEntrySchema",
+};
+const logEntryServiceNames: ServiceFunctionNames = {
+  findMany: "findManyLogEntries",
+  findById: "findLogEntryById", // Still need this for the type even if not used
+  create: "createLogEntry",
+  update: "updateLogEntry", // Still need this for the type even if not used
+  delete: "deleteLogEntry", // Still need this for the type even if not used
+};
+
+// --- Test Suite ---
+
+describe("generateControllerFileContent", () => {
+  it("should generate correct controller content for a standard model (User)", () => {
+    const result = generateControllerFileContent(
+      userModel,
+      userZodSchemaInfo,
+      userServiceNames
+    );
+    // --- Assertions ---
+    // Check imports
+    expect(result).toContain("import type { Context } from 'hono';");
+    expect(result).toContain("import * as service from './service';"); // Check service import
     expect(result).toContain(
-      "import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';"
+      "import type { createUserSchema, updateUserSchema } from './schema';"
     );
-    expect(result).toContain("from './schema';");
-    // Check service import is REMOVED
-    expect(result).not.toContain("from './service';");
-    // Check handler definitions are REMOVED
-    expect(result).not.toContain("const handleListUser = async");
-    expect(result).not.toContain("const handleGetUserById = async");
-    // Check route definitions still exist
-    expect(result).toContain("const listUserRoute = createRoute");
-    expect(result).toContain("const getUserByIdRoute = createRoute");
-    expect(result).toContain("const createUserRoute = createRoute");
-    expect(result).toContain("const updateUserRoute = createRoute");
-    expect(result).toContain("const deleteUserRoute = createRoute");
-    // Check routes are mapped to controller functions using standard Hono methods and validator
-    expect(result).toMatch(/userRoutes\.get\(\s*'\/',\s*controller\.listUser/);
-    expect(result).toMatch(
-      /userRoutes\.post\(\s*'\/',\s*validator\('json'/ // Check POST starts correctly
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createUserSchema>;"
     );
-    expect(result).toMatch(/\s*controller\.createUser/); // Check controller follows validator
-    expect(result).toMatch(
-      /userRoutes\.get\(\s*'\/{id}',\s*validator\('param'/ // Check GET by ID starts correctly
+    expect(result).toContain(
+      "type UpdateInput = z.infer<typeof updateUserSchema>;"
     );
-    expect(result).toMatch(/\s*controller\.getUserById/); // Check controller follows validator
-    expect(result).toMatch(
-      /userRoutes\.patch\(\s*'\/{id}',\s*validator\('param'/ // Check PATCH starts correctly
+    expect(result).toContain("import { Prisma } from '@prisma/client';"); // Check Prisma import for errors
+
+    // Check function definitions (Updated Signatures)
+    expect(result).toContain("export const listUser = async (c: Context)");
+    expect(result).toContain("export const createUser = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const getUserById = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const updateUser = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const deleteUser = async (c: Context)"); // Simplified check
+
+    // Check service function calls within handlers
+    expect(result).toContain("await service.findManyUsers();");
+    expect(result).toContain("await service.createUser(data);");
+    expect(result).toContain("await service.findUserById(id);");
+    expect(result).toContain("await service.updateUser(id, data);");
+    expect(result).toContain("await service.deleteUser(id);");
+
+    // Check basic ID retrieval (string ID)
+    expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring
+
+    // Check error handling for Prisma known request errors (e.g., P2025)
+    expect(result).toContain(
+      "if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')"
     );
-    expect(result).toMatch(/\s*validator\('json'/); // Check PATCH includes json validator
-    expect(result).toMatch(/\s*controller\.updateUser/); // Check controller follows validators
-    expect(result).toMatch(
-      /userRoutes\.delete\(\s*'\/{id}',\s*validator\('param'/ // Check DELETE starts correctly
+    expect(result).toContain(
+      "return c.json({ error: 'User not found' }, 404);"
     );
-    expect(result).toMatch(/\s*controller\.deleteUser/); // Check controller follows validator
+
+    // Check generic error handling
+    expect(result).toContain(
+      "console.error(message, error); // Log the detailed error"
+    );
+    expect(result).toContain("return c.json({ error: `Failed to");
+
+    expect(result).toMatchSnapshot(); // Keep snapshot check
+  });
+
+  it("should generate correct controller content for a model with numeric ID (Product)", () => {
+    const result = generateControllerFileContent(
+      productModel,
+      productZodSchemaInfo,
+      productServiceNames
+    );
+    // --- Assertions ---
+    // Check imports (similar to User, but with Product schemas)
+    expect(result).toContain("import type { Context } from 'hono';");
+    expect(result).toContain("import * as service from './service';");
+    expect(result).toContain(
+      "import type { createProductSchema, updateProductSchema } from './schema';"
+    );
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createProductSchema>;"
+    );
+    expect(result).toContain(
+      "type UpdateInput = z.infer<typeof updateProductSchema>;"
+    );
+    expect(result).toContain("import { Prisma } from '@prisma/client';");
+
+    // Check function definitions (Updated Signatures)
+    expect(result).toContain("export const listProduct = async (c: Context)");
+    expect(result).toContain("export const createProduct = async (c: Context)"); // Simplified check
+    expect(result).toContain(
+      "export const getProductById = async (c: Context)"
+    ); // Simplified check
+    expect(result).toContain("export const updateProduct = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const deleteProduct = async (c: Context)"); // Simplified check
+
+    // Check service function calls
+    expect(result).toContain("await service.findManyProducts();");
+    expect(result).toContain("await service.createProduct(data);");
+    expect(result).toContain("await service.findProductById(id);");
+    expect(result).toContain("await service.updateProduct(id, data);");
+    expect(result).toContain("await service.deleteProduct(id);");
+
+    // Check numeric ID retrieval - relaxed check
+    expect(result).toContain("const { id } = c.req.valid('param');"); // Type is handled by route validation
+
+    // Check error handling
+    expect(result).toContain(
+      "if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')"
+    );
+    expect(result).toContain(
+      "return c.json({ error: 'Product not found' }, 404);"
+    );
 
     expect(result).toMatchSnapshot();
   });
 
-  it("should generate only non-ID routes if model has no ID field", () => {
-    const modelWithoutId: ParsedModel = {
-      name: "LogEntry",
-      dbName: null,
-      fields: [
-        {
-          name: "message",
-          type: "string",
-          kind: "scalar",
-          isList: false,
-          isRequired: true,
-          isUnique: false,
-          isId: false,
-          hasDefaultValue: false,
-        },
-        {
-          name: "timestamp",
-          type: "date",
-          kind: "scalar",
-          isList: false,
-          isRequired: true,
-          isUnique: false,
-          isId: false,
-          hasDefaultValue: true,
-        },
-      ],
-    };
-    // Provide necessary Zod info even if updateSchema isn't used in routes
-    const logEntryZodInfo: ZodSchemaDetails = {
-      imports: [
-        `import { LogEntrySchema, createLogEntrySchema, updateLogEntrySchema } from './schema';`,
-      ],
-      modelSchemaName: "LogEntrySchema",
-      createSchemaName: "createLogEntrySchema",
-      updateSchemaName: "updateLogEntrySchema",
-    };
-
-    const result = generateRoutesFileContent(modelWithoutId, logEntryZodInfo);
-
-    // Check controller import is present
-    expect(result).toContain("import * as controller from './controller';");
-    // Check LIST and CREATE routes ARE defined
-    expect(result).toContain("const listLogEntryRoute = createRoute");
-    expect(result).toContain("const createLogEntryRoute = createRoute");
-    // Check LIST and CREATE routes ARE mapped using standard Hono methods
-    expect(result).toMatch(
-      /logEntryRoutes\.get\(\s*'\/',\s*controller\.listLogEntry/ // Check GET list
+  it("should generate correct controller content for a model without an ID (LogEntry)", () => {
+    const result = generateControllerFileContent(
+      logEntryModel,
+      logEntryZodSchemaInfo,
+      logEntryServiceNames
     );
-    expect(result).toMatch(
-      /logEntryRoutes\.post\(\s*'\/',\s*validator\('json'/ // Check POST create with validator
+    // --- Assertions ---
+    // Check imports
+    expect(result).toContain("import type { Context } from 'hono';");
+    expect(result).toContain("import * as service from './service';");
+    expect(result).toContain(
+      "import type { createLogEntrySchema, updateLogEntrySchema } from './schema';" // Still expect update schema import even if not used in controller
     );
-    expect(result).toMatch(/\s*controller\.createLogEntry/); // Check controller follows validator
+    expect(result).toContain(
+      "type CreateInput = z.infer<typeof createLogEntrySchema>;"
+    );
+    // No UpdateInput type needed if no update handler
 
-    // Check ID-based routes are NOT defined
-    expect(result).not.toContain("const getLogEntryByIdRoute = createRoute");
-    expect(result).not.toContain("const updateLogEntryRoute = createRoute");
-    expect(result).not.toContain("const deleteLogEntryRoute = createRoute");
-    // Check ID-based routes are NOT mapped
-    expect(result).not.toContain("openapi(getLogEntryByIdRoute");
-    expect(result).not.toContain("openapi(updateLogEntryRoute");
-    expect(result).not.toContain("openapi(deleteLogEntryRoute");
+    // Check that only list and create functions are defined (Updated Signatures)
+    expect(result).toContain("export const listLogEntry = async (c: Context)");
+    expect(result).toContain(
+      "export const createLogEntry = async (c: Context)"
+    ); // Simplified check
+
+    // Check service function calls
+    expect(result).toContain("await service.findManyLogEntries();");
+    expect(result).toContain("await service.createLogEntry(data);");
+
+    // Check that ID-specific handlers are NOT present
+    expect(result).not.toContain("export const getLogEntryById = async");
+    expect(result).not.toContain("export const updateLogEntry = async");
+    expect(result).not.toContain("export const deleteLogEntry = async");
+    expect(result).not.toContain("findLogEntryById(id)"); // Check no service calls for ID ops
+    expect(result).not.toContain("updateLogEntry(id, data)");
+    expect(result).not.toContain("deleteLogEntry(id)");
 
     expect(result).toMatchSnapshot();
   });

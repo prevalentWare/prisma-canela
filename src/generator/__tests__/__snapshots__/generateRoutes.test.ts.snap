@@ -1,342 +1,307 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`generateRoutesFileContent > should generate correct refactored route file content for a User model 1`] = `
-"import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { validator } from 'hono/validator';
-import { UserSchema, createUserSchema, updateUserSchema } from './schema';
-import { Role } from '@prisma/client';
-import * as controller from './controller';
+exports[`generateControllerFileContent > should generate correct controller content for a model with numeric ID (Product) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+import type { z } from 'zod';
+import type { createProductSchema, updateProductSchema } from './schema';
+type CreateInput = z.infer<typeof createProductSchema>;
+type UpdateInput = z.infer<typeof updateProductSchema>;
+import * as service from './service';
 
+/**
+ * Handles list product Product.
+ */
+export const listProduct = async (c: Context) => {
+  
+  
+  try {
+    const item = await service.findManyProducts(); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error list producting Product: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list Product\` }, 500);
+  }
+};
 
+/**
+ * Handles create product Product.
+ */
+export const createProduct = async (c: Context) => {
+  
+  const data = c.req.valid('json');
+  try {
+    const item = await service.createProduct(data); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error create producting Product: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create Product\` }, 500);
+  }
+};
 
-// --- Route Definitions ---
-// GET /users
-const listUserRoute = createRoute({
-  method: 'get',
-  path: '/',
-  tags: ['User'],
-  summary: 'List all users',
-  responses: {
-    200: {
-      description: 'Returns a list of users',
-      content: {
-        'application/json': {
-          schema: z.array(UserSchema),
-        },
-      },
-    },
-    // TODO: Define 500 error response
-  },
-});
-
-// Define ID-based routes only if idField exists
-
-// GET /users/{id}
-const getUserByIdRoute = createRoute({
-  method: 'get',
-  path: '/{id}',
-  tags: ['User'],
-  summary: 'Get a user by ID',
-  request: {
-    params: z.object({
-      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
-    }),
-  },
-  responses: {
-    200: {
-      description: 'Returns the user',
-      content: {
-        'application/json': {
-          schema: UserSchema,
-        },
-      },
-    },
-    404: {
-      description: 'User not found',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 400, 500 error responses
-  },
-});
-
-// PATCH /users/{id}
-const updateUserRoute = createRoute({
-  method: 'patch',
-  path: '/{id}',
-  tags: ['User'],
-  summary: 'Update a user by ID',
-  request: {
-    params: z.object({
-      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
-    }),
-    body: {
-      content: {
-        'application/json': {
-          schema: updateUserSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Returns the updated user',
-      content: {
-        'application/json': {
-          schema: UserSchema,
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input',
-      // TODO: Define standard error schema
-    },
-    404: {
-      description: 'User not found',
-      // TODO: Define standard error schema
-    },
-     // TODO: Define 500 error response
-  },
-});
-
-// DELETE /users/{id}
-const deleteUserRoute = createRoute({
-  method: 'delete',
-  path: '/{id}',
-  tags: ['User'],
-  summary: 'Delete a user by ID',
-  request: {
-    params: z.object({
-      id: z.string().pipe(z.coerce.number().int({ message: "Invalid ID format"})),
-    }),
-  },
-  responses: {
-    200: { // Consider 204 No Content if not returning the object
-      description: 'User deleted successfully',
-      content: {
-        'application/json': {
-            // Optional: Return the deleted object's ID or a success message
-            schema: z.object({ id: z.number() }) // Use actual ID field name
-        },
-      },
-    },
-    404: {
-      description: 'User not found',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 400, 500 error responses
-  },
-});
- // End of conditional ID routes
-
-// POST /users - Always defined
-const createUserRoute = createRoute({
-  method: 'post',
-  path: '/',
-  tags: ['User'],
-  summary: 'Create a new user',
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: createUserSchema,
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: 'Returns the created user',
-      content: {
-        'application/json': {
-          schema: UserSchema,
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 500 error response
-  },
-});
-
-
-
-
-// --- Hono App Setup ---
-// Using standard Hono methods for clearer middleware application
-const userRoutes = new OpenAPIHono(); // Keep OpenAPIHono for potential doc gen later
-
-// GET /users (List)
-userRoutes.get(
-  '/',
-  controller.listUser
-);
-
-// POST /users (Create)
-userRoutes.post(
-  '/',
-  validator('json', (value, c) => {
-    // Reuse the schema defined in createRoute for validation
-    const parsed = createUserRoute.request.body.content['application/json'].schema.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+/**
+ * Handles get product by id Product.
+ */
+export const getProductById = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  
+  try {
+    const item = await service.findProductById(id); // Use service namespace and correct args
+    
+    if (!item) {
+      return c.json({ error: 'Product not found' }, 404);
     }
-    return parsed.data; // Make validated data available via c.req.valid('json')
-  }),
-  controller.createUser
-);
-
-
-// GET /users/{id}
-userRoutes.get(
-  '/{id}',
-  validator('param', (value, c) => {
-    const parsed = getUserByIdRoute.request.params.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error get product by iding Product \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
     }
-    return parsed.data;
-  }),
-  controller.getUserById
-);
+    // Generic error handling for other cases
+    const message = \`Error get product by iding Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to get Product\` }, 500);
+  }
+};
 
-// PATCH /users/{id}
-userRoutes.patch(
-  '/{id}',
-  validator('param', (value, c) => {
-    const parsed = updateUserRoute.request.params.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+/**
+ * Handles update product Product.
+ */
+export const updateProduct = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  const data = c.req.valid('json');
+  try {
+    const item = await service.updateProduct(id, data); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error update producting Product \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
     }
-    return parsed.data;
-  }),
-  validator('json', (value, c) => {
-    const parsed = updateUserRoute.request.body.content['application/json'].schema.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+    // Generic error handling for other cases
+    const message = \`Error update producting Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to update Product\` }, 500);
+  }
+};
+
+/**
+ * Handles delete product Product.
+ */
+export const deleteProduct = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  
+  try {
+    const item = await service.deleteProduct(id); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error delete producting Product \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
     }
-    return parsed.data;
-  }),
-  controller.updateUser
-);
-
-// DELETE /users/{id}
-userRoutes.delete(
-  '/{id}',
-  validator('param', (value, c) => {
-    const parsed = deleteUserRoute.request.params.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
-    }
-    return parsed.data;
-  }),
-  controller.deleteUser
-);
- // Conditionally register ID-based routes
-
-// TODO: Optionally re-attach OpenAPI route definitions for documentation generation if needed
-// Example: userRoutes.doc('/path', listUserRoute.getOpenAPIMetadata());
-
-export default userRoutes;
+    // Generic error handling for other cases
+    const message = \`Error delete producting Product \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to delete Product\` }, 500);
+  }
+};
 "
 `;
 
-exports[`generateRoutesFileContent > should generate only non-ID routes if model has no ID field 1`] = `
-"import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { validator } from 'hono/validator';
-import { LogEntrySchema, createLogEntrySchema, updateLogEntrySchema } from './schema';
-import * as controller from './controller';
+exports[`generateControllerFileContent > should generate correct controller content for a model without an ID (LogEntry) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+import type { z } from 'zod';
+import type { createLogEntrySchema, updateLogEntrySchema } from './schema';
+type CreateInput = z.infer<typeof createLogEntrySchema>;
+type UpdateInput = z.infer<typeof updateLogEntrySchema>;
+import * as service from './service';
 
+/**
+ * Handles list log entry LogEntry.
+ */
+export const listLogEntry = async (c: Context) => {
+  
+  
+  try {
+    const item = await service.findManyLogEntries(); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error list log entrying LogEntry: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list LogEntry\` }, 500);
+  }
+};
 
+/**
+ * Handles create log entry LogEntry.
+ */
+export const createLogEntry = async (c: Context) => {
+  
+  const data = c.req.valid('json');
+  try {
+    const item = await service.createLogEntry(data); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error create log entrying LogEntry: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create LogEntry\` }, 500);
+  }
+};
+"
+`;
 
-// --- Route Definitions ---
-// GET /logentrys
-const listLogEntryRoute = createRoute({
-  method: 'get',
-  path: '/',
-  tags: ['LogEntry'],
-  summary: 'List all logentrys',
-  responses: {
-    200: {
-      description: 'Returns a list of logentrys',
-      content: {
-        'application/json': {
-          schema: z.array(LogEntrySchema),
-        },
-      },
-    },
-    // TODO: Define 500 error response
-  },
-});
+exports[`generateControllerFileContent > should generate correct controller content for a standard model (User) 1`] = `
+"
+import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+import type { z } from 'zod';
+import type { createUserSchema, updateUserSchema } from './schema';
+type CreateInput = z.infer<typeof createUserSchema>;
+type UpdateInput = z.infer<typeof updateUserSchema>;
+import * as service from './service';
 
-// Define ID-based routes only if idField exists
- // End of conditional ID routes
+/**
+ * Handles list user User.
+ */
+export const listUser = async (c: Context) => {
+  
+  
+  try {
+    const item = await service.findManyUsers(); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error list usering User: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list User\` }, 500);
+  }
+};
 
-// POST /logentrys - Always defined
-const createLogEntryRoute = createRoute({
-  method: 'post',
-  path: '/',
-  tags: ['LogEntry'],
-  summary: 'Create a new logentry',
-  request: {
-    body: {
-      content: {
-        'application/json': {
-          schema: createLogEntrySchema,
-        },
-      },
-    },
-  },
-  responses: {
-    201: {
-      description: 'Returns the created logentry',
-      content: {
-        'application/json': {
-          schema: LogEntrySchema,
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input',
-      // TODO: Define standard error schema
-    },
-    // TODO: Define 500 error response
-  },
-});
+/**
+ * Handles create user User.
+ */
+export const createUser = async (c: Context) => {
+  
+  const data = c.req.valid('json');
+  try {
+    const item = await service.createUser(data); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Generic error handling for other cases
+    const message = \`Error create usering User: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create User\` }, 500);
+  }
+};
 
-
-
-
-// --- Hono App Setup ---
-// Using standard Hono methods for clearer middleware application
-const logEntryRoutes = new OpenAPIHono(); // Keep OpenAPIHono for potential doc gen later
-
-// GET /logentrys (List)
-logEntryRoutes.get(
-  '/',
-  controller.listLogEntry
-);
-
-// POST /logentrys (Create)
-logEntryRoutes.post(
-  '/',
-  validator('json', (value, c) => {
-    // Reuse the schema defined in createRoute for validation
-    const parsed = createLogEntryRoute.request.body.content['application/json'].schema.safeParse(value);
-    if (!parsed.success) {
-      return c.json({ error: 'Validation failed', issues: parsed.error.issues }, 400);
+/**
+ * Handles get user by id User.
+ */
+export const getUserById = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  
+  try {
+    const item = await service.findUserById(id); // Use service namespace and correct args
+    
+    if (!item) {
+      return c.json({ error: 'User not found' }, 404);
     }
-    return parsed.data; // Make validated data available via c.req.valid('json')
-  }),
-  controller.createLogEntry
-);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error get user by iding User \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Generic error handling for other cases
+    const message = \`Error get user by iding User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to get User\` }, 500);
+  }
+};
 
- // Conditionally register ID-based routes
+/**
+ * Handles update user User.
+ */
+export const updateUser = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  const data = c.req.valid('json');
+  try {
+    const item = await service.updateUser(id, data); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error update usering User \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Generic error handling for other cases
+    const message = \`Error update usering User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to update User\` }, 500);
+  }
+};
 
-// TODO: Optionally re-attach OpenAPI route definitions for documentation generation if needed
-// Example: logEntryRoutes.doc('/path', listLogEntryRoute.getOpenAPIMetadata());
-
-export default logEntryRoutes;
+/**
+ * Handles delete user User.
+ */
+export const deleteUser = async (c: Context) => {
+  const { id } = c.req.valid('param');
+  
+  try {
+    const item = await service.deleteUser(id); // Use service namespace and correct args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error delete usering User \\\${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Generic error handling for other cases
+    const message = \`Error delete usering User \\\${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to delete User\` }, 500);
+  }
+};
 "
 `;

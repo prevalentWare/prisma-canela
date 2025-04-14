@@ -19,7 +19,8 @@ export const listProduct = async (c: Context) => {
   try {
     const item = await service.findManyProducts(); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     // Generic error handling for other cases
     const message = \`Error list producting Product: \${error instanceof Error ? error.message : 'Unknown error'}\`;
@@ -31,12 +32,13 @@ export const listProduct = async (c: Context) => {
 /**
  * Handles create product Product.
  */
-export const createProduct = async (c: Context<{}, string, { json: CreateInput }>) => {
+export const createProduct = async (c: Context) => {
   
   const data = c.req.valid('json');
   try {
     const item = await service.createProduct(data); // Use service namespace and correct args
     
+    // Always return status code explicitly for better type matching with openapi()
     return c.json(item, 201);
   } catch (error: unknown) {
     // Generic error handling for other cases
@@ -49,7 +51,7 @@ export const createProduct = async (c: Context<{}, string, { json: CreateInput }
 /**
  * Handles get product by id Product.
  */
-export const getProductById = async (c: Context<{}, string, { param: { id: string } }>) => {
+export const getProductById = async (c: Context) => {
   const { id } = c.req.valid('param');
   
   try {
@@ -58,7 +60,8 @@ export const getProductById = async (c: Context<{}, string, { param: { id: strin
     if (!item) {
       return c.json({ error: 'Product not found' }, 404);
     }
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
@@ -76,13 +79,14 @@ export const getProductById = async (c: Context<{}, string, { param: { id: strin
 /**
  * Handles update product Product.
  */
-export const updateProduct = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {
+export const updateProduct = async (c: Context) => {
   const { id } = c.req.valid('param');
   const data = c.req.valid('json');
   try {
     const item = await service.updateProduct(id, data); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
@@ -100,13 +104,14 @@ export const updateProduct = async (c: Context<{}, string, { param: { id: string
 /**
  * Handles delete product Product.
  */
-export const deleteProduct = async (c: Context<{}, string, { param: { id: string } }>) => {
+export const deleteProduct = async (c: Context) => {
   const { id } = c.req.valid('param');
   
   try {
     const item = await service.deleteProduct(id); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
@@ -142,7 +147,8 @@ export const listLogEntry = async (c: Context) => {
   try {
     const item = await service.findManyLogEntries(); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     // Generic error handling for other cases
     const message = \`Error list log entrying LogEntry: \${error instanceof Error ? error.message : 'Unknown error'}\`;
@@ -154,12 +160,13 @@ export const listLogEntry = async (c: Context) => {
 /**
  * Handles create log entry LogEntry.
  */
-export const createLogEntry = async (c: Context<{}, string, { json: CreateInput }>) => {
+export const createLogEntry = async (c: Context) => {
   
   const data = c.req.valid('json');
   try {
     const item = await service.createLogEntry(data); // Use service namespace and correct args
     
+    // Always return status code explicitly for better type matching with openapi()
     return c.json(item, 201);
   } catch (error: unknown) {
     // Generic error handling for other cases
@@ -190,7 +197,8 @@ export const listUser = async (c: Context) => {
   try {
     const item = await service.findManyUsers(); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     // Generic error handling for other cases
     const message = \`Error list usering User: \${error instanceof Error ? error.message : 'Unknown error'}\`;
@@ -202,12 +210,13 @@ export const listUser = async (c: Context) => {
 /**
  * Handles create user User.
  */
-export const createUser = async (c: Context<{}, string, { json: CreateInput }>) => {
+export const createUser = async (c: Context) => {
   
   const data = c.req.valid('json');
   try {
     const item = await service.createUser(data); // Use service namespace and correct args
     
+    // Always return status code explicitly for better type matching with openapi()
     return c.json(item, 201);
   } catch (error: unknown) {
     // Generic error handling for other cases
@@ -220,7 +229,7 @@ export const createUser = async (c: Context<{}, string, { json: CreateInput }>) 
 /**
  * Handles get user by id User.
  */
-export const getUserById = async (c: Context<{}, string, { param: { id: string } }>) => {
+export const getUserById = async (c: Context) => {
   const { id } = c.req.valid('param');
   
   try {
@@ -229,7 +238,8 @@ export const getUserById = async (c: Context<{}, string, { param: { id: string }
     if (!item) {
       return c.json({ error: 'User not found' }, 404);
     }
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
@@ -247,13 +257,14 @@ export const getUserById = async (c: Context<{}, string, { param: { id: string }
 /**
  * Handles update user User.
  */
-export const updateUser = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {
+export const updateUser = async (c: Context) => {
   const { id } = c.req.valid('param');
   const data = c.req.valid('json');
   try {
     const item = await service.updateUser(id, data); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available
@@ -271,13 +282,14 @@ export const updateUser = async (c: Context<{}, string, { param: { id: string },
 /**
  * Handles delete user User.
  */
-export const deleteUser = async (c: Context<{}, string, { param: { id: string } }>) => {
+export const deleteUser = async (c: Context) => {
   const { id } = c.req.valid('param');
   
   try {
     const item = await service.deleteUser(id); // Use service namespace and correct args
     
-    return c.json(item);
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
   } catch (error: unknown) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Use the specific ID in the error message if available

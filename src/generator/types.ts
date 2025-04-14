@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Contains details about the generated Zod schemas for a model.
  */
@@ -18,3 +20,12 @@ export interface ServiceFunctionNames {
   update: string; // e.g., "updateUser"
   delete: string; // e.g., "deleteUser"
 }
+
+// --- Common Schemas ---
+
+/**
+ * Standard Zod schema for API error responses.
+ */
+export const ErrorSchema = z.object({
+  error: z.string().openapi({ example: "Resource not found" }),
+});

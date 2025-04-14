@@ -130,9 +130,6 @@ export const create${modelNamePascal}Schema = ${modelNamePascal}Schema${createSc
 // Schema for updating a ${modelNamePascal}
 // Based on the base schema, making all fields optional and omitting generated fields.
 export const update${modelNamePascal}Schema = ${modelNamePascal}Schema.partial()${updateSchemaOmit};
-
-// Infer the TypeScript type from the base schema
-export type ${modelNamePascal} = z.infer<typeof ${modelNamePascal}Schema>;
 `;
 
   return { content: schemaContent.trim(), imports: requiredImports };

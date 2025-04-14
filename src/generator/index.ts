@@ -12,6 +12,7 @@ import { generateZodSchema } from "./generateZod"; // Import from new file
 import { generateServiceFileContent } from "./generateService"; // Import service generator
 import { generateControllerFileContent } from "./generateController"; // Import controller generator
 // import { generateServerFileContent } from "./generateServer"; // Removed import
+import { generateTypesFileContent } from "./generateTypes"; // Import types generator
 import { pascalCase } from "../utils/pascalCase";
 import { camelCase } from "../utils/camelCase";
 import type { ZodSchemaDetails, ServiceFunctionNames } from "./types"; // Import shared types
@@ -60,6 +61,12 @@ export async function generateApi(
         generateZodSchema(model, parsedSchema.enums);
       const schemaFilePath = path.join(modelDir, "schema.ts");
       await fs.writeFile(schemaFilePath, zodSchemaContent);
+
+      // Generate types file
+      console.log(`  - Generating types file: types.ts`);
+      const typesContent = generateTypesFileContent(model);
+      const typesFilePath = path.join(modelDir, "types.ts");
+      await fs.writeFile(typesFilePath, typesContent);
 
       // Prepare info for route generation - update import path
       const zodSchemaInfo: ZodSchemaDetails = {

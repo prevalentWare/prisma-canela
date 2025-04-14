@@ -1,35 +1,21 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import fs from "node:fs/promises";
+import * as PrismaInternals from "@prisma/internals";
+import type { DMMF } from "@prisma/generator-helper"; // Import DMMF types for better mocking
 // --- Adjusted import path ---
 import { parsePrismaSchema } from "../index";
 // --- Adjusted import path ---
 import type { ParsedSchema } from "../types";
+import path from "node:path";
 
-// Mock the fs.readFile function - moved inside beforeEach
-// vi.mock("node:fs/promises", () => ({
-//   default: {
-//     readFile: vi.fn(),
-//   },
-// }));
-
-// Helper to set mock implementation for readFile
-const mockReadFile = (content: string) => {
-  // We use mockResolvedValue because readFile returns a Promise
-  vi.mocked(fs.readFile).mockResolvedValue(content);
-};
+// Use vi.mock for module mocking
+vi.mock("node:fs/promises");
+vi.mock("@prisma/internals");
 
 describe("Prisma Schema Parser", () => {
-  // Set up the mock before each test in this suite
   beforeEach(() => {
-    vi.mock("node:fs/promises", () => ({
-      default: {
-        readFile: vi.fn(),
-      },
-    }));
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks(); // Restore mocks after each test
+    // Reset mocks before each test
+    vi.resetAllMocks();
   });
 
   it("should parse a simple schema with one model and basic fields", async () => {
@@ -52,8 +38,109 @@ describe("Prisma Schema Parser", () => {
       }
     `;
 
-    mockReadFile(simpleSchema);
+    // Set mock implementations for this test
+    vi.mocked(fs.readFile).mockResolvedValueOnce(simpleSchema);
 
+    // Create mock DMMF object (simplified, add required fields)
+    const mockDMMF = {
+      datamodel: {
+        models: [
+          {
+            name: "Post",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: true,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "title",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "content",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: false,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "published",
+                type: "Boolean",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: true,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "createdAt",
+                type: "DateTime",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: true,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+        ],
+        enums: [],
+        types: [],
+      },
+      // Add minimal schema and mappings to satisfy DMMF.Document type if strictly needed
+      schema: {
+        inputObjectTypes: {},
+        outputObjectTypes: {},
+        enumTypes: {},
+        fieldRefTypes: {},
+      },
+      mappings: {
+        modelOperations: [],
+        otherOperations: { read: [], write: [] },
+      },
+    };
+
+    // Cast the mock to any to bypass strict type checking for the mock
+    vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
+
+    // Expected ParsedSchema (remains the same)
     const expected: ParsedSchema = {
       models: [
         {
@@ -126,10 +213,7 @@ describe("Prisma Schema Parser", () => {
       enums: [],
     };
 
-    // Since parsePrismaSchema takes a path, we provide one, but readFile is mocked
     const result = await parsePrismaSchema("./dummy-schema.prisma");
-
-    // We use deep equality check
     expect(result).toEqual(expected);
   });
 
@@ -146,7 +230,74 @@ describe("Prisma Schema Parser", () => {
         role Role   @default(USER)
       }
     `;
-    mockReadFile(enumSchema);
+    vi.mocked(fs.readFile).mockResolvedValueOnce(enumSchema);
+
+    const mockDMMF = {
+      datamodel: {
+        models: [
+          {
+            name: "User",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "role",
+                type: "Role",
+                kind: "enum",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: true,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+        ],
+        enums: [
+          {
+            name: "Role",
+            values: [
+              { name: "USER", dbName: null },
+              { name: "ADMIN", dbName: null },
+            ],
+            dbName: null,
+          },
+        ],
+        types: [],
+      },
+      schema: {
+        inputObjectTypes: {},
+        outputObjectTypes: {},
+        enumTypes: {},
+        fieldRefTypes: {},
+      },
+      mappings: {
+        modelOperations: [],
+        otherOperations: { read: [], write: [] },
+      },
+    };
+
+    // Cast the mock to any to bypass strict type checking for the mock
+    vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {
       models: [
@@ -200,10 +351,132 @@ describe("Prisma Schema Parser", () => {
         id     String @id
         bio    String?
         user   User   @relation("UserProfile", fields: [userId], references: [id])
-        userId String @unique // relation scalar field (used in fields)
+        userId String @unique
       }
     `;
-    mockReadFile(oneToOneSchema);
+    vi.mocked(fs.readFile).mockResolvedValueOnce(oneToOneSchema);
+
+    const mockDMMF = {
+      datamodel: {
+        models: [
+          {
+            name: "User",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "profile",
+                type: "Profile",
+                kind: "object",
+                relationName: "UserProfile",
+                isList: false,
+                isRequired: false,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+          {
+            name: "Profile",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "bio",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: false,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "user",
+                type: "User",
+                kind: "object",
+                relationName: "UserProfile",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "userId",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: true,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+        ],
+        enums: [],
+        types: [],
+      },
+      schema: {
+        inputObjectTypes: {},
+        outputObjectTypes: {},
+        enumTypes: {},
+        fieldRefTypes: {},
+      },
+      mappings: {
+        modelOperations: [],
+        otherOperations: { read: [], write: [] },
+      },
+    };
+
+    // Cast the mock to any to bypass strict type checking for the mock
+    vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {
       models: [
@@ -319,7 +592,130 @@ describe("Prisma Schema Parser", () => {
         authorId String
       }
     `;
-    mockReadFile(oneToManySchema);
+    vi.mocked(fs.readFile).mockResolvedValueOnce(oneToManySchema);
+
+    const mockDMMF = {
+      datamodel: {
+        models: [
+          {
+            name: "User",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "posts",
+                type: "Post",
+                kind: "object",
+                relationName: "UserPosts",
+                isList: true,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+          {
+            name: "Post",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "title",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "author",
+                type: "User",
+                kind: "object",
+                relationName: "UserPosts",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "authorId",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+        ],
+        enums: [],
+        types: [],
+      },
+      schema: {
+        inputObjectTypes: {},
+        outputObjectTypes: {},
+        enumTypes: {},
+        fieldRefTypes: {},
+      },
+      mappings: {
+        modelOperations: [],
+        otherOperations: { read: [], write: [] },
+      },
+    };
+
+    // Cast the mock to any to bypass strict type checking for the mock
+    vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
+
     const expected: ParsedSchema = {
       models: [
         {
@@ -433,7 +829,117 @@ describe("Prisma Schema Parser", () => {
         posts Post[] @relation("PostCategories")
       }
     `;
-    mockReadFile(manyToManySchema);
+    vi.mocked(fs.readFile).mockResolvedValueOnce(manyToManySchema);
+
+    const mockDMMF = {
+      datamodel: {
+        models: [
+          {
+            name: "Post",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "categories",
+                type: "Category",
+                kind: "object",
+                relationName: "PostCategories",
+                isList: true,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+          {
+            name: "Category",
+            dbName: null,
+            fields: [
+              {
+                name: "id",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: true,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "name",
+                type: "String",
+                kind: "scalar",
+                isList: false,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+              {
+                name: "posts",
+                type: "Post",
+                kind: "object",
+                relationName: "PostCategories",
+                isList: true,
+                isRequired: true,
+                isUnique: false,
+                isId: false,
+                isReadOnly: false,
+                hasDefaultValue: false,
+                isGenerated: false,
+                isUpdatedAt: false,
+              },
+            ],
+            uniqueFields: [],
+            uniqueIndexes: [],
+            primaryKey: null,
+            isGenerated: false,
+          },
+        ],
+        enums: [],
+        types: [],
+      },
+      schema: {
+        inputObjectTypes: {},
+        outputObjectTypes: {},
+        enumTypes: {},
+        fieldRefTypes: {},
+      },
+      mappings: {
+        modelOperations: [],
+        otherOperations: { read: [], write: [] },
+      },
+    };
+
+    // Cast the mock to any to bypass strict type checking for the mock
+    vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
+
     const expected: ParsedSchema = {
       models: [
         {

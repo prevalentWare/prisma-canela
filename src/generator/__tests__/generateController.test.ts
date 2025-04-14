@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { generateControllerFileContent } from "../generateController";
 import type { ParsedModel } from "../../parser/types";
 import type { ZodSchemaDetails, ServiceFunctionNames } from "../types";
-import * as z from "zod";
+import * as z from "zod"; // Need z for inferring types
 
 // --- Mock Data ---
 
@@ -171,10 +171,10 @@ const logEntryZodSchemaInfo: ZodSchemaDetails = {
 };
 const logEntryServiceNames: ServiceFunctionNames = {
   findMany: "findManyLogEntries",
-  findById: "findLogEntryById",
+  findById: "findLogEntryById", // Still need this for the type even if not used
   create: "createLogEntry",
-  update: "updateLogEntry",
-  delete: "deleteLogEntry",
+  update: "updateLogEntry", // Still need this for the type even if not used
+  delete: "deleteLogEntry", // Still need this for the type even if not used
 };
 
 // --- Test Suite ---
@@ -201,27 +201,19 @@ describe("generateControllerFileContent", () => {
     );
     expect(result).toContain("import { Prisma } from '@prisma/client';"); // Check Prisma import for errors
 
-    // Check function definitions
+    // Check function definitions (Updated Signatures)
     expect(result).toContain("export const listUser = async (c: Context)");
-    expect(result).toContain(
-      "export const createUser = async (c: Context<{}, string, { json: CreateInput }>) => {"
-    );
-    expect(result).toContain(
-      "export const getUserById = async (c: Context<{}, string, { param: { id: string } }>) => {"
-    );
-    expect(result).toContain(
-      "export const updateUser = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {"
-    );
-    expect(result).toContain(
-      "export const deleteUser = async (c: Context<{}, string, { param: { id: string } }>) => {"
-    );
+    expect(result).toContain("export const createUser = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const getUserById = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const updateUser = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const deleteUser = async (c: Context)"); // Simplified check
 
     // Check service function calls within handlers
-    expect(result).toContain("await service.findManyUsers();"); // Updated
-    expect(result).toContain("await service.createUser(data);"); // Updated
-    expect(result).toContain("await service.findUserById(id);"); // Updated
-    expect(result).toContain("await service.updateUser(id, data);"); // Updated
-    expect(result).toContain("await service.deleteUser(id);"); // Updated
+    expect(result).toContain("await service.findManyUsers();");
+    expect(result).toContain("await service.createUser(data);");
+    expect(result).toContain("await service.findUserById(id);");
+    expect(result).toContain("await service.updateUser(id, data);");
+    expect(result).toContain("await service.deleteUser(id);");
 
     // Check basic ID retrieval (string ID)
     expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring
@@ -264,30 +256,24 @@ describe("generateControllerFileContent", () => {
     );
     expect(result).toContain("import { Prisma } from '@prisma/client';");
 
-    // Check function definitions
+    // Check function definitions (Updated Signatures)
     expect(result).toContain("export const listProduct = async (c: Context)");
+    expect(result).toContain("export const createProduct = async (c: Context)"); // Simplified check
     expect(result).toContain(
-      "export const createProduct = async (c: Context<{}, string, { json: CreateInput }>) => {"
-    );
-    expect(result).toContain(
-      "export const getProductById = async (c: Context<{}, string, { param: { id: string } }>) => {"
-    );
-    expect(result).toContain(
-      "export const updateProduct = async (c: Context<{}, string, { param: { id: string }, json: UpdateInput }>) => {"
-    );
-    expect(result).toContain(
-      "export const deleteProduct = async (c: Context<{}, string, { param: { id: string } }>) => {"
-    );
+      "export const getProductById = async (c: Context)"
+    ); // Simplified check
+    expect(result).toContain("export const updateProduct = async (c: Context)"); // Simplified check
+    expect(result).toContain("export const deleteProduct = async (c: Context)"); // Simplified check
 
     // Check service function calls
-    expect(result).toContain("await service.findManyProducts();"); // Updated
-    expect(result).toContain("await service.createProduct(data);"); // Updated
-    expect(result).toContain("await service.findProductById(id);"); // Updated
-    expect(result).toContain("await service.updateProduct(id, data);"); // Updated
-    expect(result).toContain("await service.deleteProduct(id);"); // Updated
+    expect(result).toContain("await service.findManyProducts();");
+    expect(result).toContain("await service.createProduct(data);");
+    expect(result).toContain("await service.findProductById(id);");
+    expect(result).toContain("await service.updateProduct(id, data);");
+    expect(result).toContain("await service.deleteProduct(id);");
 
     // Check numeric ID retrieval - relaxed check
-    expect(result).toContain("const { id } = c.req.valid('param');"); // Updated assertion for param destructuring (type is handled by route validation)
+    expect(result).toContain("const { id } = c.req.valid('param');"); // Type is handled by route validation
 
     // Check error handling
     expect(result).toContain(
@@ -318,15 +304,15 @@ describe("generateControllerFileContent", () => {
     );
     // No UpdateInput type needed if no update handler
 
-    // Check that only list and create functions are defined
+    // Check that only list and create functions are defined (Updated Signatures)
     expect(result).toContain("export const listLogEntry = async (c: Context)");
     expect(result).toContain(
-      "export const createLogEntry = async (c: Context<{}, string, { json: CreateInput }>) => {"
-    );
+      "export const createLogEntry = async (c: Context)"
+    ); // Simplified check
 
     // Check service function calls
-    expect(result).toContain("await service.findManyLogEntries();"); // Updated
-    expect(result).toContain("await service.createLogEntry(data);"); // Updated
+    expect(result).toContain("await service.findManyLogEntries();");
+    expect(result).toContain("await service.createLogEntry(data);");
 
     // Check that ID-specific handlers are NOT present
     expect(result).not.toContain("export const getLogEntryById = async");

@@ -80,8 +80,6 @@ import { z } from 'zod';
 export const ${modelNameLower}Schema = z.object({
 ${zodFields}
 });
-
-export type ${name} = z.infer<typeof ${modelNameLower}Schema>;
 `;
 }
 
@@ -216,10 +214,7 @@ export const createPostSchema = PostSchema.omit({ "id": true });
 // Schema for updating a Post
 // Based on the base schema, making all fields optional and omitting generated fields.
 export const updatePostSchema = PostSchema.partial().omit({ "id": true });
-
-// Infer the TypeScript type from the base schema
-export type Post = z.infer<typeof PostSchema>;
-    `;
+`;
 
     // Access the content property
     const { content: generatedContent } = generateZodSchema(simpleModel, []);
@@ -294,10 +289,7 @@ export const createUserSchema = UserSchema.omit({ "id": true });
 // Schema for updating a User
 // Based on the base schema, making all fields optional and omitting generated fields.
 export const updateUserSchema = UserSchema.partial().omit({ "id": true });
-
-// Infer the TypeScript type from the base schema
-export type User = z.infer<typeof UserSchema>;
-    `;
+`;
     // Access the content property
     const { content: generatedContent } = generateZodSchema(enumModel, enums);
     expect(generatedContent.trim()).toEqual(expectedSchema.trim());
@@ -381,10 +373,7 @@ export const createConfigSchema = ConfigSchema.omit({ "id": true });
 // Schema for updating a Config
 // Based on the base schema, making all fields optional and omitting generated fields.
 export const updateConfigSchema = ConfigSchema.partial().omit({ "id": true });
-
-// Infer the TypeScript type from the base schema
-export type Config = z.infer<typeof ConfigSchema>;
-    `;
+`;
     // Access the content property
     const { content: generatedContent } = generateZodSchema(listModel, enums);
     expect(generatedContent.trim()).toEqual(expectedSchema.trim());
