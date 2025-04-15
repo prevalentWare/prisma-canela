@@ -1,13 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import * as PrismaInternals from '@prisma/internals';
-import type { DMMF } from '@prisma/generator-helper'; // Import DMMF types for better mocking
-// --- Adjusted import path ---
-import { parsePrismaSchema } from '../index';
-// --- Adjusted import path ---
-import type { ParsedSchema } from '../types';
-import path from 'node:path';
-import type { MockDMMF } from './types';
+import { parsePrismaSchema } from '@parser/index';
+import type { ParsedSchema } from '@parser/types';
 
 // Use vi.mock for module mocking
 vi.mock('node:fs/promises');

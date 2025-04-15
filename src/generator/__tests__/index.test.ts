@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 // We need to export generateZodSchema and mapFieldTypeToZodType for testing
 // For now, let's test generateZodSchema which uses the mapper internally.
 // We might need to adjust the generator file to export helpers if needed.
-import { generateZodSchema } from '../generateZod'; // Placeholder, need exported helpers
+import { generateZodSchema } from '@generator/generateZod'; // Placeholder, need exported helpers
 import type { ParsedModel, ParsedEnum, ParsedField } from '@parser/types'; // Update to use path alias
 
 // --- Mocking generateApi to access helper functions ---
@@ -54,7 +54,7 @@ const mapFieldTypeToZodType_Test = (
   }
 };
 
-const generateZodSchema_Test = (
+const _generateZodSchema_Test = (
   model: ParsedModel,
   enums: ParsedEnum[]
 ): string => {

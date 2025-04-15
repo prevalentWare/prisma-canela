@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { generateControllerFileContent } from '../generateController';
-import type { ParsedModel } from '../../parser/types';
-import type { ZodSchemaDetails, ServiceFunctionNames } from '../types';
-import * as z from 'zod'; // Need z for inferring types
+import { generateControllerFileContent } from '@generator/generateController';
+import type { ParsedModel } from '@parser/types';
+import type { ZodSchemaDetails, ServiceFunctionNames } from '@generator/types';
 
 // --- Mock Data ---
 

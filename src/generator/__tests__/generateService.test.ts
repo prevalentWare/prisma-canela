@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateServiceFileContent } from '../generateService';
-import type { ParsedModel, ParsedField } from '../../parser/types';
+import { generateServiceFileContent } from '@generator/generateService';
+import type { ParsedModel } from '@parser/types';
 
 // Mock data for a simple User model
 const userModel: ParsedModel = {

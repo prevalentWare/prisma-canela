@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateTypesFileContent } from '../generateTypes';
-import type { ParsedModel } from '../../parser/types';
+import { generateTypesFileContent } from '@generator/generateTypes';
+import type { ParsedModel } from '@parser/types';
 
 describe('generateTypesFileContent', () => {
   it('should generate correct type definitions for a simple model', () => {

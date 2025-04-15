@@ -116,8 +116,8 @@ const config = tseslint.config(
     // Allow relative imports in test files
     files: ['**/__tests__/**'],
     rules: {
-      'no-restricted-imports': 'off',
-      '@typescript-eslint/no-unused-vars': 'off', // Tests often import things for type checking only
+      'no-restricted-imports': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn', // Tests often import things for type checking only
     },
   },
   {

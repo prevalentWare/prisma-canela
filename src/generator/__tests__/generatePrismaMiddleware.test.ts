@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generatePrismaMiddlewareFileContent } from '../generatePrismaMiddleware';
+import { generatePrismaMiddlewareFileContent } from '@generator/generatePrismaMiddleware';
 
 describe('generatePrismaMiddlewareFileContent', () => {
   it('should generate middleware content with correct exports', () => {

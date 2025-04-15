@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   generateModelIndexFileContent,
   generateRootIndexFileContent,
-} from '../generateIndex';
-import type { ParsedModel } from '../../parser/types';
+} from '@generator/generateIndex';
+import type { ParsedModel } from '@parser/types';
 
 describe('generateModelIndexFileContent', () => {
   it('should generate model index file content correctly', () => {
