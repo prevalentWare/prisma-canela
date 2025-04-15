@@ -41,13 +41,13 @@ Canela is a codegen tool that takes a Prisma schema and generates a fully typed 
 
 ```bash
 # Using bun (recommended)
-bun install prisma-canela
+bun install @prevalentware/prisma-canela
 
 # Using npm
-npm install prisma-canela
+npm install @prevalentware/prisma-canela
 
 # Using yarn
-yarn add prisma-canela
+yarn add @prevalentware/prisma-canela
 ```
 
 ## Usage
@@ -56,7 +56,7 @@ yarn add prisma-canela
 
 ```bash
 # Generate API from a Prisma schema
-bun prisma-canela generate --schema ./prisma/schema.prisma --output ./src/generated
+bun @prevalentware/prisma-canela generate --schema ./prisma/schema.prisma --output ./src/generated
 ```
 
 ### Generated Code Structure
@@ -296,7 +296,7 @@ Prisma-Canela will support the `prismaSchemaFolder` preview feature from Prisma,
 
 ```bash
 # Generate API from a Prisma schema folder
-bun prisma-canela generate --schema ./prisma/schema --output ./src/generated
+bun @prevalentware/prisma-canela generate --schema ./prisma/schema --output ./src/generated
 ```
 
 ```
