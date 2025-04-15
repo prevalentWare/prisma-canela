@@ -34,7 +34,7 @@ app.get("/debug/context", (c) => {
 });
 
 // Register all API routes
-registerAllRoutes(app, { prefix: "/api" });
+registerAllRoutes(app, { prefix: "" });
 
 // Generate OpenAPI documentation
 const openApiDoc = app.getOpenAPIDocument({
@@ -47,8 +47,8 @@ const openApiDoc = app.getOpenAPIDocument({
 });
 
 // Swagger UI documentation
-app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
-app.get("/api/docs/openapi.json", (c) => {
+app.get("/docs", swaggerUI({ url: "/docs/openapi.json" }));
+app.get("/docs/openapi.json", (c) => {
   return c.json(openApiDoc);
 });
 
@@ -58,8 +58,8 @@ app.get("/", (c) => c.json({ status: "ok", message: "Canela API is running" }));
 // Start server
 const port = process.env.PORT || 3000;
 console.log(`Server starting on port ${port}...`);
-console.log(`API available at http://localhost:${port}/api`);
-console.log(`API documentation at http://localhost:${port}/api/docs`);
+console.log(`API available at http://localhost:${port}`);
+console.log(`API documentation at http://localhost:${port}/docs`);
 
 serve({
   fetch: app.fetch,
