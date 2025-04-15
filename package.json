@@ -24,7 +24,7 @@
     "clean": "rm -rf dist",
     "start": "node dist/bin/canela.js",
     "lint": "eslint --ext .ts ./src",
-    "lint:fix": "eslint --ext .ts --fix",
+    "lint:fix": "eslint --ext .ts --fix && bun run format",
     "format": "prettier --write ./src",
     "test": "vitest run",
     "test:watch": "vitest",
