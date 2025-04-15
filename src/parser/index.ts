@@ -2,6 +2,7 @@ import { getDMMF } from '@prisma/internals';
 import type { DMMF } from '@prisma/generator-helper';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import * as logger from '@utils/logger';
 import type {
   ParsedSchema,
   ParsedModel,
@@ -10,6 +11,9 @@ import type {
   FieldType,
   ParsedRelationInfo,
 } from './types';
+
+// Create a prefixed logger for the parser
+const log = logger.createPrefixedLogger('Parser');
 
 /**
  * Finds the Prisma schema by checking common locations.
@@ -37,14 +41,14 @@ export const findPrismaSchema = async (): Promise<string> => {
     }
   } catch {
     // If package.json doesn't exist or can't be parsed, continue with defaults
-    console.log('No schema location found in package.json, using defaults.');
+    log.debug('No schema location found in package.json, using defaults.');
   }
 
   // Check each location
   for (const location of possibleLocations) {
     try {
       await fs.access(location);
-      console.log(`Found Prisma schema at: ${location}`);
+      log.info(`Found Prisma schema at: ${location}`);
       return location;
     } catch {
       // Location doesn't exist, try next
@@ -59,7 +63,7 @@ export const findPrismaSchema = async (): Promise<string> => {
       // Check if directory contains .prisma files
       const files = await fs.readdir(schemaDir);
       if (files.some((file) => file.endsWith('.prisma'))) {
-        console.log(`Found Prisma schema directory at: ${schemaDir}`);
+        log.info(`Found Prisma schema directory at: ${schemaDir}`);
         return schemaDir;
       }
     }
@@ -89,7 +93,7 @@ export const parsePrismaSchema = async (
       ? path.resolve(process.cwd(), schemaPath)
       : await findPrismaSchema();
 
-    console.log(`Attempting to parse schema at: ${resolvedSchemaPath}`);
+    log.debug(`Attempting to parse schema at: ${resolvedSchemaPath}`);
 
     try {
       // Check if path is a directory or file
@@ -108,7 +112,7 @@ export const parsePrismaSchema = async (
       return await parseSingleSchemaFile(resolvedSchemaPath);
     }
   } catch (error) {
-    console.error(`Error parsing Prisma schema:`, error);
+    log.error(`Error parsing Prisma schema:`, error);
     throw new Error(
       `Failed to parse Prisma schema: ${
         error instanceof Error ? error.message : String(error)
@@ -127,13 +131,13 @@ export const parseSingleSchemaFile = async (
   filePath: string
 ): Promise<ParsedSchema> => {
   const schemaContent = await fs.readFile(filePath, 'utf-8');
-  console.log('Successfully read schema file.');
+  log.debug('Successfully read schema file.');
 
   // Parse schema content using DMMF
   const dmmf: DMMF.Document = await getDMMF({
     datamodel: schemaContent,
   });
-  console.log('Successfully generated DMMF from schema.');
+  log.debug('Successfully generated DMMF from schema.');
 
   return mapDmmfToParsedSchema(dmmf);
 };
@@ -148,7 +152,7 @@ export const parseSingleSchemaFile = async (
 export const parsePrismaSchemaFolder = async (
   directoryPath: string
 ): Promise<ParsedSchema> => {
-  console.log(`Processing schema directory: ${directoryPath}`);
+  log.info(`Processing schema directory: ${directoryPath}`);
 
   // Read all files in the directory
   const files = await fs.readdir(directoryPath);
@@ -165,7 +169,7 @@ export const parsePrismaSchemaFolder = async (
     throw new Error(`No .prisma files found in directory: ${directoryPath}`);
   }
 
-  console.log(
+  log.info(
     `Found ${schemaFiles.length} schema files: ${schemaFiles.join(', ')}`
   );
 
@@ -188,13 +192,13 @@ export const parsePrismaSchemaFolder = async (
     throw new Error('Combined schema is missing required "generator" block');
   }
 
-  console.log('Successfully combined schema files.');
+  log.debug('Successfully combined schema files.');
 
   // Parse the combined schema content
   const dmmf: DMMF.Document = await getDMMF({
     datamodel: combinedSchema,
   });
-  console.log('Successfully generated DMMF from combined schema.');
+  log.debug('Successfully generated DMMF from combined schema.');
 
   return mapDmmfToParsedSchema(dmmf);
 };
@@ -206,7 +210,7 @@ export const parsePrismaSchemaFolder = async (
  * @returns The structured representation of the schema.
  */
 export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
-  console.log('Mapping DMMF to ParsedSchema...');
+  log.debug('Mapping DMMF to ParsedSchema...');
 
   const parsedEnums: ParsedEnum[] = dmmf.datamodel.enums.map(
     (enumType: DMMF.DatamodelEnum) => ({
@@ -215,7 +219,7 @@ export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
     })
   );
 
-  console.log(`Mapped ${parsedEnums.length} enums.`);
+  log.debug(`Mapped ${parsedEnums.length} enums.`);
 
   const parsedModels: ParsedModel[] = dmmf.datamodel.models.map(
     (model: DMMF.Model) => ({
@@ -225,14 +229,14 @@ export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
     })
   );
 
-  console.log(`Mapped ${parsedModels.length} models (basic info).`);
+  log.debug(`Mapped ${parsedModels.length} models (basic info).`);
 
   const parsedSchema: ParsedSchema = {
     models: parsedModels,
     enums: parsedEnums,
   };
 
-  console.log('Finished mapping DMMF.');
+  log.debug('Finished mapping DMMF.');
   return parsedSchema;
 };
 

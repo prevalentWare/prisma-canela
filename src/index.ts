@@ -1,31 +1,22 @@
 import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs';
-import chalk from 'chalk';
 import type { ParsedSchema } from '@parser/types';
 import type { GeneratorOptions } from '@generator/index';
+import * as logger from '@utils/logger';
+import { LogLevel } from '@utils/logger';
 
-// ASCII art banner
-const displayBanner = (): void => {
-  console.log(
-    chalk.bold(
-      chalk.hex('#2D7BD8')(
-        `
-   ██████╗ █████╗ ███╗   ██╗███████╗██╗      █████╗ 
-  ██╔════╝██╔══██╗████╗  ██║██╔════╝██║     ██╔══██╗
-  ██║     ███████║██╔██╗ ██║█████╗  ██║     ███████║
-  ██║     ██╔══██║██║╚██╗██║██╔══╝  ██║     ██╔══██║
-  ╚██████╗██║  ██║██║ ╚████║███████╗███████╗██║  ██║
-   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═╝
-`
-      )
-    )
-  );
-  console.log(
-    chalk.italic(
-      chalk.hex('#1A4D85')('                     by prevalentWare\n')
-    )
-  );
+// Get package version from package.json
+const getPackageVersion = (): string => {
+  try {
+    // Try to read package.json relative to the current file
+    const packageJsonPath = path.resolve(__dirname, '../package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    return packageJson.version || '0.1.0';
+  } catch {
+    // Fallback version if unable to read package.json
+    return '0.1.0';
+  }
 };
 
 type ParsableSchema = {
@@ -55,23 +46,10 @@ const loadModules = async (): Promise<{
 
     return { parsePrismaSchema, generateApi };
   } catch (err) {
-    console.error('Error loading required modules:', err);
+    logger.error('Error loading required modules:', err);
     process.exit(1);
     // This return is unreachable but TypeScript needs it
     return {} as never;
-  }
-};
-
-// Get package version from package.json
-const getPackageVersion = (): string => {
-  try {
-    // Try to read package.json relative to the current file
-    const packageJsonPath = path.resolve(__dirname, '../package.json');
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    return packageJson.version || '0.1.0';
-  } catch {
-    // Fallback version if unable to read package.json
-    return '0.1.0';
   }
 };
 
@@ -87,6 +65,34 @@ export const createProgram = (): Command => {
     .description('Generate Hono API from Prisma schema')
     .version(getPackageVersion());
 
+  // Add global log level option
+  program
+    .option(
+      '--log-level <level>',
+      'Set the logging level (silent, error, warning, info, debug)',
+      'info'
+    )
+    .option('--silent', 'Silent mode, no output except errors', false)
+    .hook('preAction', (thisCommand) => {
+      const options = thisCommand.opts();
+
+      // Handle --silent flag
+      if (options.silent) {
+        logger.setLogLevel(LogLevel.ERROR);
+        return;
+      }
+
+      // Set log level from option
+      if (options.logLevel) {
+        logger.setLogLevel(options.logLevel);
+      }
+
+      // Check for environment variable
+      if (process.env.CANELA_LOG_LEVEL) {
+        logger.setLogLevel(process.env.CANELA_LOG_LEVEL);
+      }
+    });
+
   program
     .command('generate')
     .alias('g') // Short alias
@@ -101,8 +107,8 @@ export const createProgram = (): Command => {
       './src/generated'
     ) // Default output dir
     .action(async (options) => {
-      // No need to display banner here anymore, it's displayed in main
-      console.log('------------------------');
+      // Only display banner if not in silent mode
+      logger.banner();
 
       try {
         // Load required modules
@@ -114,32 +120,32 @@ export const createProgram = (): Command => {
 
         if (schemaPath) {
           schemaPath = path.resolve(process.cwd(), schemaPath);
-          console.log(`Schema path: ${schemaPath}`);
+          logger.info(`Schema path: ${schemaPath}`);
         } else {
-          console.log('Schema path: Auto-detect');
+          logger.info('Schema path: Auto-detect');
         }
 
-        console.log(`Output directory: ${outputDir}`);
+        logger.info(`Output directory: ${outputDir}`);
 
         // Parse the Prisma schema
         const parsedSchema = await parsePrismaSchema(schemaPath);
-        console.log('✅ Schema parsed successfully.');
+        logger.success('Schema parsed successfully.');
 
         // Generate the API code
         await generateApi(parsedSchema, { outputDir });
-        console.log('\n✅ Code generation finished!');
+        logger.success('Code generation finished!');
       } catch (err) {
-        console.error('\n❌ An error occurred during code generation:');
+        logger.error('An error occurred during code generation:');
         if (err instanceof Error) {
-          console.error(err.message);
+          logger.error(err.message);
 
           // In debug mode, show stack trace
           if (process.env.DEBUG === 'true') {
-            console.error('\nStack trace:');
-            console.error(err.stack);
+            logger.debug('\nStack trace:');
+            logger.debug(err.stack || '');
           }
         } else {
-          console.error(String(err));
+          logger.error(String(err));
         }
         process.exit(1); // Exit with error code
       }
@@ -150,7 +156,6 @@ export const createProgram = (): Command => {
     .command('help')
     .description('Display help information')
     .action(() => {
-      // No need to display banner here anymore, it's displayed in main
       program.outputHelp();
     });
 
@@ -162,6 +167,12 @@ Examples:
   $ canela generate
   $ canela generate --schema ./prisma/schema.prisma
   $ bun run canela generate --output ./src/api
+  
+Log Levels:
+  $ canela --log-level=debug generate   # Show detailed debug information
+  $ canela --log-level=error generate   # Show only errors
+  $ canela --silent generate            # Show only errors, shorter format
+  $ CANELA_LOG_LEVEL=debug canela generate  # Set via environment variable
 `
   );
 
@@ -172,13 +183,11 @@ Examples:
 export const main = async (): Promise<void> => {
   const program = createProgram();
 
-  // Display banner always
-  displayBanner();
-
   await program.parseAsync(process.argv);
 
   // Show help if no command is provided
   if (!process.argv.slice(2).length) {
+    logger.banner();
     program.outputHelp();
   }
 };

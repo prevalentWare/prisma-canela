@@ -1,6 +1,7 @@
 import type { ParsedSchema } from '@parser/types';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import * as logger from '@utils/logger';
 // import { exec } from 'node:child_process';
 // import { promisify } from 'node:util';
 // import type { DMMF } from "@prisma/generator-helper"; // No longer needed here
@@ -21,6 +22,9 @@ import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware.
 
 // const execPromise = promisify(exec);
 
+// Create a prefixed logger for the generator
+const log = logger.createPrefixedLogger('Generator');
+
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
   outputDir: string;
@@ -36,7 +40,7 @@ export const generateApi = async (
   parsedSchema: ParsedSchema,
   options: GeneratorOptions
 ): Promise<void> => {
-  console.log(
+  log.info(
     `Starting API generation for ${parsedSchema.models.length} models...`
   );
 
@@ -44,19 +48,19 @@ export const generateApi = async (
 
   try {
     // Clean the output directory before generation
-    console.log(`Cleaning output directory: ${outputDir}`);
+    log.info(`Cleaning output directory: ${outputDir}`);
     await fs.rm(outputDir, { recursive: true, force: true }); // Delete if exists
 
     // Ensure base output directory exists after cleaning
     await fs.mkdir(outputDir, { recursive: true });
-    console.log(`Output directory created: ${outputDir}`);
+    log.debug(`Output directory created: ${outputDir}`);
 
     // Create middleware directory
     const middlewareDir = path.join(outputDir, 'middleware');
     await fs.mkdir(middlewareDir, { recursive: true });
 
     // Generate Prisma middleware
-    console.log(`- Generating Prisma middleware: prismaMiddleware.ts`);
+    log.debug(`Generating Prisma middleware: prismaMiddleware.ts`);
     const prismaMiddlewareContent = generatePrismaMiddlewareFileContent();
     const prismaMiddlewareFilePath = path.join(
       middlewareDir,
@@ -65,7 +69,7 @@ export const generateApi = async (
     await fs.writeFile(prismaMiddlewareFilePath, prismaMiddlewareContent);
 
     // Generate index file for middleware
-    console.log(`- Generating middleware index: index.ts`);
+    log.debug(`Generating middleware index: index.ts`);
     const middlewareIndexContent = `export * from './prismaMiddleware';`;
     const middlewareIndexFilePath = path.join(middlewareDir, 'index.ts');
     await fs.writeFile(middlewareIndexFilePath, middlewareIndexContent);
@@ -76,17 +80,17 @@ export const generateApi = async (
       const modelDir = path.join(outputDir, modelNameCamel);
 
       await fs.mkdir(modelDir, { recursive: true });
-      console.log(`- Processing model: ${model.name} -> ${modelDir}`);
+      log.info(`Processing model: ${model.name}`);
 
       // Generate Zod schema with simplified name
-      console.log(`  - Generating Zod schema: schema.ts`);
+      log.debug(`Generating Zod schema: schema.ts`);
       const { content: zodSchemaContent, imports: zodSchemaImports } =
         generateZodSchema(model, parsedSchema.enums);
       const schemaFilePath = path.join(modelDir, 'schema.ts');
       await fs.writeFile(schemaFilePath, zodSchemaContent);
 
       // Generate types file
-      console.log(`  - Generating types file: types.ts`);
+      log.debug(`Generating types file: types.ts`);
       const typesContent = generateTypesFileContent(model);
       const typesFilePath = path.join(modelDir, 'types.ts');
       await fs.writeFile(typesFilePath, typesContent);
@@ -111,19 +115,19 @@ export const generateApi = async (
       };
 
       // Generate routes file with simplified name
-      console.log(`  - Generating routes file: routes.ts`);
+      log.debug(`Generating routes file: routes.ts`);
       const routesContent = generateRoutesFileContent(model, zodSchemaInfo);
       const routesFilePath = path.join(modelDir, 'routes.ts');
       await fs.writeFile(routesFilePath, routesContent);
 
       // Generate service file
-      console.log(`  - Generating service file: service.ts`);
+      log.debug(`Generating service file: service.ts`);
       const serviceContent = generateServiceFileContent(model);
       const serviceFilePath = path.join(modelDir, 'service.ts');
       await fs.writeFile(serviceFilePath, serviceContent);
 
       // Generate controller file
-      console.log(`  - Generating controller file: controller.ts`);
+      log.debug(`Generating controller file: controller.ts`);
       const controllerContent = generateControllerFileContent(
         model,
         zodSchemaInfo,
@@ -133,26 +137,26 @@ export const generateApi = async (
       await fs.writeFile(controllerFilePath, controllerContent);
 
       // Generate model-specific index file
-      console.log(`  - Generating model index file: index.ts`);
+      log.debug(`Generating model index file: index.ts`);
       const modelIndexContent = generateModelIndexFileContent(model);
       const modelIndexFilePath = path.join(modelDir, 'index.ts');
       await fs.writeFile(modelIndexFilePath, modelIndexContent);
     }
 
     // Generate root index file to export all routes
-    console.log(`- Generating root index file: index.ts`);
+    log.info(`Generating root index file: index.ts`);
     const rootIndexContent = generateRootIndexFileContent(parsedSchema.models);
     const rootIndexFilePath = path.join(outputDir, 'index.ts');
     await fs.writeFile(rootIndexFilePath, rootIndexContent);
 
-    console.log(
-      `\nAPI generation completed successfully. Files written to ${outputDir}`
+    log.success(
+      `API generation completed successfully. Files written to ${outputDir}`
     );
-    console.log(
-      '\nRemember to use the prismaMiddleware in your application to provide the Prisma client to the routes.'
+    log.info(
+      'Remember to use the prismaMiddleware in your application to provide the Prisma client to the routes.'
     );
   } catch (error) {
-    console.error('Error during API generation:', error);
+    log.error('Error during API generation:', error);
     throw new Error(
       `API generation failed: ${
         error instanceof Error ? error.message : String(error)

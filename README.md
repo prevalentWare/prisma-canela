@@ -312,6 +312,42 @@ Benefits of the generated middleware:
 4. **Clean disconnection**: Utility function for proper cleanup during shutdown
 5. **Type extensions**: Automatically extends the Hono context type definition
 
+#### Advanced Logging Configuration
+
+Canela includes configurable logging to control the verbosity of the code generation process:
+
+```bash
+# Show only ERROR level logs
+canela --log-level=error generate
+
+# Show detailed DEBUG level logs
+canela --log-level=debug generate
+
+# Silent mode (show only errors, more compact)
+canela --silent generate
+
+# Set via environment variable
+CANELA_LOG_LEVEL=debug canela generate
+```
+
+Available log levels (from least to most verbose):
+
+- `silent`: Only critical errors that prevent execution
+- `error`: Error messages only
+- `warning`: Warnings and errors
+- `info`: Standard information (default)
+- `debug`: Detailed information for troubleshooting
+
+You can also set the log level in your CI/CD pipelines for cleaner output:
+
+```yaml
+# In GitHub Actions workflow
+- name: Generate API
+  run: canela --silent generate
+  env:
+    NODE_ENV: production
+```
+
 #### Multi-file Prisma Schema Support
 
 Prisma-Canela supports Prisma's multi-file schema feature (introduced in Prisma 5.15.0), allowing you to split your schema across multiple files for better organization:
