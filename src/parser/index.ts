@@ -164,6 +164,7 @@ export const mapDmmfFieldToParsedField = (field: DMMF.Field): ParsedField => {
     isUnique: field.isUnique,
     isId: field.isId,
     hasDefaultValue: field.hasDefaultValue,
+    isUpdatedAt: field.isUpdatedAt || false,
     relationInfo: relationInfo,
     // Default value details might not be needed if hasDefaultValue is sufficient
   };

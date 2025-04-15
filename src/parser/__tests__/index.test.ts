@@ -155,6 +155,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: true,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'title',
@@ -167,6 +168,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'content',
@@ -179,6 +181,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'published',
@@ -191,6 +194,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: true,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'createdAt',
@@ -203,6 +207,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: true,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
           ],
         },
@@ -314,6 +319,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'role',
@@ -326,6 +332,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: true,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
           ],
         },
@@ -494,6 +501,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'profile',
@@ -509,6 +517,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'Profile',
                 relationName: 'UserProfile',
               },
+              isUpdatedAt: false,
             },
           ],
         },
@@ -527,6 +536,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'bio',
@@ -539,6 +549,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'user',
@@ -554,6 +565,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'User',
                 relationName: 'UserProfile',
               },
+              isUpdatedAt: false,
             },
             {
               name: 'userId',
@@ -566,6 +578,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
           ],
         },
@@ -733,6 +746,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'posts',
@@ -748,6 +762,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'Post',
                 relationName: 'UserPosts',
               },
+              isUpdatedAt: false,
             },
           ],
         },
@@ -766,6 +781,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'title',
@@ -778,6 +794,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'author',
@@ -793,6 +810,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'User',
                 relationName: 'UserPosts',
               },
+              isUpdatedAt: false,
             },
             {
               name: 'authorId',
@@ -805,6 +823,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
           ],
         },
@@ -958,6 +977,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'categories',
@@ -973,6 +993,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'Category',
                 relationName: 'PostCategories',
               },
+              isUpdatedAt: false,
             },
           ],
         },
@@ -991,6 +1012,7 @@ describe('Prisma Schema Parser', () => {
               isId: true,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'name',
@@ -1003,6 +1025,7 @@ describe('Prisma Schema Parser', () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: undefined,
+              isUpdatedAt: false,
             },
             {
               name: 'posts',
@@ -1018,6 +1041,7 @@ describe('Prisma Schema Parser', () => {
                 relatedModelName: 'Post',
                 relationName: 'PostCategories',
               },
+              isUpdatedAt: false,
             },
           ],
         },

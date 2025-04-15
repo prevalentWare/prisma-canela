@@ -77,35 +77,21 @@ export const generateZodSchema = (
   // --- Generate Create Schema ---
   const fieldsToOmitOnCreate: string[] = [];
   model.fields.forEach((field) => {
-    // Omit ID only if it has a default value (e.g., @default(uuid()), @default(autoincrement()))
-    // Or omit if it's a createdAt/updatedAt timestamp managed by Prisma/DB
-    if (
-      (field.isId && field.hasDefaultValue) ||
-      field.name === 'createdAt' ||
-      field.name === 'updatedAt'
-    ) {
-      fieldsToOmitOnCreate.push(`"${field.name}"`);
-    } else if (field.hasDefaultValue && !field.isRequired) {
-      // Omit optional fields with default values as Prisma handles them
-      // Keep required fields even if they have defaults, allows overriding
+    // Omit fields with default values or updatedAt directive
+    if (field.hasDefaultValue || field.isUpdatedAt) {
       fieldsToOmitOnCreate.push(`"${field.name}"`);
     }
   });
-  // We no longer omit all fields with defaults, only specific ones above.
   const createSchemaOmit =
     fieldsToOmitOnCreate.length > 0
       ? `.omit({ ${fieldsToOmitOnCreate.join(': true, ')}: true })`
       : '';
 
   // --- Generate Update Schema ---
-  // Update schema: partial, omit ID, createdAt, updatedAt
+  // Update schema: partial, omit ID and updatedAt fields
   const fieldsToOmitOnUpdate: string[] = [];
   model.fields.forEach((field) => {
-    if (
-      field.isId ||
-      field.name === 'createdAt' ||
-      field.name === 'updatedAt'
-    ) {
+    if (field.isId || field.isUpdatedAt) {
       fieldsToOmitOnUpdate.push(`"${field.name}"`);
     }
   });

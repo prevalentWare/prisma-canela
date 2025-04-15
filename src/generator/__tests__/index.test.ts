@@ -102,6 +102,7 @@ describe('Zod Schema Generation', () => {
           isId: true,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'title',
@@ -114,6 +115,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'content',
@@ -126,6 +128,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'likes',
@@ -138,6 +141,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'published',
@@ -150,6 +154,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'meta',
@@ -162,6 +167,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'publishedAt',
@@ -174,6 +180,7 @@ describe('Zod Schema Generation', () => {
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'author',
@@ -189,6 +196,7 @@ describe('Zod Schema Generation', () => {
             relatedModelName: 'User',
             relationName: 'PostAuthor',
           },
+          isUpdatedAt: false,
         },
       ],
     };
@@ -209,7 +217,7 @@ export const PostSchema = z.object({
 
 // Schema for creating a Post
 // Based on the base schema, omitting generated fields.
-export const createPostSchema = PostSchema.omit({ "id": true });
+export const createPostSchema = PostSchema.omit({ "id": true, "likes": true, "published": true });
 
 // Schema for updating a Post
 // Based on the base schema, making all fields optional and omitting generated fields.
@@ -240,6 +248,7 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
           isId: true,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'role',
@@ -252,6 +261,7 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
           isId: false,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'status',
@@ -264,6 +274,7 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
       ],
     };
@@ -284,7 +295,7 @@ export const UserSchema = z.object({
 
 // Schema for creating a User
 // Based on the base schema, omitting generated fields.
-export const createUserSchema = UserSchema.omit({ "id": true });
+export const createUserSchema = UserSchema.omit({ "id": true, "role": true });
 
 // Schema for updating a User
 // Based on the base schema, making all fields optional and omitting generated fields.
@@ -312,6 +323,7 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           isId: true,
           hasDefaultValue: true,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'tags',
@@ -324,6 +336,7 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'values',
@@ -336,6 +349,7 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
         {
           name: 'permissions',
@@ -348,6 +362,7 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           isId: false,
           hasDefaultValue: false,
           relationInfo: undefined,
+          isUpdatedAt: false,
         },
       ],
     };

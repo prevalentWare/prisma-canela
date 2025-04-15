@@ -32,6 +32,7 @@ export interface ParsedField {
   isUnique: boolean;
   isId: boolean;
   hasDefaultValue: boolean;
+  isUpdatedAt?: boolean; // Tracks if field has @updatedAt
   relationInfo?: ParsedRelationInfo; // Details if it's a relation field
   // Add specifics like default value, @map, validation rules later
 }
