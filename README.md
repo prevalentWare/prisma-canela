@@ -1,6 +1,6 @@
-# Canela 🌿
+# Prisma-Canela 🌿
 
-[![npm version](https://badge.fury.io/js/canela.svg)](https://badge.fury.io/js/canela) <!-- Placeholder -->
+[![npm version](https://badge.fury.io/js/prisma-canela.svg)](https://badge.fury.io/js/prisma-canela) <!-- Placeholder -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Placeholder -->
 
 Canela is a codegen tool that takes a Prisma schema and generates a fully typed REST API using [Hono](https://hono.dev/) and [Zod](https://zod.dev/).
@@ -41,13 +41,13 @@ Canela is a codegen tool that takes a Prisma schema and generates a fully typed 
 
 ```bash
 # Using bun (recommended)
-bun install canela
+bun install prisma-canela
 
 # Using npm
-npm install canela
+npm install prisma-canela
 
 # Using yarn
-yarn add canela
+yarn add prisma-canela
 ```
 
 ## Usage
@@ -56,12 +56,12 @@ yarn add canela
 
 ```bash
 # Generate API from a Prisma schema
-bun canela generate --schema ./prisma/schema.prisma --output ./src/generated
+bun prisma-canela generate --schema ./prisma/schema.prisma --output ./src/generated
 ```
 
 ### Generated Code Structure
 
-For each model in your Prisma schema, Canela generates:
+For each model in your Prisma schema, Prisma-Canela generates:
 
 ```
 src/generated/
@@ -97,7 +97,7 @@ export default app;
 
 ### Simplified Route Registration
 
-Canela provides a utility function to register all routes at once, making it easier to mount all routes on your Hono app:
+Prisma-Canela provides a utility function to register all routes at once, making it easier to mount all routes on your Hono app:
 
 ```typescript
 // Import the utility function
@@ -126,7 +126,7 @@ This approach simplifies the process of adding new routes as your schema evolves
 
 ### Clean Modular Exports
 
-Canela provides clean, modular exports for easy integration with any Hono application:
+Prisma-Canela provides clean, modular exports for easy integration with any Hono application:
 
 ```typescript
 // Import specific routes
@@ -194,8 +194,8 @@ const openApiDoc = app.getOpenAPIDocument({
   openapi: '3.0.0',
   info: {
     version: '1.0.0',
-    title: 'Canela API',
-    description: 'Auto-generated API using Canela code generator',
+    title: 'Prisma-Canela API',
+    description: 'Auto-generated API using Prisma-Canela code generator',
   },
 });
 
@@ -206,7 +206,9 @@ app.get('/docs/openapi.json', (c) => {
 });
 
 // Health check route
-app.get('/', (c) => c.json({ status: 'ok', message: 'Canela API is running' }));
+app.get('/', (c) =>
+  c.json({ status: 'ok', message: 'Prisma-Canela API is running' })
+);
 
 // Start server
 const port = process.env.PORT || 3000;
@@ -290,11 +292,11 @@ Benefits of the generated middleware:
 
 #### Multi-file Prisma Schema Support
 
-Canela will support the `prismaSchemaFolder` preview feature from Prisma, allowing you to split your schema into multiple files:
+Prisma-Canela will support the `prismaSchemaFolder` preview feature from Prisma, allowing you to split your schema into multiple files:
 
 ```bash
 # Generate API from a Prisma schema folder
-bun canela generate --schema ./prisma/schema --output ./src/generated
+bun prisma-canela generate --schema ./prisma/schema --output ./src/generated
 ```
 
 ```
