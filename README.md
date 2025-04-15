@@ -72,6 +72,17 @@ If you don't specify the schema path, Canela will try to find it automatically:
 npx @prevalentware/prisma-canela generate
 ```
 
+### Handling Generated Code in Your Project
+
+If your project has specific linting rules, you may want to add the generated directory to your `.eslintignore` file to avoid linting conflicts:
+
+```
+# .eslintignore
+src/generated/**
+```
+
+This ensures that your project's linting rules won't be applied to the generated code, preventing potential conflicts.
+
 ### Generated Code Structure
 
 For each model in your Prisma schema, Prisma-Canela generates:
@@ -439,8 +450,21 @@ Before submitting your code, please make sure:
 
 - All tests pass (`bun run test`)
 - Code linting passes (`bun run lint`)
+- Run the quality check to verify generated code meets standards (`bun run quality-check`)
 - Your feature includes tests
 - Code follows the project style guidelines
+
+### Code Generation Quality
+
+We maintain high code quality standards for both the generator code and the generated output:
+
+1. The generator code is fully linted and tested
+2. We run quality checks in CI that verify the generated code meets our standards
+3. When adding new generator templates, you should:
+   - Test the output with our linting rules using `bun run quality-check`
+   - Ensure generated code follows best practices for TypeScript, Hono, and Zod
+
+This approach ensures our generated code is high quality without forcing our linting rules on end users.
 
 ### Code Style and Linting
 

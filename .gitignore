@@ -184,3 +184,6 @@ bun.lockb
 plans
 prisma
 generated
+
+# Generated test output
+test-output/
