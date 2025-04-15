@@ -1,17 +1,52 @@
 {
-  "name": "canela",
-  "module": "src/index.ts",
+  "name": "@prevalentware/prisma-canela",
+  "version": "0.1.0",
+  "description": "Prisma schema to Hono API codegen tool",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.js",
+  "bin": {
+    "canela": "dist/bin/canela.js"
+  },
   "prisma": {
     "schema": "./prisma/schema"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outfile dist/index.js",
-    "start": "bun run dist/index.js",
+    "build": "bun run clean && bun build ./src/bin/canela.ts --outdir ./dist/bin --target node --external commander --external fs --external path && chmod +x dist/bin/canela.js",
+    "clean": "rm -rf dist",
+    "start": "node dist/bin/canela.js",
     "lint": "eslint --ext .ts ./src",
     "format": "prettier --write ./src",
-    "test": "vitest run"
+    "test": "bun test",
+    "prepublishOnly": "bun test && bun run build",
+    "canela": "node dist/bin/canela.js"
+  },
+  "keywords": [
+    "prisma",
+    "hono",
+    "codegen",
+    "api",
+    "zod",
+    "typescript",
+    "rest",
+    "openapi"
+  ],
+  "author": "Prevalentware",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prevalentware/prisma-canela"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "bun": ">=1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
@@ -19,12 +54,15 @@
     "@prisma/internals": "^6.6.0",
     "@types/bun": "latest",
     "@types/eslint": "^8.56.5",
+    "@types/node": "^20.11.30",
     "bun-types": "latest",
     "eslint": "^9.24.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.6",
     "prettier": "^3.5.3",
     "prisma": "^6.6.0",
+    "tsc-alias": "^1.8.8",
+    "typescript": "^5.3.3",
     "typescript-eslint": "^8.30.1",
     "vitest": "^3.1.1"
   },
@@ -36,6 +74,7 @@
     "@hono/swagger-ui": "^0.5.1",
     "@hono/zod-openapi": "^0.19.4",
     "@prisma/client": "^6.6.0",
+    "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "hono": "^4.5.3",
     "zod": "^3.23.8"
