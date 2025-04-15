@@ -149,114 +149,142 @@ The modular export pattern allows you to choose exactly what you need for your a
 
 ### Example Server
 
-You can find a working example of a Hono server using the generated routes in the `examples/server.ts` file:
+The generated code includes a complete example server implementation in [examples/server.ts](examples/server.ts):
 
 ```typescript
-// Import the key components from the generated code
+import { serve } from "@hono/node-server";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
+import { swaggerUI } from "@hono/swagger-ui";
+import { OpenAPIHono } from "@hono/zod-openapi";
+
+// Import routes and utility functions from generated code
 import { registerAllRoutes } from "../src/generated";
+
+// Import the generated prismaMiddleware
 import {
+  prisma,
   prismaMiddleware,
   disconnectPrisma,
 } from "../src/generated/middleware/prismaMiddleware";
-import { OpenAPIHono } from "@hono/zod-openapi";
 
 // Create a single OpenAPIHono app for everything
 const app = new OpenAPIHono();
 
 // Add middleware
 app.use("*", logger());
+app.use("*", prettyJSON());
+
+// Apply prismaMiddleware to inject the Prisma client
 app.use("*", prismaMiddleware);
 
-// Register all API routes with a prefix
-registerAllRoutes(app, { prefix: "/api" });
+// Add diagnostic route to check prisma in context
+app.get("/debug/context", (c) => {
+  return c.json({
+    hasPrisma: !!c.get("prisma"),
+    contextKeys: Object.keys(c.var),
+  });
+});
 
-// Add OpenAPI documentation
-app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+// Register all API routes
+registerAllRoutes(app, { prefix: "" });
+
+// Generate OpenAPI documentation
+const openApiDoc = app.getOpenAPIDocument({
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Canela API",
+    description: "Auto-generated API using Canela code generator",
+  },
+});
+
+// Swagger UI documentation
+app.get("/docs", swaggerUI({ url: "/docs/openapi.json" }));
+app.get("/docs/openapi.json", (c) => {
+  return c.json(openApiDoc);
+});
+
+// Health check route
+app.get("/", (c) => c.json({ status: "ok", message: "Canela API is running" }));
+
+// Start server
+const port = process.env.PORT || 3000;
+console.log(`Server starting on port ${port}...`);
+console.log(`API available at http://localhost:${port}`);
+console.log(`API documentation at http://localhost:${port}/docs`);
+
+serve({
+  fetch: app.fetch,
+  port: Number(port),
+});
+
+// Handle shutdown gracefully
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received, shutting down gracefully");
+  await disconnectPrisma();
+  process.exit(0);
+});
+
+process.on("SIGINT", async () => {
+  console.log("SIGINT received, shutting down gracefully");
+  await disconnectPrisma();
+  process.exit(0);
+});
 ```
 
-To run the example:
+Run the example server with:
 
 ```bash
-# Generate the API code first
-bun canela generate --schema ./prisma/schema.prisma --output ./src/generated
-
-# Run the example server
-bun examples/server.ts
+cd examples
+bun install
+bun dev
 ```
 
-The example server demonstrates how to:
+Then access:
 
-- Use the `registerAllRoutes` utility for one-line route mounting
-- Apply the Prisma middleware to provide database access
-- Set up Swagger UI for API documentation
+- API documentation: http://localhost:3000/docs
+- Health check: http://localhost:3000/
+- API endpoints: http://localhost:3000/users, etc.
+- Diagnostic route: http://localhost:3000/debug/context
 
 ### Current Features
 
-#### Prisma Client from Context
+#### Prisma Client Middleware
 
-Canela provides a simple middleware to inject the Prisma client into the Hono context for all route handlers:
+The generated middleware makes it easy to use Prisma in your Hono routes:
 
 ```typescript
-// Example of using the generated middleware
-import { OpenAPIHono } from "@hono/zod-openapi";
+// Import the middleware from the generated code
 import {
+  prisma,
   prismaMiddleware,
   disconnectPrisma,
-} from "./generated/middleware/prismaMiddleware";
-import { registerAllRoutes } from "./generated";
+} from "./src/generated/middleware/prismaMiddleware";
 
-// Create app
-const app = new OpenAPIHono();
-
-// Apply the middleware to provide Prisma to all routes
+// Add it to your Hono app
 app.use("*", prismaMiddleware);
 
-// Register all routes at once
-registerAllRoutes(app, { prefix: "/api" });
+// Now you can access prisma in your route handlers:
+app.get("/users", async (c) => {
+  const users = await c.get("prisma").user.findMany();
+  return c.json(users);
+});
 
-// Handle shutdown gracefully
+// For graceful shutdown:
 process.on("SIGTERM", async () => {
   await disconnectPrisma();
   process.exit(0);
 });
 ```
 
-The generated middleware provides:
+Benefits of the generated middleware:
 
-- A ready-to-use `prismaMiddleware` with a shared Prisma client instance
-- A `createPrismaMiddleware(customPrisma)` factory function that accepts a custom Prisma client
-- A utility function `disconnectPrisma()` for proper cleanup when your application shuts down
-
-All generated service functions extract the Prisma client from the Hono context automatically, with proper error handling for cases when the client is not available.
-
-#### Simplified Route Registration
-
-Canela provides a utility function to register all routes at once, making it easier to mount all routes on your Hono app:
-
-```typescript
-// Import the utility function
-import { registerAllRoutes } from "./generated";
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { createPrismaMiddleware } from "./generated/middleware/prismaMiddleware";
-
-// Create a Prisma client
-const prisma = new PrismaClient();
-
-// Create an OpenAPIHono app and add the middleware
-const api = new OpenAPIHono();
-api.use("*", createPrismaMiddleware(prisma));
-
-// Register all routes at once with a single function call
-registerAllRoutes(api, {
-  prefix: "", // Optional path prefix for all routes
-  pluralize: true, // Whether to add 's' to route paths (default: true)
-});
-
-// Mount the API app on your main app
-app.route("/api", api);
-```
-
-This approach simplifies the process of adding new routes as your schema evolves, since you don't need to manually add each new model's routes.
+1. **Type safety**: The Prisma client is correctly typed based on your schema
+2. **Context accessibility**: Available through `c.get("prisma")` in all routes
+3. **Simplified shared instance**: Uses a single shared Prisma client for your application
+4. **Clean disconnection**: Utility function for proper cleanup during shutdown
+5. **Type extensions**: Automatically extends the Hono context type definition
 
 ### Upcoming Features
 

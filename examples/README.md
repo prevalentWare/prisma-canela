@@ -38,15 +38,16 @@ The server will start on port 3000 by default. You can change this by setting th
 - `GET /`: Health check endpoint
 - `GET /docs`: Swagger UI for API documentation
 - `GET /docs/openapi.json`: OpenAPI specification in JSON format
+- `GET /debug/context`: Diagnostic endpoint to verify Prisma is in the context
 
-API endpoints (all prefixed with `/api`):
+API endpoints:
 
-- `/api/users`: User CRUD operations
-- `/api/roles`: Role CRUD operations
-- `/api/pages`: Page CRUD operations
-- `/api/sessions`: Session CRUD operations
-- `/api/accounts`: Account CRUD operations
-- `/api/verifications`: Verification CRUD operations
+- `/users`: User CRUD operations
+- `/roles`: Role CRUD operations
+- `/pages`: Page CRUD operations
+- `/sessions`: Session CRUD operations
+- `/accounts`: Account CRUD operations
+- `/verifications`: Verification CRUD operations
 
 Each resource supports the following operations:
 
@@ -62,15 +63,21 @@ The example server demonstrates how to use the generated Prisma middleware:
 
 ```typescript
 import {
-  createPrismaMiddleware,
+  prisma,
+  prismaMiddleware,
   disconnectPrisma,
 } from "../src/generated/middleware/prismaMiddleware";
 
-// Create a Prisma client
-const prisma = new PrismaClient();
-
 // Add the middleware to your Hono app
-app.use("*", createPrismaMiddleware(prisma));
+app.use("*", prismaMiddleware);
+
+// Add a diagnostic route to confirm Prisma is in the context
+app.get("/debug/context", (c) => {
+  return c.json({
+    hasPrisma: !!c.get("prisma"),
+    contextKeys: Object.keys(c.var),
+  });
+});
 
 // Handle graceful shutdown
 process.on("SIGTERM", async () => {
@@ -81,10 +88,11 @@ process.on("SIGTERM", async () => {
 
 The middleware:
 
-1. Injects the Prisma client into the Hono context
-2. Makes it available to all route handlers
-3. Handles error cases when the client is missing
-4. Provides proper cleanup on application shutdown
+1. Provides a shared Prisma client instance exported as `prisma`
+2. Injects the Prisma client into the Hono context
+3. Makes it available to all route handlers
+4. Handles error cases when the client is missing
+5. Provides proper cleanup on application shutdown
 
 ## Modular Route Import Examples
 
