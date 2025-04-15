@@ -1,6 +1,8 @@
 import type { ParsedSchema } from '@parser/types';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 // import type { DMMF } from "@prisma/generator-helper"; // No longer needed here
 import { generateRoutesFileContent } from './generateRoutes.js';
 import { generateZodSchema } from './generateZod.js'; // Import from new file
@@ -17,9 +19,12 @@ import { camelCase } from '@utils/camelCase';
 import type { ZodSchemaDetails, ServiceFunctionNames } from './types.js'; // Import shared types
 import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware.js';
 
+const execPromise = promisify(exec);
+
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
   outputDir: string;
+  runFixers?: boolean; // Whether to run the formatters/linters on generated files
 }
 
 /**
@@ -37,6 +42,7 @@ export const generateApi = async (
   );
 
   const outputDir = path.resolve(process.cwd(), options.outputDir);
+  const shouldRunFixers = options.runFixers !== false; // Default to true if not specified
 
   try {
     // Clean the output directory before generation
@@ -140,6 +146,39 @@ export const generateApi = async (
     const rootIndexContent = generateRootIndexFileContent(parsedSchema.models);
     const rootIndexFilePath = path.join(outputDir, 'index.ts');
     await fs.writeFile(rootIndexFilePath, rootIndexContent);
+
+    // Run formatting/linting on the generated files if enabled
+    if (shouldRunFixers) {
+      // Run Prettier first to format the code
+      console.log(`\n- Running Prettier on generated files...`);
+      try {
+        // Use escaped quotes for paths with spaces
+        await execPromise(
+          `cd "${process.cwd()}" && bun run prettier --write "${outputDir}/**/*.ts"`
+        );
+        console.log('✅ Prettier formatting completed successfully.');
+      } catch (formatError) {
+        console.error(
+          '⚠️ Some formatting issues could not be automatically fixed:',
+          formatError
+        );
+      }
+
+      // Then run ESLint with --fix to fix any remaining linting issues
+      console.log(`- Running ESLint with --fix on generated files...`);
+      try {
+        // Use escaped quotes for paths with spaces
+        await execPromise(
+          `cd "${process.cwd()}" && bun run eslint --ext .ts --fix "${outputDir}"`
+        );
+        console.log('✅ ESLint auto-fixing completed successfully.');
+      } catch (lintError) {
+        console.error(
+          '⚠️ Some linting issues could not be automatically fixed:',
+          lintError
+        );
+      }
+    }
 
     console.log(
       `\nAPI generation completed successfully. Files written to ${outputDir}`
