@@ -46,10 +46,11 @@ type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePascal}Sche
  * Helper function to extract Prisma client from context with error handling
  */
 function getPrismaClient(c: Context): PrismaClient {
-  if (!c.prisma) {
+  const prisma = c.get('prisma');
+  if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
-  return c.prisma;
+  return prisma;
 }
 `;
 

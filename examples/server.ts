@@ -1,55 +1,43 @@
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { PrismaClient } from "@prisma/client";
 
-// Import routes from generated code
-// Import specific routes
-import { userRoutes, roleRoutes, pageRoutes } from "../src/generated";
-// Alternative: import all routes as a module
-import * as api from "../src/generated";
+// Import routes and utility functions from generated code
+import { registerAllRoutes } from "../src/generated";
 
 // Import the generated prismaMiddleware
 import {
-  createPrismaMiddleware,
+  prisma,
+  prismaMiddleware,
   disconnectPrisma,
 } from "../src/generated/middleware/prismaMiddleware";
 
-// Create Prisma client
-const prisma = new PrismaClient();
-
-// Create main app
-const app = new Hono();
+// Create a single OpenAPIHono app for everything
+const app = new OpenAPIHono();
 
 // Add middleware
 app.use("*", logger());
 app.use("*", prettyJSON());
 
-// Add middleware to inject Prisma client into context using the generated middleware
-// Pass the Prisma client instance to the middleware factory
-app.use("*", createPrismaMiddleware(prisma));
+// Apply prismaMiddleware to inject the Prisma client
+app.use("*", prismaMiddleware);
 
-// Build OpenAPI app with generated routes
-const openApiApp = new OpenAPIHono();
-
-// Mount specific routes
-openApiApp.route("/users", userRoutes);
-openApiApp.route("/roles", roleRoutes);
-openApiApp.route("/pages", pageRoutes);
-
-// Mount all routes from the api object
-Object.entries(api.routes).forEach(([name, routes]) => {
-  if (!["user", "role", "page"].includes(name)) {
-    // Skip already mounted routes
-    openApiApp.route(`/${name}s`, routes);
-  }
+// Add diagnostic route to check prisma in context
+app.get("/debug/context", (c) => {
+  return c.json({
+    hasPrisma: !!c.get("prisma"),
+    contextKeys: Object.keys(c.var),
+  });
 });
 
+// Register all API routes
+registerAllRoutes(app, { prefix: "/api" });
+
 // Generate OpenAPI documentation
-const openApiDoc = openApiApp.getOpenAPIDocument({
+const openApiDoc = app.getOpenAPIDocument({
   openapi: "3.0.0",
   info: {
     version: "1.0.0",
@@ -58,10 +46,9 @@ const openApiDoc = openApiApp.getOpenAPIDocument({
   },
 });
 
-// Mount OpenAPI app and docs
-app.route("/api", openApiApp);
-app.get("/docs", swaggerUI({ url: "/docs/openapi.json" }));
-app.get("/docs/openapi.json", (c) => {
+// Swagger UI documentation
+app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+app.get("/api/docs/openapi.json", (c) => {
   return c.json(openApiDoc);
 });
 
@@ -71,6 +58,8 @@ app.get("/", (c) => c.json({ status: "ok", message: "Canela API is running" }));
 // Start server
 const port = process.env.PORT || 3000;
 console.log(`Server starting on port ${port}...`);
+console.log(`API available at http://localhost:${port}/api`);
+console.log(`API documentation at http://localhost:${port}/api/docs`);
 
 serve({
   fetch: app.fetch,

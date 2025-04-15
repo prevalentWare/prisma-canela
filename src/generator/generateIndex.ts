@@ -32,6 +32,47 @@ export default routes;
 }
 
 /**
+ * Generates a utility function to register all routes at once.
+ * This creates a function that will mount all generated routes on a Hono app instance.
+ *
+ * @param models The parsed models from the schema.
+ * @returns The function content as a string.
+ */
+export function generateRegisterRoutesFunction(models: ParsedModel[]): string {
+  const modelRegistrations = models
+    .map((model) => {
+      const modelNameCamel = camelCase(model.name);
+      return `  // Mount ${pascalCase(model.name)} routes
+  app.route(\`\${prefix}/${modelNameCamel}s\`, ${modelNameCamel}Routes);`;
+    })
+    .join("\n\n");
+
+  return `/**
+ * Registers all generated API routes with a Hono app instance.
+ * This provides a convenient way to mount all routes at once instead of manually.
+ * 
+ * @param app The Hono app instance (can be Hono or OpenAPIHono)
+ * @param options Configuration options for route registration
+ *   - prefix: URL prefix for all routes (e.g., '/api')
+ *   - pluralize: Whether to pluralize route paths (default: true)
+ * @returns The app instance with routes registered
+ */
+export function registerAllRoutes(
+  app: any, 
+  options: { 
+    prefix?: string;
+    pluralize?: boolean;
+  } = {}
+) {
+  const { prefix = '', pluralize = true } = options;
+  
+${modelRegistrations}
+
+  return app;
+}`;
+}
+
+/**
  * Generates the root index file content that imports and re-exports
  * all model routes for easy consumption.
  *
@@ -62,11 +103,16 @@ ${models
   .join("\n")}
 };`;
 
+  // Generate register routes function
+  const registerRoutesFunction = generateRegisterRoutesFunction(models);
+
   return `${imports}
 
 ${namedExports}
 
 ${routesObject}
+
+${registerRoutesFunction}
 
 export default routes;
 `;

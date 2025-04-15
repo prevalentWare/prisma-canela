@@ -95,6 +95,35 @@ app.get("/docs/*", swaggerUI({ url: "/api/docs" }));
 export default app;
 ```
 
+### Simplified Route Registration
+
+Canela provides a utility function to register all routes at once, making it easier to mount all routes on your Hono app:
+
+```typescript
+// Import the utility function
+import { registerAllRoutes } from "./generated";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { createPrismaMiddleware } from "./generated/middleware/prismaMiddleware";
+
+// Create a Prisma client
+const prisma = new PrismaClient();
+
+// Create an OpenAPIHono app and add the middleware
+const api = new OpenAPIHono();
+api.use("*", createPrismaMiddleware(prisma));
+
+// Register all routes at once with a single function call
+registerAllRoutes(api, {
+  prefix: "", // Optional path prefix for all routes
+  pluralize: true, // Whether to add 's' to route paths (default: true)
+});
+
+// Mount the API app on your main app
+app.route("/api", api);
+```
+
+This approach simplifies the process of adding new routes as your schema evolves, since you don't need to manually add each new model's routes.
+
 ### Clean Modular Exports
 
 Canela provides clean, modular exports for easy integration with any Hono application:
@@ -106,30 +135,45 @@ import { userRoutes, accountRoutes } from "./generated";
 // Or import all routes as a module
 import * as api from "./generated";
 
-// Mount specific routes
-app.route("/api/users", userRoutes);
-
-// Or mount all routes dynamically
-Object.entries(api.routes).forEach(([name, routes]) => {
-  app.route(`/api/${name}s`, routes);
-});
-```
-
-You can also access the types generated for each model:
-
-```typescript
+// Import all types for a specific model
 import { userTypes } from "./generated/user";
 
-// Use the types in your application
-const createUserData: userTypes.CreateUserInput = {
-  email: "user@example.com",
-  name: "Test User",
+// Access model-specific types
+const newUser: userTypes.CreateUserInput = {
+  name: "John Doe",
+  email: "john@example.com",
 };
 ```
 
+The modular export pattern allows you to choose exactly what you need for your application.
+
 ### Example Server
 
-You can find a working example of a Hono server using the generated routes in the `examples` directory.
+You can find a working example of a Hono server using the generated routes in the `examples/server.ts` file:
+
+```typescript
+// Import the key components from the generated code
+import { registerAllRoutes } from "../src/generated";
+import {
+  prismaMiddleware,
+  disconnectPrisma,
+} from "../src/generated/middleware/prismaMiddleware";
+import { OpenAPIHono } from "@hono/zod-openapi";
+
+// Create a single OpenAPIHono app for everything
+const app = new OpenAPIHono();
+
+// Add middleware
+app.use("*", logger());
+app.use("*", prismaMiddleware);
+
+// Register all API routes with a prefix
+registerAllRoutes(app, { prefix: "/api" });
+
+// Add OpenAPI documentation
+app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+```
+
 To run the example:
 
 ```bash
@@ -142,34 +186,33 @@ bun examples/server.ts
 
 The example server demonstrates how to:
 
-- Import and mount the generated routes
+- Use the `registerAllRoutes` utility for one-line route mounting
+- Apply the Prisma middleware to provide database access
 - Set up Swagger UI for API documentation
-- Provide a Prisma client to the routes
 
-### Upcoming Features
+### Current Features
 
 #### Prisma Client from Context
 
-Canela supports extracting the Prisma client from the Hono context instead of creating a new one in each service:
+Canela provides a simple middleware to inject the Prisma client into the Hono context for all route handlers:
 
 ```typescript
-// Example of providing Prisma client to routes using the generated middleware
-import { PrismaClient } from "@prisma/client";
-import { Hono } from "hono";
+// Example of using the generated middleware
+import { OpenAPIHono } from "@hono/zod-openapi";
 import {
-  createPrismaMiddleware,
+  prismaMiddleware,
   disconnectPrisma,
 } from "./generated/middleware/prismaMiddleware";
-import { userRoutes } from "./generated";
+import { registerAllRoutes } from "./generated";
 
-const prisma = new PrismaClient();
-const app = new Hono();
+// Create app
+const app = new OpenAPIHono();
 
-// Use the generated middleware to inject Prisma client into context
-app.use("*", createPrismaMiddleware(prisma));
+// Apply the middleware to provide Prisma to all routes
+app.use("*", prismaMiddleware);
 
-// Mount routes that will use the Prisma client from context
-app.route("/api/users", userRoutes);
+// Register all routes at once
+registerAllRoutes(app, { prefix: "/api" });
 
 // Handle shutdown gracefully
 process.on("SIGTERM", async () => {
@@ -180,11 +223,42 @@ process.on("SIGTERM", async () => {
 
 The generated middleware provides:
 
-- A factory function `createPrismaMiddleware(prismaClient?)` that accepts an optional Prisma client instance
-- A default middleware instance `prismaMiddleware` that creates its own singleton client
+- A ready-to-use `prismaMiddleware` with a shared Prisma client instance
+- A `createPrismaMiddleware(customPrisma)` factory function that accepts a custom Prisma client
 - A utility function `disconnectPrisma()` for proper cleanup when your application shuts down
 
-All generated service functions extract the Prisma client from the Hono context, with proper error handling for cases when the client is not available.
+All generated service functions extract the Prisma client from the Hono context automatically, with proper error handling for cases when the client is not available.
+
+#### Simplified Route Registration
+
+Canela provides a utility function to register all routes at once, making it easier to mount all routes on your Hono app:
+
+```typescript
+// Import the utility function
+import { registerAllRoutes } from "./generated";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { createPrismaMiddleware } from "./generated/middleware/prismaMiddleware";
+
+// Create a Prisma client
+const prisma = new PrismaClient();
+
+// Create an OpenAPIHono app and add the middleware
+const api = new OpenAPIHono();
+api.use("*", createPrismaMiddleware(prisma));
+
+// Register all routes at once with a single function call
+registerAllRoutes(api, {
+  prefix: "", // Optional path prefix for all routes
+  pluralize: true, // Whether to add 's' to route paths (default: true)
+});
+
+// Mount the API app on your main app
+app.route("/api", api);
+```
+
+This approach simplifies the process of adding new routes as your schema evolves, since you don't need to manually add each new model's routes.
+
+### Upcoming Features
 
 #### Multi-file Prisma Schema Support
 
@@ -218,11 +292,12 @@ _(Coming Soon)_
 - ✅ OpenAPI route generation
 - ✅ Service layer for database operations
 - ✅ Modular route exports for seamless integration
+- ✅ Prisma client from Hono context
+- ✅ Route registration utilities
 - ✅ Unit tests for core generation features
 
 ### In Progress
 
-- 🔄 Use Prisma client from Hono context
 - 🔄 Additional unit tests
 
 ### Planned

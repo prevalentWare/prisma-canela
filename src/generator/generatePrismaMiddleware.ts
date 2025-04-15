@@ -8,49 +8,43 @@ export function generatePrismaMiddlewareFileContent(): string {
   return `import { PrismaClient } from '@prisma/client';
 import type { Context, Next } from 'hono';
 
-// Default Prisma client instance
-let prismaInstance: PrismaClient | null = null;
+// Extend Hono Context to include the Prisma client
+declare module 'hono' {
+  interface ContextVariableMap {
+    prisma: PrismaClient;
+  }
+}
+
+// Create a shared Prisma client instance
+export const prisma = new PrismaClient();
 
 /**
- * Creates a Prisma middleware with the given Prisma client instance
- * 
- * @param prismaClient Optional custom Prisma client instance.
- * If not provided, a singleton instance will be created.
- * @returns A middleware function that injects the Prisma client into the context
+ * Injects the Prisma client into the request context
+ * This makes the database client available in all route handlers
  */
-export function createPrismaMiddleware(prismaClient?: PrismaClient) {
-  // Use provided client or create a singleton instance
-  if (prismaClient) {
-    prismaInstance = prismaClient;
-  } else if (!prismaInstance) {
-    prismaInstance = new PrismaClient();
-  }
+export const prismaMiddleware = async (c: Context, next: Next) => {
+  // Inject the Prisma client into the context
+  c.set('prisma', prisma);
+  await next();
+};
 
-  /**
-   * Middleware that injects the Prisma client into the request context
-   * This makes the database client available in all route handlers
-   */
+/**
+ * Shorthand function to create a middleware with the given Prisma client
+ * Useful when you want to use your own Prisma client instance
+ */
+export function createPrismaMiddleware(customPrisma: PrismaClient = prisma) {
   return async (c: Context, next: Next) => {
-    // Inject the Prisma client into the context
-    c.set('prisma', prismaInstance);
+    c.set('prisma', customPrisma);
     await next();
   };
 }
-
-/**
- * Default middleware instance with a singleton Prisma client
- * For custom configuration, use createPrismaMiddleware() instead
- */
-export const prismaMiddleware = createPrismaMiddleware();
 
 /**
  * Cleanup function to disconnect the Prisma client
  * Call this when your application is shutting down
  */
 export async function disconnectPrisma(): Promise<void> {
-  if (prismaInstance) {
-    await prismaInstance.$disconnect();
-  }
+  await prisma.$disconnect();
 }
 `;
 }
