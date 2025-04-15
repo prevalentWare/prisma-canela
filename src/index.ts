@@ -2,6 +2,8 @@ import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs';
 import chalk from 'chalk';
+import type { ParsedSchema } from '@parser/types';
+import type { GeneratorOptions } from '@generator/index';
 
 // ASCII art banner
 const displayBanner = (): void => {
@@ -26,8 +28,22 @@ const displayBanner = (): void => {
   );
 };
 
+type ParsableSchema = {
+  parsePrismaSchema: (schemaPath?: string) => Promise<ParsedSchema>;
+};
+
+type ApiGenerator = {
+  generateApi: (
+    parsedSchema: ParsedSchema,
+    options: GeneratorOptions
+  ) => Promise<void>;
+};
+
 // This requires dynamic imports for ESM compatibility
-const loadModules = async () => {
+const loadModules = async (): Promise<{
+  parsePrismaSchema: ParsableSchema['parsePrismaSchema'];
+  generateApi: ApiGenerator['generateApi'];
+}> => {
   try {
     // Load modules dynamically (supporting both CJS and ESM)
     const parsePrismaSchema = await import('./parser/index.js').then(
@@ -38,9 +54,11 @@ const loadModules = async () => {
     );
 
     return { parsePrismaSchema, generateApi };
-  } catch (error) {
-    console.error('Error loading required modules:', error);
+  } catch (err) {
+    console.error('Error loading required modules:', err);
     process.exit(1);
+    // This return is unreachable but TypeScript needs it
+    return {} as never;
   }
 };
 
@@ -51,7 +69,7 @@ const getPackageVersion = (): string => {
     const packageJsonPath = path.resolve(__dirname, '../package.json');
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
     return packageJson.version || '0.1.0';
-  } catch (error) {
+  } catch {
     // Fallback version if unable to read package.json
     return '0.1.0';
   }
@@ -110,18 +128,18 @@ export const createProgram = (): Command => {
         // Generate the API code
         await generateApi(parsedSchema, { outputDir });
         console.log('\n✅ Code generation finished!');
-      } catch (error) {
+      } catch (err) {
         console.error('\n❌ An error occurred during code generation:');
-        if (error instanceof Error) {
-          console.error(error.message);
+        if (err instanceof Error) {
+          console.error(err.message);
 
           // In debug mode, show stack trace
           if (process.env.DEBUG === 'true') {
             console.error('\nStack trace:');
-            console.error(error.stack);
+            console.error(err.stack);
           }
         } else {
-          console.error(String(error));
+          console.error(String(err));
         }
         process.exit(1); // Exit with error code
       }

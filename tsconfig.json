@@ -37,7 +37,8 @@
       "@parser/*": ["src/parser/*"],
       "@generator/*": ["src/generator/*"],
       "@utils/*": ["src/utils/*"],
-      "@types/*": ["src/types/*"]
+      "@types/*": ["src/types/*"],
+      "@app/*": ["src/*"]
     }
   },
   "include": ["src/**/*"],
