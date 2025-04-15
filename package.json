@@ -24,7 +24,7 @@
     "start": "node dist/bin/canela.js",
     "lint": "eslint --ext .ts ./src",
     "format": "prettier --write ./src",
-    "test": "bun test",
+    "test": "vitest run",
     "prepublishOnly": "bun test && bun run build",
     "canela": "node dist/bin/canela.js"
   },
