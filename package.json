@@ -27,7 +27,7 @@
     "lint:fix": "eslint --ext .ts --fix",
     "format": "prettier --write ./src",
     "test": "vitest run",
-    "prepublishOnly": "bun test && bun run build",
+    "prepublishOnly": "bun run test && bun run build",
     "canela": "node dist/bin/canela.js"
   },
   "keywords": [
