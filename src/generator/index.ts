@@ -2,20 +2,20 @@ import type { ParsedSchema } from '@parser/types';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 // import type { DMMF } from "@prisma/generator-helper"; // No longer needed here
-import { generateRoutesFileContent } from './generateRoutes';
-import { generateZodSchema } from './generateZod'; // Import from new file
-import { generateServiceFileContent } from './generateService'; // Import service generator
-import { generateControllerFileContent } from './generateController'; // Import controller generator
+import { generateRoutesFileContent } from './generateRoutes.js';
+import { generateZodSchema } from './generateZod.js'; // Import from new file
+import { generateServiceFileContent } from './generateService.js'; // Import service generator
+import { generateControllerFileContent } from './generateController.js'; // Import controller generator
 // import { generateServerFileContent } from "./generateServer"; // Removed import
-import { generateTypesFileContent } from './generateTypes'; // Import types generator
+import { generateTypesFileContent } from './generateTypes.js'; // Import types generator
 import {
   generateModelIndexFileContent,
   generateRootIndexFileContent,
-} from './generateIndex'; // Import index generators
+} from './generateIndex.js'; // Import index generators
 import { pascalCase } from '@utils/pascalCase';
 import { camelCase } from '@utils/camelCase';
-import type { ZodSchemaDetails, ServiceFunctionNames } from './types'; // Import shared types
-import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware';
+import type { ZodSchemaDetails, ServiceFunctionNames } from './types.js'; // Import shared types
+import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware.js';
 
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
