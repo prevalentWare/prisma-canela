@@ -7,6 +7,7 @@ import { parsePrismaSchema } from '../index';
 // --- Adjusted import path ---
 import type { ParsedSchema } from '../types';
 import path from 'node:path';
+import type { MockDMMF } from './types';
 
 // Use vi.mock for module mocking
 vi.mock('node:fs/promises');
@@ -137,7 +138,8 @@ describe('Prisma Schema Parser', () => {
       },
     };
 
-    // Cast the mock to any to bypass strict type checking for the mock
+    // Disable ESLint for this specific line since the DMMF type is very complex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     // Expected ParsedSchema (remains the same)
@@ -296,7 +298,8 @@ describe('Prisma Schema Parser', () => {
       },
     };
 
-    // Cast the mock to any to bypass strict type checking for the mock
+    // Disable ESLint for this specific line since the DMMF type is very complex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {
@@ -475,7 +478,8 @@ describe('Prisma Schema Parser', () => {
       },
     };
 
-    // Cast the mock to any to bypass strict type checking for the mock
+    // Disable ESLint for this specific line since the DMMF type is very complex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {
@@ -713,7 +717,8 @@ describe('Prisma Schema Parser', () => {
       },
     };
 
-    // Cast the mock to any to bypass strict type checking for the mock
+    // Disable ESLint for this specific line since the DMMF type is very complex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {
@@ -937,7 +942,8 @@ describe('Prisma Schema Parser', () => {
       },
     };
 
-    // Cast the mock to any to bypass strict type checking for the mock
+    // Disable ESLint for this specific line since the DMMF type is very complex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(PrismaInternals.getDMMF).mockResolvedValueOnce(mockDMMF as any);
 
     const expected: ParsedSchema = {

@@ -52,9 +52,9 @@ export const parsePrismaSchema = async (
 };
 
 /**
- * Maps the DMMF structure to the ParsedSchema interface.
+ * Maps the DMMF structure to our simplified ParsedSchema structure.
  *
- * @param dmmf The DMMF document obtained from Prisma.
+ * @param dmmf The DMMF document from prisma/internals.
  * @returns The structured representation of the schema.
  */
 export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
@@ -95,6 +95,8 @@ export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
  * @param kind The DMMF field kind ('scalar', 'enum', 'object').
  * @returns The corresponding FieldType.
  */
+// This function has high complexity due to the many different Prisma types that need to be mapped
+// eslint-disable-next-line complexity
 export const mapPrismaTypeToFieldType = (
   prismaType: string,
   kind: DMMF.FieldKind

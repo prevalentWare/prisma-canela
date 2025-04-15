@@ -1,9 +1,4 @@
-import type {
-  ParsedSchema,
-  ParsedModel,
-  // ParsedField, // No longer directly used here
-  // ParsedEnum, // No longer directly used here
-} from '../parser/types';
+import type { ParsedSchema } from '@parser/types';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 // import type { DMMF } from "@prisma/generator-helper"; // No longer needed here
@@ -17,8 +12,8 @@ import {
   generateModelIndexFileContent,
   generateRootIndexFileContent,
 } from './generateIndex'; // Import index generators
-import { pascalCase } from '../utils/pascalCase';
-import { camelCase } from '../utils/camelCase';
+import { pascalCase } from '@utils/pascalCase';
+import { camelCase } from '@utils/camelCase';
 import type { ZodSchemaDetails, ServiceFunctionNames } from './types'; // Import shared types
 import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware';
 

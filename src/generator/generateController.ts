@@ -1,16 +1,13 @@
-import type { ParsedModel } from '../parser/types';
-import type { Context } from 'hono';
-import { Prisma } from '@prisma/client'; // Import Prisma namespace
-import { pascalCase } from '../utils/pascalCase';
-// import { camelCase } from "../utils/camelCase"; // Not strictly needed here anymore
+import type { ParsedModel } from '@parser/types';
+import { pascalCase } from '@utils/pascalCase';
 import type { ServiceFunctionNames, ZodSchemaDetails } from './types';
 
 // Helper function to generate controller imports
 export const generateControllerImports = (
   model: ParsedModel,
-  zodSchemaInfo: ZodSchemaDetails
+  _zodSchemaInfo: ZodSchemaDetails
 ): string => {
-  const modelNamePascal = pascalCase(model.name);
+  const _modelNamePascal = pascalCase(model.name);
 
   // Remove Zod and schema imports, as they are not used in the controller
   const zodImports = '';
@@ -36,6 +33,8 @@ ${serviceImports}
 };
 
 // Helper function to generate handler logic
+// This function has high complexity due to its nature of generating different handler types
+// eslint-disable-next-line complexity
 export const generateHandler = (
   modelNamePascal: string,
   handlerName: string, // e.g., listUser, createUserById
@@ -43,7 +42,7 @@ export const generateHandler = (
   successStatusCode: number = 200,
   requiresId: boolean = false,
   requiresBody: boolean = false,
-  idType: string = 'string' // Default, only used if requiresId is true
+  _idType: string = 'string' // Default, only used if requiresId is true
 ): string => {
   // No need for complex Context typing - we'll use the utility function
   const contextType = 'Context';

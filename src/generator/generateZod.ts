@@ -1,6 +1,6 @@
-import type { ParsedModel, ParsedField, ParsedEnum } from '../parser/types';
-import { pascalCase } from '../utils/pascalCase';
-import { camelCase } from '../utils/camelCase';
+import type { ParsedModel, ParsedField, ParsedEnum } from '@parser/types';
+import { pascalCase } from '@utils/pascalCase';
+import { camelCase } from '@utils/camelCase';
 
 /**
  * Generates the Zod schema string for a given model.
@@ -16,7 +16,7 @@ export const generateZodSchema = (
   // Return content and imports
   const { name, fields } = model;
   const modelNamePascal = pascalCase(name); // Use pascalCase for schema names
-  const modelNameCamel = camelCase(name);
+  const _modelNameCamel = camelCase(name);
 
   const requiredImports: string[] = []; // Track required imports
 

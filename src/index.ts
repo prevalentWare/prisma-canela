@@ -1,7 +1,6 @@
 import { Command } from 'commander';
 import { parsePrismaSchema } from './parser';
 import { generateApi } from './generator';
-import path from 'node:path';
 
 // --- CLI Definition using Commander ---
 

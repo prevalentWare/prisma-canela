@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 // For now, let's test generateZodSchema which uses the mapper internally.
 // We might need to adjust the generator file to export helpers if needed.
 import { generateZodSchema } from '../generateZod'; // Placeholder, need exported helpers
-import type { ParsedModel, ParsedEnum, ParsedField } from '../../parser/types'; // Adjust path
+import type { ParsedModel, ParsedEnum, ParsedField } from '@parser/types'; // Update to use path alias
 
 // --- Mocking generateApi to access helper functions ---
 // This is a workaround. Ideally, helper functions like generateZodSchema
@@ -19,10 +19,10 @@ import type { ParsedModel, ParsedEnum, ParsedField } from '../../parser/types'; 
 // We'll copy the function signature/logic here for the test setup
 // In a real scenario, we would IMPORT the actual function.
 
-function mapFieldTypeToZodType_Test(
+const mapFieldTypeToZodType_Test = (
   field: ParsedField,
   enums: ParsedEnum[]
-): string {
+): string => {
   // Simplified test version or copy of actual implementation
   if (field.isList) {
     const singleField: ParsedField = { ...field, isList: false };
@@ -52,12 +52,12 @@ function mapFieldTypeToZodType_Test(
     default:
       return 'z.any()';
   }
-}
+};
 
-function generateZodSchema_Test(
+const generateZodSchema_Test = (
   model: ParsedModel,
   enums: ParsedEnum[]
-): string {
+): string => {
   const { name, fields } = model;
   const modelNameLower = name.toLowerCase();
   const zodFields = fields
@@ -81,7 +81,7 @@ export const ${modelNameLower}Schema = z.object({
 ${zodFields}
 });
 `;
-}
+};
 
 // --- End Mock Implementation ---
 

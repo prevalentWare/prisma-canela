@@ -1,6 +1,6 @@
-import type { ParsedModel, ParsedSchema } from '../parser/types';
-import { camelCase } from '../utils/camelCase';
-import { pascalCase } from '../utils/pascalCase';
+import type { ParsedModel } from '@parser/types';
+import { camelCase } from '@utils/camelCase';
+import { pascalCase } from '@utils/pascalCase';
 
 /**
  * Generates the index file content for a specific model directory.

@@ -1,6 +1,6 @@
-import type { ParsedModel } from '../parser/types';
-import { pascalCase } from '../utils/pascalCase';
-import { camelCase } from '../utils/camelCase';
+import type { ParsedModel } from '@parser/types';
+import { pascalCase } from '@utils/pascalCase';
+import { camelCase } from '@utils/camelCase';
 
 /**
  * Generates the content for a model-specific service file (service.ts).

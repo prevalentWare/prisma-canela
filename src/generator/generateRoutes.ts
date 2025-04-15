@@ -1,9 +1,9 @@
-import type { ParsedModel } from '../parser/types';
-import { pascalCase } from '../utils/pascalCase';
-import { camelCase } from '../utils/camelCase';
+import type { ParsedModel } from '@parser/types';
+import { pascalCase } from '@utils/pascalCase';
+import { camelCase } from '@utils/camelCase';
 import type { ZodSchemaDetails } from './types';
 // ErrorSchema is defined locally below as imports were unreliable
-import { z } from '@hono/zod-openapi';
+import { z as _z } from '@hono/zod-openapi';
 
 /**
  * Generates the Hono route file content for a given model.
