@@ -9,10 +9,10 @@ import { camelCase } from '../utils/camelCase';
  * @param enums List of parsed enums (used to find names).
  * @returns An object containing the schema content string and any required imports.
  */
-export function generateZodSchema(
+export const generateZodSchema = (
   model: ParsedModel,
   enums: ParsedEnum[]
-): { content: string; imports: string[] } {
+): { content: string; imports: string[] } => {
   // Return content and imports
   const { name, fields } = model;
   const modelNamePascal = pascalCase(name); // Use pascalCase for schema names
@@ -133,7 +133,7 @@ export const update${modelNamePascal}Schema = ${modelNamePascal}Schema.partial()
 `;
 
   return { content: schemaContent.trim(), imports: requiredImports };
-}
+};
 
 /**
  * Maps a ParsedField to its corresponding Zod type string.
@@ -142,7 +142,7 @@ export const update${modelNamePascal}Schema = ${modelNamePascal}Schema.partial()
  * @param field The parsed field definition.
  * @returns The Zod type string (e.g., "z.string()", "z.nativeEnum(Role)").
  */
-function mapFieldTypeToZodType(field: ParsedField): string {
+export const mapFieldTypeToZodType = (field: ParsedField): string => {
   // --- Handle list fields first ---
   if (field.isList) {
     // Create a temporary field representing the non-list type
@@ -192,4 +192,4 @@ function mapFieldTypeToZodType(field: ParsedField): string {
       );
       return 'z.any()';
   }
-}
+};

@@ -11,10 +11,10 @@ import { camelCase } from '../utils/camelCase';
  * @param prismaClientImportPath Optional path for Prisma Client import.
  * @returns The generated TypeScript code for the service file as a string.
  */
-export function generateServiceFileContent(
+export const generateServiceFileContent = (
   model: ParsedModel,
   prismaClientImportPath: string = '@prisma/client'
-): string {
+): string => {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
   const idField = model.fields.find((f) => f.isId);
@@ -45,13 +45,13 @@ type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePascal}Sche
 /**
  * Helper function to extract Prisma client from context with error handling
  */
-function getPrismaClient(c: Context): PrismaClient {
+const getPrismaClient = (c: Context): PrismaClient => {
   const prisma = c.get('prisma');
   if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
   return prisma;
-}
+};
 `;
 
   // --- Generate Core Service Functions (FindMany, Create) ---
@@ -62,7 +62,7 @@ function getPrismaClient(c: Context): PrismaClient {
  * @param c The Hono context containing the Prisma client.
  * @returns A promise resolving to an array of ${modelNamePascal} records.
  */
-export async function findMany${modelNamePascal}(c: Context): Promise<${modelNamePascal}Type[]> {
+export const findMany${modelNamePascal} = async (c: Context): Promise<${modelNamePascal}Type[]> => {
   try {
     const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.findMany();
@@ -71,7 +71,7 @@ export async function findMany${modelNamePascal}(c: Context): Promise<${modelNam
     // TODO: Implement more specific error handling and logging
     throw new Error('Could not fetch ${modelNamePascal}s');
   }
-}
+};
 
 /**
  * Creates a new ${modelNamePascal} record.
@@ -79,7 +79,10 @@ export async function findMany${modelNamePascal}(c: Context): Promise<${modelNam
  * @param data The data for the new ${modelNamePascal}.
  * @returns A promise resolving to the created ${modelNamePascal} record.
  */
-export async function create${modelNamePascal}(c: Context, data: Create${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
+export const create${modelNamePascal} = async (
+  c: Context, 
+  data: Create${modelNamePascal}Input
+): Promise<${modelNamePascal}Type> => {
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
@@ -89,7 +92,7 @@ export async function create${modelNamePascal}(c: Context, data: Create${modelNa
     // TODO: Implement more specific error handling and logging
     throw new Error('Could not create ${modelNamePascal}');
   }
-}
+};
 `;
 
   // --- Generate ID-Based Service Functions (FindById, Update, Delete) ---
@@ -102,7 +105,10 @@ export async function create${modelNamePascal}(c: Context, data: Create${modelNa
  * @param id The ID of the ${modelNamePascal} to find.
  * @returns A promise resolving to the ${modelNamePascal} record or null if not found.
  */
-export async function find${modelNamePascal}ById(c: Context, id: ${idType}): Promise<${modelNamePascal}Type | null> {
+export const find${modelNamePascal}ById = async (
+  c: Context, 
+  id: ${idType}
+): Promise<${modelNamePascal}Type | null> => {
   try {
     const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.findUnique({
@@ -113,7 +119,7 @@ export async function find${modelNamePascal}ById(c: Context, id: ${idType}): Pro
     // TODO: Implement more specific error handling and logging
     throw new Error('Could not fetch ${modelNamePascal} by ID');
   }
-}
+};
 
 /**
  * Updates a ${modelNamePascal} record by its ID.
@@ -122,7 +128,11 @@ export async function find${modelNamePascal}ById(c: Context, id: ${idType}): Pro
  * @param data The data to update the ${modelNamePascal} with.
  * @returns A promise resolving to the updated ${modelNamePascal} record.
  */
-export async function update${modelNamePascal}(c: Context, id: ${idType}, data: Update${modelNamePascal}Input): Promise<${modelNamePascal}Type> {
+export const update${modelNamePascal} = async (
+  c: Context, 
+  id: ${idType}, 
+  data: Update${modelNamePascal}Input
+): Promise<${modelNamePascal}Type> => {
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
@@ -136,7 +146,7 @@ export async function update${modelNamePascal}(c: Context, id: ${idType}, data: 
     // TODO: Implement more specific error handling and logging
     throw new Error('Could not update ${modelNamePascal}');
   }
-}
+};
 
 /**
  * Deletes a ${modelNamePascal} record by its ID.
@@ -144,7 +154,10 @@ export async function update${modelNamePascal}(c: Context, id: ${idType}, data: 
  * @param id The ID of the ${modelNamePascal} to delete.
  * @returns A promise resolving to the deleted ${modelNamePascal} record.
  */
-export async function delete${modelNamePascal}(c: Context, id: ${idType}): Promise<${modelNamePascal}Type> {
+export const delete${modelNamePascal} = async (
+  c: Context, 
+  id: ${idType}
+): Promise<${modelNamePascal}Type> => {
   try {
     const prisma = getPrismaClient(c);
     return await prisma.${prismaModelAccessor}.delete({
@@ -156,9 +169,9 @@ export async function delete${modelNamePascal}(c: Context, id: ${idType}): Promi
     // TODO: Implement more specific error handling and logging
     throw new Error('Could not delete ${modelNamePascal}');
   }
-}
+};
 `;
   }
 
   return imports + functions;
-}
+};

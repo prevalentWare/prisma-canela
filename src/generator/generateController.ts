@@ -6,10 +6,10 @@ import { pascalCase } from '../utils/pascalCase';
 import type { ServiceFunctionNames, ZodSchemaDetails } from './types';
 
 // Helper function to generate controller imports
-function generateControllerImports(
+export const generateControllerImports = (
   model: ParsedModel,
   zodSchemaInfo: ZodSchemaDetails
-): string {
+): string => {
   const modelNamePascal = pascalCase(model.name);
 
   // Remove Zod and schema imports, as they are not used in the controller
@@ -33,10 +33,10 @@ ${zodImports}
 ${utilityFunctions}
 ${serviceImports}
 `;
-}
+};
 
 // Helper function to generate handler logic
-function generateHandler(
+export const generateHandler = (
   modelNamePascal: string,
   handlerName: string, // e.g., listUser, createUserById
   serviceFunctionName: string, // e.g., findManyUsers, findUserById
@@ -44,9 +44,9 @@ function generateHandler(
   requiresId: boolean = false,
   requiresBody: boolean = false,
   idType: string = 'string' // Default, only used if requiresId is true
-): string {
+): string => {
   // No need for complex Context typing - we'll use the utility function
-  let contextType = 'Context';
+  const contextType = 'Context';
 
   // Determine how to access validated data
   const paramValidation = requiresId
@@ -128,16 +128,16 @@ export const ${handlerName} = async (c: ${contextType}) => {
   }
 };
 `;
-}
+};
 
 /**
  * Generates the content for a controller file (controller.ts).
  */
-export function generateControllerFileContent(
+export const generateControllerFileContent = (
   model: ParsedModel,
   zodSchemaInfo: ZodSchemaDetails,
   serviceNames: ServiceFunctionNames
-): string {
+): string => {
   const modelNamePascal = pascalCase(model.name);
   const idField = model.fields.find((f) => f.isId);
   const idType = idField?.type === 'number' ? 'number' : 'string';
@@ -201,4 +201,4 @@ export function generateControllerFileContent(
   }
 
   return imports + handlers;
-}
+};

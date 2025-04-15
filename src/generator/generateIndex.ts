@@ -9,7 +9,7 @@ import { pascalCase } from '../utils/pascalCase';
  * @param model The parsed model definition.
  * @returns The index file content as a string.
  */
-export function generateModelIndexFileContent(model: ParsedModel): string {
+export const generateModelIndexFileContent = (model: ParsedModel): string => {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
 
@@ -28,7 +28,7 @@ export const ${modelNameCamel}Types = types;
 
 export default routes;
 `;
-}
+};
 
 /**
  * Generates a utility function to register all routes at once.
@@ -37,7 +37,9 @@ export default routes;
  * @param models The parsed models from the schema.
  * @returns The function content as a string.
  */
-export function generateRegisterRoutesFunction(models: ParsedModel[]): string {
+export const generateRegisterRoutesFunction = (
+  models: ParsedModel[]
+): string => {
   const modelRegistrations = models
     .map((model) => {
       const modelNameCamel = camelCase(model.name);
@@ -69,7 +71,7 @@ ${modelRegistrations}
 
   return app;
 }`;
-}
+};
 
 /**
  * Generates the root index file content that imports and re-exports
@@ -78,7 +80,7 @@ ${modelRegistrations}
  * @param models The parsed models from the schema.
  * @returns The root index file content as a string.
  */
-export function generateRootIndexFileContent(models: ParsedModel[]): string {
+export const generateRootIndexFileContent = (models: ParsedModel[]): string => {
   // Generate imports for all model routes
   const imports = models
     .map((model) => {
@@ -115,4 +117,4 @@ ${registerRoutesFunction}
 
 export default routes;
 `;
-}
+};

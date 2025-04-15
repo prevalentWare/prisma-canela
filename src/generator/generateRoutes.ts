@@ -12,10 +12,10 @@ import { z } from '@hono/zod-openapi';
  * @param zodSchemaInfo Details about the generated Zod schemas.
  * @returns The Hono route file content string.
  */
-export function generateRoutesFileContent(
+export const generateRoutesFileContent = (
   model: ParsedModel,
   zodSchemaInfo: ZodSchemaDetails
-): string {
+): string => {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
   const modelNamePlural = `${modelNameCamel}s`; // Simple pluralization
@@ -306,4 +306,4 @@ export default ${modelNameCamel}Routes;
     idRoutesSetup +
     exportStatement
   );
-}
+};

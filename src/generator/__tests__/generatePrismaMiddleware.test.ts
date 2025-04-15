@@ -18,8 +18,8 @@ describe('generatePrismaMiddlewareFileContent', () => {
 
     // Check function exports
     expect(result).toContain('export const prismaMiddleware');
-    expect(result).toContain('export function createPrismaMiddleware');
-    expect(result).toContain('export async function disconnectPrisma');
+    expect(result).toContain('export const createPrismaMiddleware');
+    expect(result).toContain('export const disconnectPrisma');
 
     // Check middleware implementation
     expect(result).toContain("c.set('prisma', prisma)");
@@ -27,7 +27,7 @@ describe('generatePrismaMiddlewareFileContent', () => {
 
     // Check custom middleware factory
     expect(result).toContain(
-      'createPrismaMiddleware(customPrisma: PrismaClient = prisma)'
+      'createPrismaMiddleware = (customPrisma: PrismaClient = prisma)'
     );
     expect(result).toContain("c.set('prisma', customPrisma)");
 

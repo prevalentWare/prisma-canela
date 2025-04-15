@@ -107,10 +107,10 @@ describe('generateServiceFileContent', () => {
     const result = generateServiceFileContent(logEntryModel, '@prisma/client');
     expect(result).toContain('findManyLogEntry');
     expect(result).toContain('createLogEntry');
-    // Assert that ID-based functions are NOT present by checking for their async definition
-    expect(result).not.toContain('async function findLogEntryById');
-    expect(result).not.toContain('async function updateLogEntry');
-    expect(result).not.toContain('async function deleteLogEntry');
+    // Assert that ID-based functions are NOT present
+    expect(result).not.toContain('export const findLogEntryById');
+    expect(result).not.toContain('export const updateLogEntry');
+    expect(result).not.toContain('export const deleteLogEntry');
     expect(result).toMatchSnapshot();
   });
 
@@ -137,9 +137,11 @@ describe('generateServiceFileContent', () => {
       modelWithNumericId,
       '@prisma/client'
     );
-    expect(result).toContain('findProductById(c: Context, id: number)');
-    expect(result).toContain('updateProduct(c: Context, id: number');
-    expect(result).toContain('deleteProduct(c: Context, id: number)');
+    expect(result).toContain('id: number');
+    expect(result).toContain('findProductById');
+    expect(result).toContain('updateProduct');
+    expect(result).toContain('deleteProduct');
+    // Update snapshot with new format
     expect(result).toMatchSnapshot();
   });
 });

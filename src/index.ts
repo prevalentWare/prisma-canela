@@ -52,8 +52,8 @@ program
 
 // --- Entry Point ---
 
-async function main() {
+const main = async (): Promise<void> => {
   await program.parseAsync(process.argv);
-}
+};
 
 void main();

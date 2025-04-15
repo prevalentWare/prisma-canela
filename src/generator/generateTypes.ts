@@ -8,7 +8,7 @@ import { z } from 'zod'; // Need z for z.infer
  * @param model The parsed model definition.
  * @returns The TypeScript types file content string.
  */
-export function generateTypesFileContent(model: ParsedModel): string {
+export const generateTypesFileContent = (model: ParsedModel): string => {
   const modelNamePascal = pascalCase(model.name);
 
   const content = `import { z } from 'zod';
@@ -29,4 +29,4 @@ export type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePasc
 `;
 
   return content.trim() + '\n'; // Add trailing newline
-}
+};

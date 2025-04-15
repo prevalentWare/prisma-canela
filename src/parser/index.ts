@@ -18,9 +18,9 @@ import type {
  * @returns A promise that resolves to the parsed schema structure.
  * @throws If the schema file cannot be read or parsed.
  */
-export async function parsePrismaSchema(
+export const parsePrismaSchema = async (
   schemaPath: string = 'prisma/schema.prisma'
-): Promise<ParsedSchema> {
+): Promise<ParsedSchema> => {
   const absoluteSchemaPath = path.resolve(process.cwd(), schemaPath);
 
   console.log(`Attempting to parse schema at: ${absoluteSchemaPath}`);
@@ -49,7 +49,7 @@ export async function parsePrismaSchema(
       }`
     );
   }
-}
+};
 
 /**
  * Maps the DMMF structure to the ParsedSchema interface.
@@ -57,7 +57,7 @@ export async function parsePrismaSchema(
  * @param dmmf The DMMF document obtained from Prisma.
  * @returns The structured representation of the schema.
  */
-function mapDmmfToParsedSchema(dmmf: DMMF.Document): ParsedSchema {
+export const mapDmmfToParsedSchema = (dmmf: DMMF.Document): ParsedSchema => {
   console.log('Mapping DMMF to ParsedSchema...');
 
   const parsedEnums: ParsedEnum[] = dmmf.datamodel.enums.map(
@@ -86,7 +86,7 @@ function mapDmmfToParsedSchema(dmmf: DMMF.Document): ParsedSchema {
 
   console.log('Finished mapping DMMF.');
   return parsedSchema;
-}
+};
 
 /**
  * Maps Prisma DMMF field types to simplified FieldType categories.
@@ -95,10 +95,10 @@ function mapDmmfToParsedSchema(dmmf: DMMF.Document): ParsedSchema {
  * @param kind The DMMF field kind ('scalar', 'enum', 'object').
  * @returns The corresponding FieldType.
  */
-function mapPrismaTypeToFieldType(
+export const mapPrismaTypeToFieldType = (
   prismaType: string,
   kind: DMMF.FieldKind
-): FieldType {
+): FieldType => {
   if (kind === 'object') {
     return 'relation';
   }
@@ -134,7 +134,7 @@ function mapPrismaTypeToFieldType(
       console.warn(`Unsupported Prisma scalar type: ${prismaType}`);
       return 'unsupported';
   }
-}
+};
 
 /**
  * Maps a DMMF field to a ParsedField structure.
@@ -142,7 +142,7 @@ function mapPrismaTypeToFieldType(
  * @param field The DMMF field object.
  * @returns The corresponding ParsedField.
  */
-function mapDmmfFieldToParsedField(field: DMMF.Field): ParsedField {
+export const mapDmmfFieldToParsedField = (field: DMMF.Field): ParsedField => {
   const relationInfo: ParsedRelationInfo | undefined =
     field.kind === 'object' && field.relationName
       ? {
@@ -165,17 +165,4 @@ function mapDmmfFieldToParsedField(field: DMMF.Field): ParsedField {
     relationInfo: relationInfo,
     // Default value details might not be needed if hasDefaultValue is sufficient
   };
-}
-
-// --- Commented out after testing ---
-async function main() {
-  try {
-    // Make sure you have a prisma/schema.prisma file
-    const parsed = await parsePrismaSchema();
-    console.log(JSON.stringify(parsed, null, 2));
-  } catch (err) {
-    console.error('Failed to parse schema:', err);
-  }
-}
-
-void main();
+};
