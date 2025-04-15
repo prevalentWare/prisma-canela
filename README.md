@@ -79,18 +79,18 @@ src/generated/
 
 ```typescript
 // In your main app file
-import { Hono } from "hono";
-import { userRoutes, accountRoutes } from "./generated";
+import { Hono } from 'hono';
+import { userRoutes, accountRoutes } from './generated';
 
 const app = new Hono();
 
 // Mount generated API routes
-app.route("/api/users", userRoutes);
-app.route("/api/accounts", accountRoutes);
+app.route('/api/users', userRoutes);
+app.route('/api/accounts', accountRoutes);
 
 // Add Swagger UI
-import { swaggerUI } from "@hono/swagger-ui";
-app.get("/docs/*", swaggerUI({ url: "/api/docs" }));
+import { swaggerUI } from '@hono/swagger-ui';
+app.get('/docs/*', swaggerUI({ url: '/api/docs' }));
 
 export default app;
 ```
@@ -101,25 +101,25 @@ Canela provides a utility function to register all routes at once, making it eas
 
 ```typescript
 // Import the utility function
-import { registerAllRoutes } from "./generated";
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { createPrismaMiddleware } from "./generated/middleware/prismaMiddleware";
+import { registerAllRoutes } from './generated';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { createPrismaMiddleware } from './generated/middleware/prismaMiddleware';
 
 // Create a Prisma client
 const prisma = new PrismaClient();
 
 // Create an OpenAPIHono app and add the middleware
 const api = new OpenAPIHono();
-api.use("*", createPrismaMiddleware(prisma));
+api.use('*', createPrismaMiddleware(prisma));
 
 // Register all routes at once with a single function call
 registerAllRoutes(api, {
-  prefix: "", // Optional path prefix for all routes
+  prefix: '', // Optional path prefix for all routes
   pluralize: true, // Whether to add 's' to route paths (default: true)
 });
 
 // Mount the API app on your main app
-app.route("/api", api);
+app.route('/api', api);
 ```
 
 This approach simplifies the process of adding new routes as your schema evolves, since you don't need to manually add each new model's routes.
@@ -130,18 +130,18 @@ Canela provides clean, modular exports for easy integration with any Hono applic
 
 ```typescript
 // Import specific routes
-import { userRoutes, accountRoutes } from "./generated";
+import { userRoutes, accountRoutes } from './generated';
 
 // Or import all routes as a module
-import * as api from "./generated";
+import * as api from './generated';
 
 // Import all types for a specific model
-import { userTypes } from "./generated/user";
+import { userTypes } from './generated/user';
 
 // Access model-specific types
 const newUser: userTypes.CreateUserInput = {
-  name: "John Doe",
-  email: "john@example.com",
+  name: 'John Doe',
+  email: 'john@example.com',
 };
 ```
 
@@ -152,61 +152,61 @@ The modular export pattern allows you to choose exactly what you need for your a
 The generated code includes a complete example server implementation in [examples/server.ts](examples/server.ts):
 
 ```typescript
-import { serve } from "@hono/node-server";
-import { logger } from "hono/logger";
-import { prettyJSON } from "hono/pretty-json";
-import { swaggerUI } from "@hono/swagger-ui";
-import { OpenAPIHono } from "@hono/zod-openapi";
+import { serve } from '@hono/node-server';
+import { logger } from 'hono/logger';
+import { prettyJSON } from 'hono/pretty-json';
+import { swaggerUI } from '@hono/swagger-ui';
+import { OpenAPIHono } from '@hono/zod-openapi';
 
 // Import routes and utility functions from generated code
-import { registerAllRoutes } from "../src/generated";
+import { registerAllRoutes } from '../src/generated';
 
 // Import the generated prismaMiddleware
 import {
   prisma,
   prismaMiddleware,
   disconnectPrisma,
-} from "../src/generated/middleware/prismaMiddleware";
+} from '../src/generated/middleware/prismaMiddleware';
 
 // Create a single OpenAPIHono app for everything
 const app = new OpenAPIHono();
 
 // Add middleware
-app.use("*", logger());
-app.use("*", prettyJSON());
+app.use('*', logger());
+app.use('*', prettyJSON());
 
 // Apply prismaMiddleware to inject the Prisma client
-app.use("*", prismaMiddleware);
+app.use('*', prismaMiddleware);
 
 // Add diagnostic route to check prisma in context
-app.get("/debug/context", (c) => {
+app.get('/debug/context', (c) => {
   return c.json({
-    hasPrisma: !!c.get("prisma"),
+    hasPrisma: !!c.get('prisma'),
     contextKeys: Object.keys(c.var),
   });
 });
 
 // Register all API routes
-registerAllRoutes(app, { prefix: "" });
+registerAllRoutes(app, { prefix: '' });
 
 // Generate OpenAPI documentation
 const openApiDoc = app.getOpenAPIDocument({
-  openapi: "3.0.0",
+  openapi: '3.0.0',
   info: {
-    version: "1.0.0",
-    title: "Canela API",
-    description: "Auto-generated API using Canela code generator",
+    version: '1.0.0',
+    title: 'Canela API',
+    description: 'Auto-generated API using Canela code generator',
   },
 });
 
 // Swagger UI documentation
-app.get("/docs", swaggerUI({ url: "/docs/openapi.json" }));
-app.get("/docs/openapi.json", (c) => {
+app.get('/docs', swaggerUI({ url: '/docs/openapi.json' }));
+app.get('/docs/openapi.json', (c) => {
   return c.json(openApiDoc);
 });
 
 // Health check route
-app.get("/", (c) => c.json({ status: "ok", message: "Canela API is running" }));
+app.get('/', (c) => c.json({ status: 'ok', message: 'Canela API is running' }));
 
 // Start server
 const port = process.env.PORT || 3000;
@@ -220,14 +220,14 @@ serve({
 });
 
 // Handle shutdown gracefully
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM received, shutting down gracefully");
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
   await disconnectPrisma();
   process.exit(0);
 });
 
-process.on("SIGINT", async () => {
-  console.log("SIGINT received, shutting down gracefully");
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully');
   await disconnectPrisma();
   process.exit(0);
 });
@@ -260,19 +260,19 @@ import {
   prisma,
   prismaMiddleware,
   disconnectPrisma,
-} from "./src/generated/middleware/prismaMiddleware";
+} from './src/generated/middleware/prismaMiddleware';
 
 // Add it to your Hono app
-app.use("*", prismaMiddleware);
+app.use('*', prismaMiddleware);
 
 // Now you can access prisma in your route handlers:
-app.get("/users", async (c) => {
-  const users = await c.get("prisma").user.findMany();
+app.get('/users', async (c) => {
+  const users = await c.get('prisma').user.findMany();
   return c.json(users);
 });
 
 // For graceful shutdown:
-process.on("SIGTERM", async () => {
+process.on('SIGTERM', async () => {
   await disconnectPrisma();
   process.exit(0);
 });
@@ -350,8 +350,32 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 Before submitting your code, please make sure:
 
 - All tests pass (`bun run test`)
+- Code linting passes (`bun run lint`)
 - Your feature includes tests
 - Code follows the project style guidelines
+
+### Code Style and Linting
+
+This project uses ESLint to enforce consistent code style and best practices:
+
+- Use absolute imports with path aliases (e.g., `@parser/types`) instead of relative imports
+- Follow TypeScript best practices and maintain type safety
+- Use function expressions and arrow functions over function declarations
+- Keep files under 300 lines to maintain readability
+- Write descriptive variable and function names
+- Follow established patterns in the codebase
+
+To check your code against our linting rules:
+
+```bash
+bun run lint
+```
+
+To automatically fix issues:
+
+```bash
+bun run lint -- --fix
+```
 
 ## License
 
