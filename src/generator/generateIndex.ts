@@ -59,13 +59,13 @@ export const generateRegisterRoutesFunction = (
  * @returns The app instance with routes registered
  */
 export function registerAllRoutes(
-  app: any, 
+  app: Record<string, unknown>, 
   options: { 
     prefix?: string;
     pluralize?: boolean;
   } = {}
 ) {
-  const { prefix = '', pluralize = true } = options;
+  const { prefix = '', _pluralize = true } = options;
   
 ${modelRegistrations}
 
