@@ -18,10 +18,11 @@ type UpdateUserInput = z.infer<typeof updateUserSchema>;
  * Helper function to extract Prisma client from context with error handling
  */
 function getPrismaClient(c: Context): PrismaClient {
-  if (!c.prisma) {
+  const prisma = c.get('prisma');
+  if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
-  return c.prisma;
+  return prisma;
 }
 
 /**
@@ -140,10 +141,11 @@ type UpdateLogEntryInput = z.infer<typeof updateLogEntrySchema>;
  * Helper function to extract Prisma client from context with error handling
  */
 function getPrismaClient(c: Context): PrismaClient {
-  if (!c.prisma) {
+  const prisma = c.get('prisma');
+  if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
-  return c.prisma;
+  return prisma;
 }
 
 /**
@@ -200,10 +202,11 @@ type UpdateUserInput = z.infer<typeof updateUserSchema>;
  * Helper function to extract Prisma client from context with error handling
  */
 function getPrismaClient(c: Context): PrismaClient {
-  if (!c.prisma) {
+  const prisma = c.get('prisma');
+  if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
-  return c.prisma;
+  return prisma;
 }
 
 /**
@@ -322,10 +325,11 @@ type UpdateProductInput = z.infer<typeof updateProductSchema>;
  * Helper function to extract Prisma client from context with error handling
  */
 function getPrismaClient(c: Context): PrismaClient {
-  if (!c.prisma) {
+  const prisma = c.get('prisma');
+  if (!prisma) {
     throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
   }
-  return c.prisma;
+  return prisma;
 }
 
 /**

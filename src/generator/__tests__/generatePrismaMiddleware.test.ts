@@ -9,19 +9,29 @@ describe("generatePrismaMiddlewareFileContent", () => {
     expect(result).toContain("import { PrismaClient } from '@prisma/client'");
     expect(result).toContain("import type { Context, Next } from 'hono'");
 
+    // Check context type extension
+    expect(result).toContain("declare module 'hono'");
+    expect(result).toContain("interface ContextVariableMap");
+
+    // Check shared Prisma instance
+    expect(result).toContain("export const prisma = new PrismaClient()");
+
     // Check function exports
-    expect(result).toContain("export function createPrismaMiddleware");
     expect(result).toContain("export const prismaMiddleware");
+    expect(result).toContain("export function createPrismaMiddleware");
     expect(result).toContain("export async function disconnectPrisma");
 
-    // Check singleton pattern
-    expect(result).toContain("let prismaInstance: PrismaClient | null = null");
-
     // Check middleware implementation
-    expect(result).toContain("c.set('prisma', prismaInstance)");
+    expect(result).toContain("c.set('prisma', prisma)");
     expect(result).toContain("await next()");
 
+    // Check custom middleware factory
+    expect(result).toContain(
+      "createPrismaMiddleware(customPrisma: PrismaClient = prisma)"
+    );
+    expect(result).toContain("c.set('prisma', customPrisma)");
+
     // Check disconnect function
-    expect(result).toContain("await prismaInstance.$disconnect()");
+    expect(result).toContain("await prisma.$disconnect()");
   });
 });
