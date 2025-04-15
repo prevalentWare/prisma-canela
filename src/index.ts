@@ -1,63 +1,174 @@
 import { Command } from 'commander';
-import { parsePrismaSchema } from './parser';
-import { generateApi } from './generator';
+import path from 'path';
+import fs from 'fs';
+import chalk from 'chalk';
 
-// --- CLI Definition using Commander ---
-
-const program = new Command();
-
-program
-  .name('canela')
-  .description('CLI tool to generate Hono/Zod REST APIs from Prisma schemas')
-  .version('0.0.1'); // TODO: Get version from package.json?
-
-program
-  .command('generate')
-  .description('Generate API code from a Prisma schema')
-  .option(
-    '-s, --schema [path]',
-    'Optional path to the Prisma schema file or directory containing .prisma files. If not provided, common locations will be checked.'
-  )
-  .option(
-    '-o, --output <path>',
-    'Directory to output generated code',
-    './src/generated'
-  ) // Default output dir
-  .action(async (options) => {
-    console.log('Canela Codegen 🌿');
-    console.log('-------------------');
-
-    if (options.schema) {
-      console.log(`Schema path: ${options.schema}`);
-    } else {
-      console.log('Schema path: Auto-detect');
-    }
-
-    console.log(`Output directory: ${options.output}`);
-
-    try {
-      // 1. Parse the Prisma schema
-      const parsedSchema = await parsePrismaSchema(options.schema);
-      console.log('Schema parsed successfully.');
-
-      // 2. Generate the API code
-      await generateApi(parsedSchema, { outputDir: options.output });
-      console.log('\nCode generation finished!');
-    } catch (error) {
-      console.error('\nAn error occurred during code generation:');
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error(String(error));
-      }
-      process.exit(1); // Exit with error code
-    }
-  });
-
-// --- Entry Point ---
-
-const main = async (): Promise<void> => {
-  await program.parseAsync(process.argv);
+// ASCII art banner
+const displayBanner = (): void => {
+  console.log(
+    chalk.bold(
+      chalk.hex('#2D7BD8')(
+        `
+   ██████╗ █████╗ ███╗   ██╗███████╗██╗      █████╗ 
+  ██╔════╝██╔══██╗████╗  ██║██╔════╝██║     ██╔══██╗
+  ██║     ███████║██╔██╗ ██║█████╗  ██║     ███████║
+  ██║     ██╔══██║██║╚██╗██║██╔══╝  ██║     ██╔══██║
+  ╚██████╗██║  ██║██║ ╚████║███████╗███████╗██║  ██║
+   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═╝
+`
+      )
+    )
+  );
+  console.log(
+    chalk.italic(
+      chalk.hex('#1A4D85')('                     by prevalentWare\n')
+    )
+  );
 };
 
-void main();
+// This requires dynamic imports for ESM compatibility
+const loadModules = async () => {
+  try {
+    // Load modules dynamically (supporting both CJS and ESM)
+    const parsePrismaSchema = await import('./parser/index.js').then(
+      (module) => module.parsePrismaSchema
+    );
+    const generateApi = await import('./generator/index.js').then(
+      (module) => module.generateApi
+    );
+
+    return { parsePrismaSchema, generateApi };
+  } catch (error) {
+    console.error('Error loading required modules:', error);
+    process.exit(1);
+  }
+};
+
+// Get package version from package.json
+const getPackageVersion = (): string => {
+  try {
+    // Try to read package.json relative to the current file
+    const packageJsonPath = path.resolve(__dirname, '../package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    return packageJson.version || '0.1.0';
+  } catch (error) {
+    // Fallback version if unable to read package.json
+    return '0.1.0';
+  }
+};
+
+/**
+ * Creates and configures the CLI program
+ * @returns Configured Commander program
+ */
+export const createProgram = (): Command => {
+  const program = new Command();
+
+  program
+    .name('canela')
+    .description('Generate Hono API from Prisma schema')
+    .version(getPackageVersion());
+
+  program
+    .command('generate')
+    .alias('g') // Short alias
+    .description('Generate API code from a Prisma schema')
+    .option(
+      '-s, --schema [path]',
+      'Path to the Prisma schema file or directory containing .prisma files. If not provided, common locations will be checked.'
+    )
+    .option(
+      '-o, --output <path>',
+      'Directory to output generated code',
+      './src/generated'
+    ) // Default output dir
+    .action(async (options) => {
+      // No need to display banner here anymore, it's displayed in main
+      console.log('------------------------');
+
+      try {
+        // Load required modules
+        const { parsePrismaSchema, generateApi } = await loadModules();
+
+        // Resolve paths to absolute paths
+        const outputDir = path.resolve(process.cwd(), options.output);
+        let schemaPath = options.schema;
+
+        if (schemaPath) {
+          schemaPath = path.resolve(process.cwd(), schemaPath);
+          console.log(`Schema path: ${schemaPath}`);
+        } else {
+          console.log('Schema path: Auto-detect');
+        }
+
+        console.log(`Output directory: ${outputDir}`);
+
+        // Parse the Prisma schema
+        const parsedSchema = await parsePrismaSchema(schemaPath);
+        console.log('✅ Schema parsed successfully.');
+
+        // Generate the API code
+        await generateApi(parsedSchema, { outputDir });
+        console.log('\n✅ Code generation finished!');
+      } catch (error) {
+        console.error('\n❌ An error occurred during code generation:');
+        if (error instanceof Error) {
+          console.error(error.message);
+
+          // In debug mode, show stack trace
+          if (process.env.DEBUG === 'true') {
+            console.error('\nStack trace:');
+            console.error(error.stack);
+          }
+        } else {
+          console.error(String(error));
+        }
+        process.exit(1); // Exit with error code
+      }
+    });
+
+  // Add help command
+  program
+    .command('help')
+    .description('Display help information')
+    .action(() => {
+      // No need to display banner here anymore, it's displayed in main
+      program.outputHelp();
+    });
+
+  // Add help examples
+  program.addHelpText(
+    'after',
+    `
+Examples:
+  $ canela generate
+  $ canela generate --schema ./prisma/schema.prisma
+  $ bun run canela generate --output ./src/api
+`
+  );
+
+  return program;
+};
+
+// --- Entry Point ---
+export const main = async (): Promise<void> => {
+  const program = createProgram();
+
+  // Display banner always
+  displayBanner();
+
+  await program.parseAsync(process.argv);
+
+  // Show help if no command is provided
+  if (!process.argv.slice(2).length) {
+    program.outputHelp();
+  }
+};
+
+// When this file is run directly
+if (
+  import.meta.url.endsWith('index.ts') ||
+  import.meta.url.endsWith('index.js')
+) {
+  void main();
+}

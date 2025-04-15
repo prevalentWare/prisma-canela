@@ -20,6 +20,7 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "build": "bun run clean && bun build ./src/bin/canela.ts --outdir ./dist/bin --target node --external commander --external fs --external path && chmod +x dist/bin/canela.js",
+    "build:test": "bun build src/test-cli.ts --outdir ./dist --target node --external commander && chmod +x dist/test-cli.js",
     "clean": "rm -rf dist",
     "start": "node dist/bin/canela.js",
     "lint": "eslint --ext .ts ./src",
