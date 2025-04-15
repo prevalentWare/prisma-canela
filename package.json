@@ -2,6 +2,9 @@
   "name": "canela",
   "module": "src/index.ts",
   "type": "module",
+  "prisma": {
+    "schema": "./prisma/schema"
+  },
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "build": "bun build src/index.ts --outfile dist/index.js",

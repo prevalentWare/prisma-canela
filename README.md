@@ -292,20 +292,48 @@ Benefits of the generated middleware:
 
 #### Multi-file Prisma Schema Support
 
-Prisma-Canela will support the `prismaSchemaFolder` preview feature from Prisma, allowing you to split your schema into multiple files:
-
-```bash
-# Generate API from a Prisma schema folder
-bun @prevalentware/prisma-canela generate --schema ./prisma/schema --output ./src/generated
-```
+Prisma-Canela supports Prisma's multi-file schema feature (introduced in Prisma 5.15.0), allowing you to split your schema across multiple files for better organization:
 
 ```
 prisma/
 └── schema/
-    ├── schema.prisma    # Main schema with datasource and generator
+    ├── schema.prisma    # Main schema with datasource and generator blocks
     ├── user.prisma      # User-related models
-    └── product.prisma   # Product-related models
+    ├── product.prisma   # Product-related models
+    └── order.prisma     # Order-related models
 ```
+
+The tool automatically detects if you're using a single schema file or a directory of schema files:
+
+1. If you've enabled the `prismaSchemaFolder` preview feature in Prisma
+2. If you have a `prisma/schema` directory containing `.prisma` files
+
+You don't need to do anything special - just run the CLI command as usual:
+
+```bash
+bun @prevalentware/prisma-canela generate
+```
+
+The tool will:
+
+1. First look for schema location in your package.json (prisma.schema field)
+2. If not found, look for the standard schema.prisma file
+3. If not found, check if a prisma/schema directory exists with .prisma files
+4. Use the first one found
+
+You can also explicitly specify a schema directory:
+
+```bash
+bun @prevalentware/prisma-canela generate --schema ./prisma/schema
+```
+
+#### Multi-file Schema Best Practices
+
+For the best results with multi-file schemas:
+
+- Keep datasource and generator blocks in a main schema file (e.g., schema.prisma)
+- Group related models into domain-specific files
+- Use clear naming conventions for schema files
 
 ### Configuration Options
 

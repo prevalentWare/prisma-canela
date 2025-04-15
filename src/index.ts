@@ -15,9 +15,8 @@ program
   .command('generate')
   .description('Generate API code from a Prisma schema')
   .option(
-    '-s, --schema <path>',
-    'Path to the Prisma schema file',
-    'prisma/schema.prisma'
+    '-s, --schema [path]',
+    'Optional path to the Prisma schema file or directory containing .prisma files. If not provided, common locations will be checked.'
   )
   .option(
     '-o, --output <path>',
@@ -27,7 +26,13 @@ program
   .action(async (options) => {
     console.log('Canela Codegen 🌿');
     console.log('-------------------');
-    console.log(`Schema path: ${options.schema}`);
+
+    if (options.schema) {
+      console.log(`Schema path: ${options.schema}`);
+    } else {
+      console.log('Schema path: Auto-detect');
+    }
+
     console.log(`Output directory: ${options.output}`);
 
     try {

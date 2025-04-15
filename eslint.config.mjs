@@ -70,7 +70,7 @@ const config = tseslint.config(
       // Import rules
       'import/prefer-default-export': 'off',
       'import/no-default-export': 'error', // Disallow default exports
-      'import/first': 'error',
+      'import/first': 'off', // Allow imports anywhere in the file
       'import/no-duplicates': 'error',
 
       // General code quality
