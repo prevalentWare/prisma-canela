@@ -190,15 +190,6 @@ describe("generateControllerFileContent", () => {
     // Check imports
     expect(result).toContain("import type { Context } from 'hono';");
     expect(result).toContain("import * as service from './service';"); // Check service import
-    expect(result).toContain(
-      "import type { createUserSchema, updateUserSchema } from './schema';"
-    );
-    expect(result).toContain(
-      "type CreateInput = z.infer<typeof createUserSchema>;"
-    );
-    expect(result).toContain(
-      "type UpdateInput = z.infer<typeof updateUserSchema>;"
-    );
     expect(result).toContain("import { Prisma } from '@prisma/client';"); // Check Prisma import for errors
 
     // Check function definitions (Updated Signatures)
@@ -245,15 +236,6 @@ describe("generateControllerFileContent", () => {
     // Check imports (similar to User, but with Product schemas)
     expect(result).toContain("import type { Context } from 'hono';");
     expect(result).toContain("import * as service from './service';");
-    expect(result).toContain(
-      "import type { createProductSchema, updateProductSchema } from './schema';"
-    );
-    expect(result).toContain(
-      "type CreateInput = z.infer<typeof createProductSchema>;"
-    );
-    expect(result).toContain(
-      "type UpdateInput = z.infer<typeof updateProductSchema>;"
-    );
     expect(result).toContain("import { Prisma } from '@prisma/client';");
 
     // Check function definitions (Updated Signatures)
@@ -296,13 +278,7 @@ describe("generateControllerFileContent", () => {
     // Check imports
     expect(result).toContain("import type { Context } from 'hono';");
     expect(result).toContain("import * as service from './service';");
-    expect(result).toContain(
-      "import type { createLogEntrySchema, updateLogEntrySchema } from './schema';" // Still expect update schema import even if not used in controller
-    );
-    expect(result).toContain(
-      "type CreateInput = z.infer<typeof createLogEntrySchema>;"
-    );
-    // No UpdateInput type needed if no update handler
+    expect(result).toContain("import { Prisma } from '@prisma/client';");
 
     // Check that only list and create functions are defined (Updated Signatures)
     expect(result).toContain("export const listLogEntry = async (c: Context)");

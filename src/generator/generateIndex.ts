@@ -13,8 +13,7 @@ export function generateModelIndexFileContent(model: ParsedModel): string {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
 
-  return `import { OpenAPIHono } from '@hono/zod-openapi';
-import routes from './routes';
+  return `import routes from './routes';
 import * as types from './types';
 
 /**

@@ -12,13 +12,8 @@ function generateControllerImports(
 ): string {
   const modelNamePascal = pascalCase(model.name);
 
-  // Import Zod types for inference
-  const zodImports = `import type { z } from 'zod';
-import type { ${zodSchemaInfo.createSchemaName}, ${zodSchemaInfo.updateSchemaName} } from './schema';`;
-
-  // Define input types based on Zod schemas
-  const inputTypes = `type CreateInput = z.infer<typeof ${zodSchemaInfo.createSchemaName}>;
-type UpdateInput = z.infer<typeof ${zodSchemaInfo.updateSchemaName}>;`;
+  // Remove Zod and schema imports, as they are not used in the controller
+  const zodImports = "";
 
   // Add validator utility function to safely cast validation results
   const utilityFunctions = `
@@ -35,7 +30,7 @@ const getValidData = (c: Context, type: 'json' | 'param') => {
 import type { Context } from 'hono';
 import { Prisma } from '@prisma/client';
 ${zodImports}
-${inputTypes}${utilityFunctions}
+${utilityFunctions}
 ${serviceImports}
 `;
 }
@@ -92,13 +87,17 @@ function generateHandler(
   }
 
   // Use the input generic in the handler signature
+  // Only include paramValidation and jsonValidation if they are non-empty
+  const validationLines = [paramValidation, jsonValidation]
+    .filter(Boolean)
+    .join("\n  ");
+
   return `
 /**
  * ${comment}
  */
 export const ${handlerName} = async (c: ${contextType}) => {
-  ${paramValidation}
-  ${jsonValidation}
+  ${validationLines}
   try {
     const item = await service.${serviceFunctionName}(${serviceCallArgs}); // Pass context first, then other args
     ${getByIdNotFound}

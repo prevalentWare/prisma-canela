@@ -4,10 +4,8 @@ exports[`generateControllerFileContent > should generate correct controller cont
 "
 import type { Context } from 'hono';
 import { Prisma } from '@prisma/client';
-import type { z } from 'zod';
-import type { createProductSchema, updateProductSchema } from './schema';
-type CreateInput = z.infer<typeof createProductSchema>;
-type UpdateInput = z.infer<typeof updateProductSchema>;
+
+
 // Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
 const getValidData = (c: Context, type: 'json' | 'param') => {
   // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
@@ -19,7 +17,6 @@ import * as service from './service';
  * List all Product records.
  */
 export const listProduct = async (c: Context) => {
-  
   
   try {
     const item = await service.findManyProducts(c); // Pass context first, then other args
@@ -44,7 +41,6 @@ export const listProduct = async (c: Context) => {
  * Create a new Product.
  */
 export const createProduct = async (c: Context) => {
-  
   const data = getValidData(c, 'json');
   try {
     const item = await service.createProduct(c, data); // Pass context first, then other args
@@ -70,7 +66,6 @@ export const createProduct = async (c: Context) => {
  */
 export const getProductById = async (c: Context) => {
   const { id } = getValidData(c, 'param');
-  
   try {
     const item = await service.findProductById(c, id); // Pass context first, then other args
     
@@ -135,7 +130,6 @@ export const updateProduct = async (c: Context) => {
  */
 export const deleteProduct = async (c: Context) => {
   const { id } = getValidData(c, 'param');
-  
   try {
     const item = await service.deleteProduct(c, id); // Pass context first, then other args
     
@@ -167,10 +161,8 @@ exports[`generateControllerFileContent > should generate correct controller cont
 "
 import type { Context } from 'hono';
 import { Prisma } from '@prisma/client';
-import type { z } from 'zod';
-import type { createLogEntrySchema, updateLogEntrySchema } from './schema';
-type CreateInput = z.infer<typeof createLogEntrySchema>;
-type UpdateInput = z.infer<typeof updateLogEntrySchema>;
+
+
 // Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
 const getValidData = (c: Context, type: 'json' | 'param') => {
   // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
@@ -182,7 +174,6 @@ import * as service from './service';
  * List all LogEntry records.
  */
 export const listLogEntry = async (c: Context) => {
-  
   
   try {
     const item = await service.findManyLogEntries(c); // Pass context first, then other args
@@ -207,7 +198,6 @@ export const listLogEntry = async (c: Context) => {
  * Create a new LogEntry.
  */
 export const createLogEntry = async (c: Context) => {
-  
   const data = getValidData(c, 'json');
   try {
     const item = await service.createLogEntry(c, data); // Pass context first, then other args
@@ -234,10 +224,8 @@ exports[`generateControllerFileContent > should generate correct controller cont
 "
 import type { Context } from 'hono';
 import { Prisma } from '@prisma/client';
-import type { z } from 'zod';
-import type { createUserSchema, updateUserSchema } from './schema';
-type CreateInput = z.infer<typeof createUserSchema>;
-type UpdateInput = z.infer<typeof updateUserSchema>;
+
+
 // Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
 const getValidData = (c: Context, type: 'json' | 'param') => {
   // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
@@ -249,7 +237,6 @@ import * as service from './service';
  * List all User records.
  */
 export const listUser = async (c: Context) => {
-  
   
   try {
     const item = await service.findManyUsers(c); // Pass context first, then other args
@@ -274,7 +261,6 @@ export const listUser = async (c: Context) => {
  * Create a new User.
  */
 export const createUser = async (c: Context) => {
-  
   const data = getValidData(c, 'json');
   try {
     const item = await service.createUser(c, data); // Pass context first, then other args
@@ -300,7 +286,6 @@ export const createUser = async (c: Context) => {
  */
 export const getUserById = async (c: Context) => {
   const { id } = getValidData(c, 'param');
-  
   try {
     const item = await service.findUserById(c, id); // Pass context first, then other args
     
@@ -365,7 +350,6 @@ export const updateUser = async (c: Context) => {
  */
 export const deleteUser = async (c: Context) => {
   const { id } = getValidData(c, 'param');
-  
   try {
     const item = await service.deleteUser(c, id); // Pass context first, then other args
     
