@@ -1,24 +1,24 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import fs from "node:fs/promises";
-import * as PrismaInternals from "@prisma/internals";
-import type { DMMF } from "@prisma/generator-helper"; // Import DMMF types for better mocking
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import fs from 'node:fs/promises';
+import * as PrismaInternals from '@prisma/internals';
+import type { DMMF } from '@prisma/generator-helper'; // Import DMMF types for better mocking
 // --- Adjusted import path ---
-import { parsePrismaSchema } from "../index";
+import { parsePrismaSchema } from '../index';
 // --- Adjusted import path ---
-import type { ParsedSchema } from "../types";
-import path from "node:path";
+import type { ParsedSchema } from '../types';
+import path from 'node:path';
 
 // Use vi.mock for module mocking
-vi.mock("node:fs/promises");
-vi.mock("@prisma/internals");
+vi.mock('node:fs/promises');
+vi.mock('@prisma/internals');
 
-describe("Prisma Schema Parser", () => {
+describe('Prisma Schema Parser', () => {
   beforeEach(() => {
     // Reset mocks before each test
     vi.resetAllMocks();
   });
 
-  it("should parse a simple schema with one model and basic fields", async () => {
+  it('should parse a simple schema with one model and basic fields', async () => {
     const simpleSchema = `
       datasource db {
         provider = "postgresql"
@@ -46,13 +46,13 @@ describe("Prisma Schema Parser", () => {
       datamodel: {
         models: [
           {
-            name: "Post",
+            name: 'Post',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -63,9 +63,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "title",
-                type: "String",
-                kind: "scalar",
+                name: 'title',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -76,9 +76,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "content",
-                type: "String",
-                kind: "scalar",
+                name: 'content',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: false,
                 isUnique: false,
@@ -89,9 +89,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "published",
-                type: "Boolean",
-                kind: "scalar",
+                name: 'published',
+                type: 'Boolean',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -102,9 +102,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "createdAt",
-                type: "DateTime",
-                kind: "scalar",
+                name: 'createdAt',
+                type: 'DateTime',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -144,13 +144,13 @@ describe("Prisma Schema Parser", () => {
     const expected: ParsedSchema = {
       models: [
         {
-          name: "Post",
+          name: 'Post',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -160,9 +160,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "title",
-              type: "string",
-              kind: "scalar",
+              name: 'title',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -172,9 +172,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "content",
-              type: "string",
-              kind: "scalar",
+              name: 'content',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: false,
@@ -184,9 +184,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "published",
-              type: "boolean",
-              kind: "scalar",
+              name: 'published',
+              type: 'boolean',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -196,9 +196,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "createdAt",
-              type: "date",
-              kind: "scalar",
+              name: 'createdAt',
+              type: 'date',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -213,12 +213,12 @@ describe("Prisma Schema Parser", () => {
       enums: [],
     };
 
-    const result = await parsePrismaSchema("./dummy-schema.prisma");
+    const result = await parsePrismaSchema('./dummy-schema.prisma');
     expect(result).toEqual(expected);
   });
 
   // --- Test Case 1: Enums ---
-  it("should parse a schema with enums", async () => {
+  it('should parse a schema with enums', async () => {
     const enumSchema = `
       enum Role {
         USER
@@ -236,13 +236,13 @@ describe("Prisma Schema Parser", () => {
       datamodel: {
         models: [
           {
-            name: "User",
+            name: 'User',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -253,9 +253,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "role",
-                type: "Role",
-                kind: "enum",
+                name: 'role',
+                type: 'Role',
+                kind: 'enum',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -274,10 +274,10 @@ describe("Prisma Schema Parser", () => {
         ],
         enums: [
           {
-            name: "Role",
+            name: 'Role',
             values: [
-              { name: "USER", dbName: null },
-              { name: "ADMIN", dbName: null },
+              { name: 'USER', dbName: null },
+              { name: 'ADMIN', dbName: null },
             ],
             dbName: null,
           },
@@ -302,13 +302,13 @@ describe("Prisma Schema Parser", () => {
     const expected: ParsedSchema = {
       models: [
         {
-          name: "User",
+          name: 'User',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -318,10 +318,10 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "role",
-              type: "enum",
-              kind: "enum",
-              enumName: "Role",
+              name: 'role',
+              type: 'enum',
+              kind: 'enum',
+              enumName: 'Role',
               isList: false,
               isRequired: true,
               isUnique: false,
@@ -332,15 +332,15 @@ describe("Prisma Schema Parser", () => {
           ],
         },
       ],
-      enums: [{ name: "Role", values: ["USER", "ADMIN"] }],
+      enums: [{ name: 'Role', values: ['USER', 'ADMIN'] }],
     };
 
-    const result = await parsePrismaSchema("./dummy-schema.prisma");
+    const result = await parsePrismaSchema('./dummy-schema.prisma');
     expect(result).toEqual(expected);
   });
 
   // --- Test Case 2: One-to-One ---
-  it("should parse a schema with a one-to-one relationship", async () => {
+  it('should parse a schema with a one-to-one relationship', async () => {
     const oneToOneSchema = `
       model User {
         id      String  @id
@@ -360,13 +360,13 @@ describe("Prisma Schema Parser", () => {
       datamodel: {
         models: [
           {
-            name: "User",
+            name: 'User',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -377,10 +377,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "profile",
-                type: "Profile",
-                kind: "object",
-                relationName: "UserProfile",
+                name: 'profile',
+                type: 'Profile',
+                kind: 'object',
+                relationName: 'UserProfile',
                 isList: false,
                 isRequired: false,
                 isUnique: false,
@@ -397,13 +397,13 @@ describe("Prisma Schema Parser", () => {
             isGenerated: false,
           },
           {
-            name: "Profile",
+            name: 'Profile',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -414,9 +414,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "bio",
-                type: "String",
-                kind: "scalar",
+                name: 'bio',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: false,
                 isUnique: false,
@@ -427,10 +427,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "user",
-                type: "User",
-                kind: "object",
-                relationName: "UserProfile",
+                name: 'user',
+                type: 'User',
+                kind: 'object',
+                relationName: 'UserProfile',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -441,9 +441,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "userId",
-                type: "String",
-                kind: "scalar",
+                name: 'userId',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: true,
@@ -481,13 +481,13 @@ describe("Prisma Schema Parser", () => {
     const expected: ParsedSchema = {
       models: [
         {
-          name: "User",
+          name: 'User',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -497,9 +497,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "profile",
-              type: "relation",
-              kind: "object",
+              name: 'profile',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: false,
               isRequired: false,
@@ -507,20 +507,20 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "Profile",
-                relationName: "UserProfile",
+                relatedModelName: 'Profile',
+                relationName: 'UserProfile',
               },
             },
           ],
         },
         {
-          name: "Profile",
+          name: 'Profile',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -530,9 +530,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "bio",
-              type: "string",
-              kind: "scalar",
+              name: 'bio',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: false,
@@ -542,9 +542,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "user",
-              type: "relation",
-              kind: "object",
+              name: 'user',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -552,14 +552,14 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "User",
-                relationName: "UserProfile",
+                relatedModelName: 'User',
+                relationName: 'UserProfile',
               },
             },
             {
-              name: "userId",
-              type: "string",
-              kind: "scalar",
+              name: 'userId',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -573,12 +573,12 @@ describe("Prisma Schema Parser", () => {
       ],
       enums: [],
     };
-    const result = await parsePrismaSchema("./dummy-schema.prisma");
+    const result = await parsePrismaSchema('./dummy-schema.prisma');
     expect(result).toEqual(expected);
   });
 
   // --- Test Case 3: One-to-Many ---
-  it("should parse a schema with a one-to-many relationship", async () => {
+  it('should parse a schema with a one-to-many relationship', async () => {
     const oneToManySchema = `
       model User {
         id    String @id
@@ -598,13 +598,13 @@ describe("Prisma Schema Parser", () => {
       datamodel: {
         models: [
           {
-            name: "User",
+            name: 'User',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -615,10 +615,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "posts",
-                type: "Post",
-                kind: "object",
-                relationName: "UserPosts",
+                name: 'posts',
+                type: 'Post',
+                kind: 'object',
+                relationName: 'UserPosts',
                 isList: true,
                 isRequired: true,
                 isUnique: false,
@@ -635,13 +635,13 @@ describe("Prisma Schema Parser", () => {
             isGenerated: false,
           },
           {
-            name: "Post",
+            name: 'Post',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -652,9 +652,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "title",
-                type: "String",
-                kind: "scalar",
+                name: 'title',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -665,10 +665,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "author",
-                type: "User",
-                kind: "object",
-                relationName: "UserPosts",
+                name: 'author',
+                type: 'User',
+                kind: 'object',
+                relationName: 'UserPosts',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -679,9 +679,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "authorId",
-                type: "String",
-                kind: "scalar",
+                name: 'authorId',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -719,13 +719,13 @@ describe("Prisma Schema Parser", () => {
     const expected: ParsedSchema = {
       models: [
         {
-          name: "User",
+          name: 'User',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -735,9 +735,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "posts",
-              type: "relation",
-              kind: "object",
+              name: 'posts',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: true,
               isRequired: true,
@@ -745,20 +745,20 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "Post",
-                relationName: "UserPosts",
+                relatedModelName: 'Post',
+                relationName: 'UserPosts',
               },
             },
           ],
         },
         {
-          name: "Post",
+          name: 'Post',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -768,9 +768,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "title",
-              type: "string",
-              kind: "scalar",
+              name: 'title',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -780,9 +780,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "author",
-              type: "relation",
-              kind: "object",
+              name: 'author',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -790,14 +790,14 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "User",
-                relationName: "UserPosts",
+                relatedModelName: 'User',
+                relationName: 'UserPosts',
               },
             },
             {
-              name: "authorId",
-              type: "string",
-              kind: "scalar",
+              name: 'authorId',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -811,12 +811,12 @@ describe("Prisma Schema Parser", () => {
       ],
       enums: [],
     };
-    const result = await parsePrismaSchema("./dummy-schema.prisma");
+    const result = await parsePrismaSchema('./dummy-schema.prisma');
     expect(result).toEqual(expected);
   });
 
   // --- Test Case 4: Many-to-Many ---
-  it("should parse a schema with a many-to-many relationship", async () => {
+  it('should parse a schema with a many-to-many relationship', async () => {
     const manyToManySchema = `
       model Post {
         id         String   @id
@@ -835,13 +835,13 @@ describe("Prisma Schema Parser", () => {
       datamodel: {
         models: [
           {
-            name: "Post",
+            name: 'Post',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -852,10 +852,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "categories",
-                type: "Category",
-                kind: "object",
-                relationName: "PostCategories",
+                name: 'categories',
+                type: 'Category',
+                kind: 'object',
+                relationName: 'PostCategories',
                 isList: true,
                 isRequired: true,
                 isUnique: false,
@@ -872,13 +872,13 @@ describe("Prisma Schema Parser", () => {
             isGenerated: false,
           },
           {
-            name: "Category",
+            name: 'Category',
             dbName: null,
             fields: [
               {
-                name: "id",
-                type: "String",
-                kind: "scalar",
+                name: 'id',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -889,9 +889,9 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "name",
-                type: "String",
-                kind: "scalar",
+                name: 'name',
+                type: 'String',
+                kind: 'scalar',
                 isList: false,
                 isRequired: true,
                 isUnique: false,
@@ -902,10 +902,10 @@ describe("Prisma Schema Parser", () => {
                 isUpdatedAt: false,
               },
               {
-                name: "posts",
-                type: "Post",
-                kind: "object",
-                relationName: "PostCategories",
+                name: 'posts',
+                type: 'Post',
+                kind: 'object',
+                relationName: 'PostCategories',
                 isList: true,
                 isRequired: true,
                 isUnique: false,
@@ -943,13 +943,13 @@ describe("Prisma Schema Parser", () => {
     const expected: ParsedSchema = {
       models: [
         {
-          name: "Post",
+          name: 'Post',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -959,9 +959,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "categories",
-              type: "relation",
-              kind: "object",
+              name: 'categories',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: true,
               isRequired: true,
@@ -969,20 +969,20 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "Category",
-                relationName: "PostCategories",
+                relatedModelName: 'Category',
+                relationName: 'PostCategories',
               },
             },
           ],
         },
         {
-          name: "Category",
+          name: 'Category',
           dbName: null,
           fields: [
             {
-              name: "id",
-              type: "string",
-              kind: "scalar",
+              name: 'id',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -992,9 +992,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "name",
-              type: "string",
-              kind: "scalar",
+              name: 'name',
+              type: 'string',
+              kind: 'scalar',
               enumName: undefined,
               isList: false,
               isRequired: true,
@@ -1004,9 +1004,9 @@ describe("Prisma Schema Parser", () => {
               relationInfo: undefined,
             },
             {
-              name: "posts",
-              type: "relation",
-              kind: "object",
+              name: 'posts',
+              type: 'relation',
+              kind: 'object',
               enumName: undefined,
               isList: true,
               isRequired: true,
@@ -1014,8 +1014,8 @@ describe("Prisma Schema Parser", () => {
               isId: false,
               hasDefaultValue: false,
               relationInfo: {
-                relatedModelName: "Post",
-                relationName: "PostCategories",
+                relatedModelName: 'Post',
+                relationName: 'PostCategories',
               },
             },
           ],
@@ -1023,7 +1023,7 @@ describe("Prisma Schema Parser", () => {
       ],
       enums: [],
     };
-    const result = await parsePrismaSchema("./dummy-schema.prisma");
+    const result = await parsePrismaSchema('./dummy-schema.prisma');
     expect(result).toEqual(expected);
   });
 

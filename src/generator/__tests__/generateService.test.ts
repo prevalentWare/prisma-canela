@@ -1,15 +1,15 @@
-import { describe, it, expect } from "vitest";
-import { generateServiceFileContent } from "../generateService";
-import type { ParsedModel, ParsedField } from "../../parser/types";
+import { describe, it, expect } from 'vitest';
+import { generateServiceFileContent } from '../generateService';
+import type { ParsedModel, ParsedField } from '../../parser/types';
 
 // Mock data for a simple User model
 const userModel: ParsedModel = {
-  name: "User",
+  name: 'User',
   fields: [
     {
-      name: "id",
-      type: "string",
-      kind: "scalar",
+      name: 'id',
+      type: 'string',
+      kind: 'scalar',
       isId: true,
       isRequired: true,
       isUnique: true,
@@ -17,9 +17,9 @@ const userModel: ParsedModel = {
       hasDefaultValue: false,
     },
     {
-      name: "email",
-      type: "string",
-      kind: "scalar",
+      name: 'email',
+      type: 'string',
+      kind: 'scalar',
       isId: false,
       isRequired: true,
       isUnique: true,
@@ -27,9 +27,9 @@ const userModel: ParsedModel = {
       hasDefaultValue: false,
     },
     {
-      name: "name",
-      type: "string",
-      kind: "scalar",
+      name: 'name',
+      type: 'string',
+      kind: 'scalar',
       isId: false,
       isRequired: false,
       isUnique: false,
@@ -37,10 +37,10 @@ const userModel: ParsedModel = {
       hasDefaultValue: false,
     },
     {
-      name: "role",
-      type: "enum",
-      kind: "enum",
-      enumName: "Role",
+      name: 'role',
+      type: 'enum',
+      kind: 'enum',
+      enumName: 'Role',
       isId: false,
       isRequired: true,
       isUnique: false,
@@ -53,12 +53,12 @@ const userModel: ParsedModel = {
 
 // Mock data for a model without an ID field (e.g., LogEntry)
 const logEntryModel: ParsedModel = {
-  name: "LogEntry",
+  name: 'LogEntry',
   fields: [
     {
-      name: "message",
-      type: "string",
-      kind: "scalar",
+      name: 'message',
+      type: 'string',
+      kind: 'scalar',
       isId: false,
       isRequired: true,
       isUnique: false,
@@ -66,9 +66,9 @@ const logEntryModel: ParsedModel = {
       hasDefaultValue: false,
     },
     {
-      name: "level",
-      type: "string",
-      kind: "scalar",
+      name: 'level',
+      type: 'string',
+      kind: 'scalar',
       isId: false,
       isRequired: true,
       isUnique: false,
@@ -76,9 +76,9 @@ const logEntryModel: ParsedModel = {
       hasDefaultValue: false,
     },
     {
-      name: "timestamp",
-      type: "date",
-      kind: "scalar",
+      name: 'timestamp',
+      type: 'date',
+      kind: 'scalar',
       isId: false,
       isRequired: true,
       isUnique: false,
@@ -89,57 +89,57 @@ const logEntryModel: ParsedModel = {
   dbName: null,
 };
 
-describe("generateServiceFileContent", () => {
-  it("should generate correct service file content for a User model", () => {
-    const result = generateServiceFileContent(userModel, "@prisma/client");
+describe('generateServiceFileContent', () => {
+  it('should generate correct service file content for a User model', () => {
+    const result = generateServiceFileContent(userModel, '@prisma/client');
     // Use snapshot testing for the generated code string
     expect(result).toMatchSnapshot();
   });
 
-  it("should generate service file content with a custom prisma client path", () => {
-    const result = generateServiceFileContent(userModel, "../../libs/prisma");
+  it('should generate service file content with a custom prisma client path', () => {
+    const result = generateServiceFileContent(userModel, '../../libs/prisma');
     expect(result).toContain("from '../../libs/prisma'");
     // Use snapshot testing for the generated code string
     expect(result).toMatchSnapshot();
   });
 
-  it("should generate service file content for a model without an ID", () => {
-    const result = generateServiceFileContent(logEntryModel, "@prisma/client");
-    expect(result).toContain("findManyLogEntry");
-    expect(result).toContain("createLogEntry");
+  it('should generate service file content for a model without an ID', () => {
+    const result = generateServiceFileContent(logEntryModel, '@prisma/client');
+    expect(result).toContain('findManyLogEntry');
+    expect(result).toContain('createLogEntry');
     // Assert that ID-based functions are NOT present by checking for their async definition
-    expect(result).not.toContain("async function findLogEntryById");
-    expect(result).not.toContain("async function updateLogEntry");
-    expect(result).not.toContain("async function deleteLogEntry");
+    expect(result).not.toContain('async function findLogEntryById');
+    expect(result).not.toContain('async function updateLogEntry');
+    expect(result).not.toContain('async function deleteLogEntry');
     expect(result).toMatchSnapshot();
   });
 
-  it("should use number type for ID if the id field type is number", () => {
+  it('should use number type for ID if the id field type is number', () => {
     const modelWithNumericId: ParsedModel = {
       ...userModel,
-      name: "Product",
+      name: 'Product',
       dbName: null,
       fields: [
         {
-          name: "id",
-          type: "number",
-          kind: "scalar",
+          name: 'id',
+          type: 'number',
+          kind: 'scalar',
           isId: true,
           isRequired: true,
           isUnique: true,
           isList: false,
           hasDefaultValue: false,
         },
-        ...userModel.fields.filter((f) => f.name !== "id"),
+        ...userModel.fields.filter((f) => f.name !== 'id'),
       ],
     };
     const result = generateServiceFileContent(
       modelWithNumericId,
-      "@prisma/client"
+      '@prisma/client'
     );
-    expect(result).toContain("findProductById(c: Context, id: number)");
-    expect(result).toContain("updateProduct(c: Context, id: number");
-    expect(result).toContain("deleteProduct(c: Context, id: number)");
+    expect(result).toContain('findProductById(c: Context, id: number)');
+    expect(result).toContain('updateProduct(c: Context, id: number');
+    expect(result).toContain('deleteProduct(c: Context, id: number)');
     expect(result).toMatchSnapshot();
   });
 });

@@ -3,24 +3,24 @@ import type {
   ParsedModel,
   // ParsedField, // No longer directly used here
   // ParsedEnum, // No longer directly used here
-} from "../parser/types";
-import path from "node:path";
-import fs from "node:fs/promises";
+} from '../parser/types';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 // import type { DMMF } from "@prisma/generator-helper"; // No longer needed here
-import { generateRoutesFileContent } from "./generateRoutes";
-import { generateZodSchema } from "./generateZod"; // Import from new file
-import { generateServiceFileContent } from "./generateService"; // Import service generator
-import { generateControllerFileContent } from "./generateController"; // Import controller generator
+import { generateRoutesFileContent } from './generateRoutes';
+import { generateZodSchema } from './generateZod'; // Import from new file
+import { generateServiceFileContent } from './generateService'; // Import service generator
+import { generateControllerFileContent } from './generateController'; // Import controller generator
 // import { generateServerFileContent } from "./generateServer"; // Removed import
-import { generateTypesFileContent } from "./generateTypes"; // Import types generator
+import { generateTypesFileContent } from './generateTypes'; // Import types generator
 import {
   generateModelIndexFileContent,
   generateRootIndexFileContent,
-} from "./generateIndex"; // Import index generators
-import { pascalCase } from "../utils/pascalCase";
-import { camelCase } from "../utils/camelCase";
-import type { ZodSchemaDetails, ServiceFunctionNames } from "./types"; // Import shared types
-import { generatePrismaMiddlewareFileContent } from "./generatePrismaMiddleware";
+} from './generateIndex'; // Import index generators
+import { pascalCase } from '../utils/pascalCase';
+import { camelCase } from '../utils/camelCase';
+import type { ZodSchemaDetails, ServiceFunctionNames } from './types'; // Import shared types
+import { generatePrismaMiddlewareFileContent } from './generatePrismaMiddleware';
 
 // Configuration options for the generator (optional for now)
 export interface GeneratorOptions {
@@ -53,7 +53,7 @@ export async function generateApi(
     console.log(`Output directory created: ${outputDir}`);
 
     // Create middleware directory
-    const middlewareDir = path.join(outputDir, "middleware");
+    const middlewareDir = path.join(outputDir, 'middleware');
     await fs.mkdir(middlewareDir, { recursive: true });
 
     // Generate Prisma middleware
@@ -61,14 +61,14 @@ export async function generateApi(
     const prismaMiddlewareContent = generatePrismaMiddlewareFileContent();
     const prismaMiddlewareFilePath = path.join(
       middlewareDir,
-      "prismaMiddleware.ts"
+      'prismaMiddleware.ts'
     );
     await fs.writeFile(prismaMiddlewareFilePath, prismaMiddlewareContent);
 
     // Generate index file for middleware
     console.log(`- Generating middleware index: index.ts`);
     const middlewareIndexContent = `export * from './prismaMiddleware';`;
-    const middlewareIndexFilePath = path.join(middlewareDir, "index.ts");
+    const middlewareIndexFilePath = path.join(middlewareDir, 'index.ts');
     await fs.writeFile(middlewareIndexFilePath, middlewareIndexContent);
 
     for (const model of parsedSchema.models) {
@@ -83,13 +83,13 @@ export async function generateApi(
       console.log(`  - Generating Zod schema: schema.ts`);
       const { content: zodSchemaContent, imports: zodSchemaImports } =
         generateZodSchema(model, parsedSchema.enums);
-      const schemaFilePath = path.join(modelDir, "schema.ts");
+      const schemaFilePath = path.join(modelDir, 'schema.ts');
       await fs.writeFile(schemaFilePath, zodSchemaContent);
 
       // Generate types file
       console.log(`  - Generating types file: types.ts`);
       const typesContent = generateTypesFileContent(model);
-      const typesFilePath = path.join(modelDir, "types.ts");
+      const typesFilePath = path.join(modelDir, 'types.ts');
       await fs.writeFile(typesFilePath, typesContent);
 
       // Prepare info for route generation - update import path
@@ -114,13 +114,13 @@ export async function generateApi(
       // Generate routes file with simplified name
       console.log(`  - Generating routes file: routes.ts`);
       const routesContent = generateRoutesFileContent(model, zodSchemaInfo);
-      const routesFilePath = path.join(modelDir, "routes.ts");
+      const routesFilePath = path.join(modelDir, 'routes.ts');
       await fs.writeFile(routesFilePath, routesContent);
 
       // Generate service file
       console.log(`  - Generating service file: service.ts`);
       const serviceContent = generateServiceFileContent(model);
-      const serviceFilePath = path.join(modelDir, "service.ts");
+      const serviceFilePath = path.join(modelDir, 'service.ts');
       await fs.writeFile(serviceFilePath, serviceContent);
 
       // Generate controller file
@@ -130,30 +130,30 @@ export async function generateApi(
         zodSchemaInfo,
         serviceFunctionNames
       );
-      const controllerFilePath = path.join(modelDir, "controller.ts");
+      const controllerFilePath = path.join(modelDir, 'controller.ts');
       await fs.writeFile(controllerFilePath, controllerContent);
 
       // Generate model-specific index file
       console.log(`  - Generating model index file: index.ts`);
       const modelIndexContent = generateModelIndexFileContent(model);
-      const modelIndexFilePath = path.join(modelDir, "index.ts");
+      const modelIndexFilePath = path.join(modelDir, 'index.ts');
       await fs.writeFile(modelIndexFilePath, modelIndexContent);
     }
 
     // Generate root index file to export all routes
     console.log(`- Generating root index file: index.ts`);
     const rootIndexContent = generateRootIndexFileContent(parsedSchema.models);
-    const rootIndexFilePath = path.join(outputDir, "index.ts");
+    const rootIndexFilePath = path.join(outputDir, 'index.ts');
     await fs.writeFile(rootIndexFilePath, rootIndexContent);
 
     console.log(
       `\nAPI generation completed successfully. Files written to ${outputDir}`
     );
     console.log(
-      "\nRemember to use the prismaMiddleware in your application to provide the Prisma client to the routes."
+      '\nRemember to use the prismaMiddleware in your application to provide the Prisma client to the routes.'
     );
   } catch (error) {
-    console.error("Error during API generation:", error);
+    console.error('Error during API generation:', error);
     throw new Error(
       `API generation failed: ${
         error instanceof Error ? error.message : String(error)
@@ -166,13 +166,13 @@ export async function generateApi(
 // TODO: Refactor this back into generateService.ts later
 function generateServiceFileContent_Inline(
   model: ParsedModel,
-  prismaClientImportPath: string = "@prisma/client"
+  prismaClientImportPath: string = '@prisma/client'
 ): string {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
   const idField = model.fields.find((f) => f.isId);
   // Ensure null check for idField before accessing type
-  const idType = idField?.type === "number" ? "number" : "string";
+  const idType = idField?.type === 'number' ? 'number' : 'string';
 
   const prismaModelAccessor = modelNameCamel;
 

@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from 'vitest';
 // Import the functions to test (adjust path if necessary)
 // We need to export generateZodSchema and mapFieldTypeToZodType for testing
 // For now, let's test generateZodSchema which uses the mapper internally.
 // We might need to adjust the generator file to export helpers if needed.
-import { generateZodSchema } from "../generateZod"; // Placeholder, need exported helpers
-import type { ParsedModel, ParsedEnum, ParsedField } from "../../parser/types"; // Adjust path
+import { generateZodSchema } from '../generateZod'; // Placeholder, need exported helpers
+import type { ParsedModel, ParsedEnum, ParsedField } from '../../parser/types'; // Adjust path
 
 // --- Mocking generateApi to access helper functions ---
 // This is a workaround. Ideally, helper functions like generateZodSchema
@@ -29,28 +29,28 @@ function mapFieldTypeToZodType_Test(
     const singleType = mapFieldTypeToZodType_Test(singleField, enums);
     return `z.array(${singleType})`;
   }
-  if (field.kind === "enum") {
+  if (field.kind === 'enum') {
     const enumDef = enums.find((e) => e.name === field.enumName);
     if (enumDef) {
-      const enumValues = enumDef.values.map((val) => `'${val}'`).join(", ");
+      const enumValues = enumDef.values.map((val) => `'${val}'`).join(', ');
       return `z.enum([${enumValues}])`;
     } else {
-      return "z.string()";
+      return 'z.string()';
     }
   }
   switch (field.type) {
-    case "string":
-      return "z.string()";
-    case "number":
-      return "z.number()";
-    case "boolean":
-      return "z.boolean()";
-    case "date":
-      return "z.date()";
-    case "json":
-      return "z.record(z.any())";
+    case 'string':
+      return 'z.string()';
+    case 'number':
+      return 'z.number()';
+    case 'boolean':
+      return 'z.boolean()';
+    case 'date':
+      return 'z.date()';
+    case 'json':
+      return 'z.record(z.any())';
     default:
-      return "z.any()";
+      return 'z.any()';
   }
 }
 
@@ -61,16 +61,16 @@ function generateZodSchema_Test(
   const { name, fields } = model;
   const modelNameLower = name.toLowerCase();
   const zodFields = fields
-    .filter((field) => field.kind !== "object")
+    .filter((field) => field.kind !== 'object')
     .map((field) => {
       const zodType = mapFieldTypeToZodType_Test(field, enums);
       let fieldDefinition = `  ${field.name}: ${zodType}`;
       if (!field.isRequired) {
-        fieldDefinition += ".optional()";
+        fieldDefinition += '.optional()';
       }
       return fieldDefinition;
     })
-    .join(",\n");
+    .join(',\n');
 
   return `
 import { z } from 'zod';
@@ -85,16 +85,16 @@ ${zodFields}
 
 // --- End Mock Implementation ---
 
-describe("Zod Schema Generation", () => {
-  it("should generate correct Zod schema for a simple model", () => {
+describe('Zod Schema Generation', () => {
+  it('should generate correct Zod schema for a simple model', () => {
     const simpleModel: ParsedModel = {
-      name: "Post",
+      name: 'Post',
       dbName: null,
       fields: [
         {
-          name: "id",
-          type: "string",
-          kind: "scalar",
+          name: 'id',
+          type: 'string',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -104,9 +104,9 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "title",
-          type: "string",
-          kind: "scalar",
+          name: 'title',
+          type: 'string',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -116,9 +116,9 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "content",
-          type: "string",
-          kind: "scalar",
+          name: 'content',
+          type: 'string',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: false,
@@ -128,21 +128,9 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "likes",
-          type: "number",
-          kind: "scalar",
-          enumName: undefined,
-          isList: false,
-          isRequired: true,
-          isUnique: false,
-          isId: false,
-          hasDefaultValue: true,
-          relationInfo: undefined,
-        },
-        {
-          name: "published",
-          type: "boolean",
-          kind: "scalar",
+          name: 'likes',
+          type: 'number',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -152,9 +140,21 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "meta",
-          type: "json",
-          kind: "scalar",
+          name: 'published',
+          type: 'boolean',
+          kind: 'scalar',
+          enumName: undefined,
+          isList: false,
+          isRequired: true,
+          isUnique: false,
+          isId: false,
+          hasDefaultValue: true,
+          relationInfo: undefined,
+        },
+        {
+          name: 'meta',
+          type: 'json',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: false,
@@ -164,9 +164,9 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "publishedAt",
-          type: "date",
-          kind: "scalar",
+          name: 'publishedAt',
+          type: 'date',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: false,
@@ -176,9 +176,9 @@ describe("Zod Schema Generation", () => {
           relationInfo: undefined,
         },
         {
-          name: "author",
-          type: "relation",
-          kind: "object",
+          name: 'author',
+          type: 'relation',
+          kind: 'object',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -186,8 +186,8 @@ describe("Zod Schema Generation", () => {
           isId: false,
           hasDefaultValue: false,
           relationInfo: {
-            relatedModelName: "User",
-            relationName: "PostAuthor",
+            relatedModelName: 'User',
+            relationName: 'PostAuthor',
           },
         },
       ],
@@ -224,15 +224,15 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
   });
 
   // --- Added test case for enums ---
-  it("should generate correct Zod schema for a model with enums", () => {
+  it('should generate correct Zod schema for a model with enums', () => {
     const enumModel: ParsedModel = {
-      name: "User",
+      name: 'User',
       dbName: null,
       fields: [
         {
-          name: "id",
-          type: "string",
-          kind: "scalar",
+          name: 'id',
+          type: 'string',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -242,10 +242,10 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
           relationInfo: undefined,
         },
         {
-          name: "role",
-          type: "enum",
-          kind: "enum",
-          enumName: "Enum_Role",
+          name: 'role',
+          type: 'enum',
+          kind: 'enum',
+          enumName: 'Enum_Role',
           isList: false,
           isRequired: true,
           isUnique: false,
@@ -254,10 +254,10 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
           relationInfo: undefined,
         },
         {
-          name: "status",
-          type: "enum",
-          kind: "enum",
-          enumName: "Enum_Status",
+          name: 'status',
+          type: 'enum',
+          kind: 'enum',
+          enumName: 'Enum_Status',
           isList: false,
           isRequired: false,
           isUnique: false,
@@ -268,8 +268,8 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
       ],
     };
     const enums: ParsedEnum[] = [
-      { name: "Enum_Role", values: ["USER", "ADMIN"] },
-      { name: "Enum_Status", values: ["ACTIVE", "INACTIVE"] },
+      { name: 'Enum_Role', values: ['USER', 'ADMIN'] },
+      { name: 'Enum_Status', values: ['ACTIVE', 'INACTIVE'] },
     ];
     const expectedSchema = `
 import { z } from 'zod';
@@ -296,15 +296,15 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
   });
 
   // --- Added test case for list/array fields ---
-  it("should generate correct Zod schema for a model with list fields", () => {
+  it('should generate correct Zod schema for a model with list fields', () => {
     const listModel: ParsedModel = {
-      name: "Config",
-      dbName: "configs",
+      name: 'Config',
+      dbName: 'configs',
       fields: [
         {
-          name: "id",
-          type: "number",
-          kind: "scalar",
+          name: 'id',
+          type: 'number',
+          kind: 'scalar',
           enumName: undefined,
           isList: false,
           isRequired: true,
@@ -314,9 +314,9 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           relationInfo: undefined,
         },
         {
-          name: "tags",
-          type: "string",
-          kind: "scalar",
+          name: 'tags',
+          type: 'string',
+          kind: 'scalar',
           enumName: undefined,
           isList: true,
           isRequired: true,
@@ -326,9 +326,9 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           relationInfo: undefined,
         },
         {
-          name: "values",
-          type: "number",
-          kind: "scalar",
+          name: 'values',
+          type: 'number',
+          kind: 'scalar',
           enumName: undefined,
           isList: true,
           isRequired: false,
@@ -338,10 +338,10 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
           relationInfo: undefined,
         },
         {
-          name: "permissions",
-          type: "enum",
-          kind: "enum",
-          enumName: "Enum_Perms",
+          name: 'permissions',
+          type: 'enum',
+          kind: 'enum',
+          enumName: 'Enum_Perms',
           isList: true,
           isRequired: true,
           isUnique: false,
@@ -352,7 +352,7 @@ export const updateUserSchema = UserSchema.partial().omit({ "id": true });
       ],
     };
     const enums: ParsedEnum[] = [
-      { name: "Enum_Perms", values: ["READ", "WRITE", "DELETE"] },
+      { name: 'Enum_Perms', values: ['READ', 'WRITE', 'DELETE'] },
     ];
     const expectedSchema = `
 import { z } from 'zod';

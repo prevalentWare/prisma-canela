@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Contains details about the generated Zod schemas for a model.
@@ -27,5 +27,5 @@ export interface ServiceFunctionNames {
  * Standard Zod schema for API error responses.
  */
 export const ErrorSchema = z.object({
-  error: z.string().openapi({ example: "Resource not found" }),
+  error: z.string().openapi({ example: 'Resource not found' }),
 });

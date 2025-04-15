@@ -1,6 +1,6 @@
-import type { ParsedModel, ParsedSchema } from "../parser/types";
-import { camelCase } from "../utils/camelCase";
-import { pascalCase } from "../utils/pascalCase";
+import type { ParsedModel, ParsedSchema } from '../parser/types';
+import { camelCase } from '../utils/camelCase';
+import { pascalCase } from '../utils/pascalCase';
 
 /**
  * Generates the index file content for a specific model directory.
@@ -44,7 +44,7 @@ export function generateRegisterRoutesFunction(models: ParsedModel[]): string {
       return `  // Mount ${pascalCase(model.name)} routes
   app.route(\`\${prefix}/${modelNameCamel}s\`, ${modelNameCamel}Routes);`;
     })
-    .join("\n\n");
+    .join('\n\n');
 
   return `/**
  * Registers all generated API routes with a Hono app instance.
@@ -85,7 +85,7 @@ export function generateRootIndexFileContent(models: ParsedModel[]): string {
       const modelNameCamel = camelCase(model.name);
       return `import ${modelNameCamel}Routes from './${modelNameCamel}';`;
     })
-    .join("\n");
+    .join('\n');
 
   // Generate named exports for all routes
   const namedExports = models
@@ -93,13 +93,13 @@ export function generateRootIndexFileContent(models: ParsedModel[]): string {
       const modelNameCamel = camelCase(model.name);
       return `export { ${modelNameCamel}Routes };`;
     })
-    .join("\n");
+    .join('\n');
 
   // Generate a routes object that contains all routes
   const routesObject = `export const routes = {
 ${models
   .map((model) => `  ${camelCase(model.name)}: ${camelCase(model.name)}Routes,`)
-  .join("\n")}
+  .join('\n')}
 };`;
 
   // Generate register routes function

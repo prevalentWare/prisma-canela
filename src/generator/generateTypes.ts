@@ -1,6 +1,6 @@
-import type { ParsedModel } from "../parser/types";
-import { pascalCase } from "../utils/pascalCase";
-import { z } from "zod"; // Need z for z.infer
+import type { ParsedModel } from '../parser/types';
+import { pascalCase } from '../utils/pascalCase';
+import { z } from 'zod'; // Need z for z.infer
 
 /**
  * Generates the TypeScript types file content for a given model.
@@ -28,5 +28,5 @@ export type Create${modelNamePascal}Input = z.infer<typeof create${modelNamePasc
 export type Update${modelNamePascal}Input = z.infer<typeof update${modelNamePascal}Schema>;
 `;
 
-  return content.trim() + "\n"; // Add trailing newline
+  return content.trim() + '\n'; // Add trailing newline
 }

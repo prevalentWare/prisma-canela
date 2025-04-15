@@ -1,6 +1,6 @@
-import type { ParsedModel, ParsedField, ParsedEnum } from "../parser/types";
-import { pascalCase } from "../utils/pascalCase";
-import { camelCase } from "../utils/camelCase";
+import type { ParsedModel, ParsedField, ParsedEnum } from '../parser/types';
+import { pascalCase } from '../utils/pascalCase';
+import { camelCase } from '../utils/camelCase';
 
 /**
  * Generates the Zod schema string for a given model.
@@ -22,7 +22,7 @@ export function generateZodSchema(
 
   const usedEnumNames = new Set<string>();
   fields.forEach((field) => {
-    if (field.kind === "enum" && field.enumName) {
+    if (field.kind === 'enum' && field.enumName) {
       // Ensure the enum name exists in the parsed enums list
       if (enums.some((e) => e.name === field.enumName)) {
         usedEnumNames.add(field.enumName);
@@ -37,7 +37,7 @@ export function generateZodSchema(
   // Generate enum import statement if needed
   const enumImportStatement =
     usedEnumNames.size > 0
-      ? `import { ${[...usedEnumNames].join(", ")} } from '@prisma/client';` // Assume enums are available from @prisma/client
+      ? `import { ${[...usedEnumNames].join(', ')} } from '@prisma/client';` // Assume enums are available from @prisma/client
       : null;
   if (enumImportStatement) {
     requiredImports.push(enumImportStatement);
@@ -45,15 +45,15 @@ export function generateZodSchema(
 
   // Generate fields for the main model schema (matches Prisma model structure)
   const zodFields = fields
-    .filter((field) => field.kind !== "object") // Exclude relation fields
+    .filter((field) => field.kind !== 'object') // Exclude relation fields
     .map((field) => {
       const zodType = mapFieldTypeToZodType(field);
       let fieldDefinition = `  ${field.name}: ${zodType}`;
 
       // Add common refinements based on field name or type (example: email)
       if (
-        field.type === "string" &&
-        field.name.toLowerCase().includes("email")
+        field.type === 'string' &&
+        field.name.toLowerCase().includes('email')
       ) {
         fieldDefinition += '.email({ message: "Invalid email format" })';
       }
@@ -61,7 +61,7 @@ export function generateZodSchema(
 
       // Handle optionality based on Prisma schema (`?`) and ID field status
       if (!field.isRequired && !field.isId) {
-        fieldDefinition += ".optional().nullable()"; // Allow optional and null for non-required, non-ID fields
+        fieldDefinition += '.optional().nullable()'; // Allow optional and null for non-required, non-ID fields
       } else if (field.isId && !field.isRequired) {
         // Note: This case (optional ID) is unusual but technically possible in some DBs
         // Adjust as needed based on expected schema patterns. Defaulting to required for ID.
@@ -72,7 +72,7 @@ export function generateZodSchema(
 
       return fieldDefinition;
     })
-    .join(",\n");
+    .join(',\n');
 
   // --- Generate Create Schema ---
   const fieldsToOmitOnCreate: string[] = [];
@@ -81,8 +81,8 @@ export function generateZodSchema(
     // Or omit if it's a createdAt/updatedAt timestamp managed by Prisma/DB
     if (
       (field.isId && field.hasDefaultValue) ||
-      field.name === "createdAt" ||
-      field.name === "updatedAt"
+      field.name === 'createdAt' ||
+      field.name === 'updatedAt'
     ) {
       fieldsToOmitOnCreate.push(`"${field.name}"`);
     } else if (field.hasDefaultValue && !field.isRequired) {
@@ -94,8 +94,8 @@ export function generateZodSchema(
   // We no longer omit all fields with defaults, only specific ones above.
   const createSchemaOmit =
     fieldsToOmitOnCreate.length > 0
-      ? `.omit({ ${fieldsToOmitOnCreate.join(": true, ")}: true })`
-      : "";
+      ? `.omit({ ${fieldsToOmitOnCreate.join(': true, ')}: true })`
+      : '';
 
   // --- Generate Update Schema ---
   // Update schema: partial, omit ID, createdAt, updatedAt
@@ -103,21 +103,21 @@ export function generateZodSchema(
   model.fields.forEach((field) => {
     if (
       field.isId ||
-      field.name === "createdAt" ||
-      field.name === "updatedAt"
+      field.name === 'createdAt' ||
+      field.name === 'updatedAt'
     ) {
       fieldsToOmitOnUpdate.push(`"${field.name}"`);
     }
   });
   const updateSchemaOmit =
     fieldsToOmitOnUpdate.length > 0
-      ? `.omit({ ${fieldsToOmitOnUpdate.join(": true, ")}: true })`
-      : "";
+      ? `.omit({ ${fieldsToOmitOnUpdate.join(': true, ')}: true })`
+      : '';
 
   // --- Assemble Schema Content ---
   const schemaContent = `
 import { z } from 'zod';
-${requiredImports.length > 0 ? requiredImports.join("\n") + "\n" : ""}
+${requiredImports.length > 0 ? requiredImports.join('\n') + '\n' : ''}
 // Base schema for ${modelNamePascal} (matches Prisma model structure)
 export const ${modelNamePascal}Schema = z.object({
 ${zodFields}
@@ -154,7 +154,7 @@ function mapFieldTypeToZodType(field: ParsedField): string {
   }
 
   // --- Handle Enums using z.nativeEnum ---
-  if (field.kind === "enum") {
+  if (field.kind === 'enum') {
     // Use field.enumName which holds the actual Enum name (e.g., Role)
     if (field.enumName) {
       // Assuming the enum name from DMMF matches the exported enum name from @prisma/client
@@ -164,32 +164,32 @@ function mapFieldTypeToZodType(field: ParsedField): string {
       console.warn(
         `Enum field ${field.name} is missing enumName. Falling back to z.string().`
       );
-      return "z.string()";
+      return 'z.string()';
     }
   }
 
   // Handle scalar types based on our simplified field.type
   switch (field.type) {
-    case "string":
-      return "z.string()";
-    case "number":
+    case 'string':
+      return 'z.string()';
+    case 'number':
       // Add refinements like .int() based on original Prisma type if needed (e.g., field.nativeType)
-      return "z.number()";
-    case "boolean":
-      return "z.boolean()";
-    case "date":
+      return 'z.number()';
+    case 'boolean':
+      return 'z.boolean()';
+    case 'date':
       // Use coerce.date() for flexibility with date strings/objects
-      return "z.coerce.date()";
-    case "json":
+      return 'z.coerce.date()';
+    case 'json':
       // Allow any valid JSON structure
-      return "z.record(z.any())"; // Or use z.unknown() or a more specific structure if possible
+      return 'z.record(z.any())'; // Or use z.unknown() or a more specific structure if possible
     // Relations are filtered out before calling the parent function
     // Enums are handled above by kind
-    case "unsupported":
+    case 'unsupported':
     default:
       console.warn(
         `Unsupported type "${field.type}" for field "${field.name}". Falling back to z.any(). Consider updating the parser or generator.`
       );
-      return "z.any()";
+      return 'z.any()';
   }
 }

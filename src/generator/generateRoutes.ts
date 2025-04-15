@@ -1,9 +1,9 @@
-import type { ParsedModel } from "../parser/types";
-import { pascalCase } from "../utils/pascalCase";
-import { camelCase } from "../utils/camelCase";
-import type { ZodSchemaDetails } from "./types";
+import type { ParsedModel } from '../parser/types';
+import { pascalCase } from '../utils/pascalCase';
+import { camelCase } from '../utils/camelCase';
+import type { ZodSchemaDetails } from './types';
 // ErrorSchema is defined locally below as imports were unreliable
-import { z } from "@hono/zod-openapi";
+import { z } from '@hono/zod-openapi';
 
 /**
  * Generates the Hono route file content for a given model.
@@ -23,7 +23,7 @@ export function generateRoutesFileContent(
   const idField = model.fields.find((f) => f.isId);
   // Determine ID type for parameter validation (string or number)
   const idType =
-    idField?.type === "number" ? "z.coerce.number()" : "z.string()"; // Use z.coerce.number() for numeric IDs
+    idField?.type === 'number' ? 'z.coerce.number()' : 'z.string()'; // Use z.coerce.number() for numeric IDs
 
   // --- Base Imports ---
   // Define ErrorSchema locally as imports weren't reliably added by auto-edit
@@ -292,7 +292,7 @@ ${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, controller.get${
 ${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, controller.update${modelNamePascal});
 ${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, controller.delete${modelNamePascal});
 `
-    : "";
+    : '';
 
   const exportStatement = `
 export default ${modelNameCamel}Routes;
@@ -300,8 +300,8 @@ export default ${modelNameCamel}Routes;
 
   return (
     imports +
-    "\n\n// --- Route Definitions ---" +
-    routeDefinitions.join("\n") +
+    '\n\n// --- Route Definitions ---' +
+    routeDefinitions.join('\n') +
     honoSetup +
     idRoutesSetup +
     exportStatement

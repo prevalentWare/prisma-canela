@@ -1,7 +1,7 @@
-import { getDMMF } from "@prisma/internals";
-import type { DMMF } from "@prisma/generator-helper";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { getDMMF } from '@prisma/internals';
+import type { DMMF } from '@prisma/generator-helper';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import type {
   ParsedSchema,
   ParsedModel,
@@ -9,7 +9,7 @@ import type {
   ParsedField,
   FieldType,
   ParsedRelationInfo,
-} from "./types";
+} from './types';
 
 /**
  * Parses the Prisma schema file and returns a structured representation.
@@ -19,21 +19,21 @@ import type {
  * @throws If the schema file cannot be read or parsed.
  */
 export async function parsePrismaSchema(
-  schemaPath: string = "prisma/schema.prisma"
+  schemaPath: string = 'prisma/schema.prisma'
 ): Promise<ParsedSchema> {
   const absoluteSchemaPath = path.resolve(process.cwd(), schemaPath);
 
   console.log(`Attempting to parse schema at: ${absoluteSchemaPath}`);
 
   try {
-    const schemaContent = await fs.readFile(absoluteSchemaPath, "utf-8");
-    console.log("Successfully read schema file.");
+    const schemaContent = await fs.readFile(absoluteSchemaPath, 'utf-8');
+    console.log('Successfully read schema file.');
 
     // --- Reverted to using datamodel key as per type definitions ---
     const dmmf: DMMF.Document = await getDMMF({
       datamodel: schemaContent,
     });
-    console.log("Successfully generated DMMF from schema.");
+    console.log('Successfully generated DMMF from schema.');
 
     const parsedSchema: ParsedSchema = mapDmmfToParsedSchema(dmmf);
 
@@ -58,7 +58,7 @@ export async function parsePrismaSchema(
  * @returns The structured representation of the schema.
  */
 function mapDmmfToParsedSchema(dmmf: DMMF.Document): ParsedSchema {
-  console.log("Mapping DMMF to ParsedSchema...");
+  console.log('Mapping DMMF to ParsedSchema...');
 
   const parsedEnums: ParsedEnum[] = dmmf.datamodel.enums.map(
     (enumType: DMMF.DatamodelEnum) => ({
@@ -84,7 +84,7 @@ function mapDmmfToParsedSchema(dmmf: DMMF.Document): ParsedSchema {
     enums: parsedEnums,
   };
 
-  console.log("Finished mapping DMMF.");
+  console.log('Finished mapping DMMF.');
   return parsedSchema;
 }
 
@@ -99,40 +99,40 @@ function mapPrismaTypeToFieldType(
   prismaType: string,
   kind: DMMF.FieldKind
 ): FieldType {
-  if (kind === "object") {
-    return "relation";
+  if (kind === 'object') {
+    return 'relation';
   }
-  if (kind === "enum") {
-    return "enum";
+  if (kind === 'enum') {
+    return 'enum';
   }
 
   // Handle scalar types
   switch (prismaType) {
-    case "String":
-    case "UUID":
-    case "Char":
-    case "Text":
-    case "VarChar":
-      return "string";
-    case "Int":
-    case "BigInt":
-    case "Float":
-    case "Decimal":
-      return "number";
-    case "Boolean":
-      return "boolean";
-    case "DateTime":
-    case "Date":
-    case "Time":
-      return "date";
-    case "Json":
-      return "json";
-    case "Bytes": // Consider how to handle Bytes - maybe unsupported or specific type?
+    case 'String':
+    case 'UUID':
+    case 'Char':
+    case 'Text':
+    case 'VarChar':
+      return 'string';
+    case 'Int':
+    case 'BigInt':
+    case 'Float':
+    case 'Decimal':
+      return 'number';
+    case 'Boolean':
+      return 'boolean';
+    case 'DateTime':
+    case 'Date':
+    case 'Time':
+      return 'date';
+    case 'Json':
+      return 'json';
+    case 'Bytes': // Consider how to handle Bytes - maybe unsupported or specific type?
       // For now, map to unsupported
-      return "unsupported";
+      return 'unsupported';
     default:
       console.warn(`Unsupported Prisma scalar type: ${prismaType}`);
-      return "unsupported";
+      return 'unsupported';
   }
 }
 
@@ -144,7 +144,7 @@ function mapPrismaTypeToFieldType(
  */
 function mapDmmfFieldToParsedField(field: DMMF.Field): ParsedField {
   const relationInfo: ParsedRelationInfo | undefined =
-    field.kind === "object" && field.relationName
+    field.kind === 'object' && field.relationName
       ? {
           relatedModelName: field.type,
           relationName: field.relationName,
@@ -156,7 +156,7 @@ function mapDmmfFieldToParsedField(field: DMMF.Field): ParsedField {
     name: field.name,
     type: mapPrismaTypeToFieldType(field.type, field.kind),
     kind: field.kind,
-    enumName: field.kind === "enum" ? field.type : undefined,
+    enumName: field.kind === 'enum' ? field.type : undefined,
     isList: field.isList,
     isRequired: field.isRequired,
     isUnique: field.isUnique,
@@ -174,7 +174,7 @@ async function main() {
     const parsed = await parsePrismaSchema();
     console.log(JSON.stringify(parsed, null, 2));
   } catch (err) {
-    console.error("Failed to parse schema:", err);
+    console.error('Failed to parse schema:', err);
   }
 }
 

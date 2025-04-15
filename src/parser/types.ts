@@ -1,5 +1,5 @@
 // --- Import DMMF for FieldKind ---
-import type { DMMF } from "@prisma/generator-helper";
+import type { DMMF } from '@prisma/generator-helper';
 
 /**
  * Represents the overall parsed Prisma schema structure.
@@ -40,14 +40,14 @@ export interface ParsedField {
  * Simplified field type categories.
  */
 export type FieldType =
-  | "string"
-  | "number" // Includes Int, Float, BigInt, Decimal
-  | "boolean"
-  | "date" // DateTime
-  | "json"
-  | "enum"
-  | "relation"
-  | "unsupported"; // For types we don't handle initially
+  | 'string'
+  | 'number' // Includes Int, Float, BigInt, Decimal
+  | 'boolean'
+  | 'date' // DateTime
+  | 'json'
+  | 'enum'
+  | 'relation'
+  | 'unsupported'; // For types we don't handle initially
 
 /**
  * Represents details about a relation field.

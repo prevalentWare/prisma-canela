@@ -1,6 +1,6 @@
-import type { ParsedModel } from "../parser/types";
-import { pascalCase } from "../utils/pascalCase";
-import { camelCase } from "../utils/camelCase";
+import type { ParsedModel } from '../parser/types';
+import { pascalCase } from '../utils/pascalCase';
+import { camelCase } from '../utils/camelCase';
 
 /**
  * Generates the content for a model-specific service file (service.ts).
@@ -13,7 +13,7 @@ import { camelCase } from "../utils/camelCase";
  */
 export function generateServiceFileContent(
   model: ParsedModel,
-  prismaClientImportPath: string = "@prisma/client"
+  prismaClientImportPath: string = '@prisma/client'
 ): string {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
@@ -21,9 +21,9 @@ export function generateServiceFileContent(
 
   // Determine the TS type for the ID based on Prisma type (Int -> number, others -> string)
   // Default to 'string' if no ID field exists, though it won't be used in that case.
-  const idType = idField?.type === "number" ? "number" : "string";
+  const idType = idField?.type === 'number' ? 'number' : 'string';
   // Get the actual name of the ID field (e.g., 'id', 'uuid') for where clauses.
-  const idFieldName = idField?.name ?? "id"; // Default to 'id' as a fallback, though unlikely needed if !idField
+  const idFieldName = idField?.name ?? 'id'; // Default to 'id' as a fallback, though unlikely needed if !idField
 
   // Determine the correct Prisma model accessor (usually camelCase)
   const prismaModelAccessor = modelNameCamel;

@@ -1,18 +1,18 @@
-import { describe, it, expect } from "vitest";
-import { generateTypesFileContent } from "../generateTypes";
-import type { ParsedModel } from "../../parser/types";
+import { describe, it, expect } from 'vitest';
+import { generateTypesFileContent } from '../generateTypes';
+import type { ParsedModel } from '../../parser/types';
 
-describe("generateTypesFileContent", () => {
-  it("should generate correct type definitions for a simple model", () => {
+describe('generateTypesFileContent', () => {
+  it('should generate correct type definitions for a simple model', () => {
     // Arrange: Define a simple mock model
     const mockModel: ParsedModel = {
-      name: "TestItem",
-      dbName: "test_item",
+      name: 'TestItem',
+      dbName: 'test_item',
       fields: [
         {
-          name: "id",
-          type: "string",
-          kind: "scalar",
+          name: 'id',
+          type: 'string',
+          kind: 'scalar',
           isList: false,
           isRequired: true,
           isUnique: false,
@@ -20,9 +20,9 @@ describe("generateTypesFileContent", () => {
           hasDefaultValue: true,
         },
         {
-          name: "name",
-          type: "string",
-          kind: "scalar",
+          name: 'name',
+          type: 'string',
+          kind: 'scalar',
           isList: false,
           isRequired: true,
           isUnique: false,
