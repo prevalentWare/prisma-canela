@@ -67,23 +67,34 @@ function generateHandler(
   if (requiresBody) args.push("data");
   const serviceCallArgs = args.join(", ");
 
-  const logId = requiresId ? ` \\\${id}` : "";
+  const logId = requiresId ? " ${id}" : "";
   const isIdNotFoundCheck = requiresId && !handlerName.startsWith("list"); // Check for P2025 on ID routes
 
   // Specific check for findById returning null
   const getByIdNotFound = handlerName.startsWith("get")
-    ? `
-    if (!item) {
-      return c.json({ error: \'${modelNamePascal} not found\' }, 404);
-    }`
+    ? `\n    if (!item) {\n      return c.json({ error: '${modelNamePascal} not found' }, 404);\n    }`
     : "";
+
+  // Generate a natural language comment for the handler
+  let comment = "";
+  if (handlerName.startsWith("list")) {
+    comment = `List all ${modelNamePascal} records.`;
+  } else if (handlerName.startsWith("create")) {
+    comment = `Create a new ${modelNamePascal}.`;
+  } else if (handlerName.startsWith("get")) {
+    comment = `Get a ${modelNamePascal} by ID.`;
+  } else if (handlerName.startsWith("update")) {
+    comment = `Update a ${modelNamePascal} by ID.`;
+  } else if (handlerName.startsWith("delete")) {
+    comment = `Delete a ${modelNamePascal} by ID.`;
+  } else {
+    comment = `${handlerName} for ${modelNamePascal}.`;
+  }
 
   // Use the input generic in the handler signature
   return `
 /**
- * Handles ${handlerName
-   .replace(/([A-Z])/g, " $1")
-   .toLowerCase()} ${modelNamePascal}.
+ * ${comment}
  */
 export const ${handlerName} = async (c: ${contextType}) => {
   ${paramValidation}
@@ -95,15 +106,10 @@ export const ${handlerName} = async (c: ${contextType}) => {
     return c.json(item, ${successStatusCode});
   } catch (error: unknown) {${
     isIdNotFoundCheck
-      ? `
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-      // Use the specific ID in the error message if available
-      const message = \`Error ${handlerName
-        .replace(/([A-Z])/g, " $1")
-        .toLowerCase()}ing ${modelNamePascal}${logId}: Record not found\`;
-      console.error(message, error);
-      return c.json({ error: '${modelNamePascal} not found' }, 404);
-    }`
+      ? `\n    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {\n      // Use the specific ID in the error message if available\n      const message = \`Error ${handlerName
+          .replace(/([A-Z])/g, " $1")
+          .toLowerCase()}ing ${modelNamePascal}${logId}: Record not found\`;
+      console.error(message, error);\n      return c.json({ error: '${modelNamePascal} not found' }, 404);\n    }`
       : ""
   }
     // Check for Prisma client not found in context
