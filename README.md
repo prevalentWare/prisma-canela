@@ -1,7 +1,7 @@
 # Prisma-Canela 🌿
 
-[![npm version](https://badge.fury.io/js/prisma-canela.svg)](https://badge.fury.io/js/prisma-canela) <!-- Placeholder -->
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Placeholder -->
+[![npm version](https://badge.fury.io/js/%40prevalentware%2Fprisma-canela.svg)](https://www.npmjs.com/package/@prevalentware/prisma-canela)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Canela is a codegen tool that takes a Prisma schema and generates a fully typed REST API using [Hono](https://hono.dev/) and [Zod](https://zod.dev/).
 
@@ -56,7 +56,20 @@ yarn add @prevalentware/prisma-canela
 
 ```bash
 # Generate API from a Prisma schema
-bun @prevalentware/prisma-canela generate --schema ./prisma/schema.prisma --output ./src/generated
+npx @prevalentware/prisma-canela generate --schema ./prisma/schema.prisma --output ./src/generated
+
+# Or if you have it installed locally with bun
+bun canela generate --schema ./prisma/schema.prisma --output ./src/generated
+
+# With npm scripts (if added to package.json)
+npm run canela generate --schema ./prisma/schema.prisma --output ./src/generated
+```
+
+If you don't specify the schema path, Canela will try to find it automatically:
+
+```bash
+# Generate using automatic schema detection
+npx @prevalentware/prisma-canela generate
 ```
 
 ### Generated Code Structure
@@ -309,7 +322,7 @@ The tool automatically detects if you're using a single schema file or a directo
 You don't need to do anything special - just run the CLI command as usual:
 
 ```bash
-bun @prevalentware/prisma-canela generate
+npx @prevalentware/prisma-canela generate
 ```
 
 The tool will:
@@ -322,7 +335,7 @@ The tool will:
 You can also explicitly specify a schema directory:
 
 ```bash
-bun @prevalentware/prisma-canela generate --schema ./prisma/schema
+npx @prevalentware/prisma-canela generate --schema ./prisma/schema
 ```
 
 ##### Multi-file Schema Best Practices
@@ -356,7 +369,7 @@ The tool automatically detects if you're using a single schema file or a directo
 You don't need to do anything special - just run the CLI command as usual:
 
 ```bash
-bun @prevalentware/prisma-canela generate
+npx @prevalentware/prisma-canela generate
 ```
 
 The tool will:
@@ -369,7 +382,7 @@ The tool will:
 You can also explicitly specify a schema directory:
 
 ```bash
-bun @prevalentware/prisma-canela generate --schema ./prisma/schema
+npx @prevalentware/prisma-canela generate --schema ./prisma/schema
 ```
 
 #### Multi-file Schema Best Practices
@@ -454,4 +467,4 @@ bun run lint -- --fix
 
 ## License
 
-[MIT](LICENSE) <!-- Placeholder -->
+[MIT](LICENSE)
