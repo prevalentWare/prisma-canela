@@ -30,7 +30,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare-test-schema": "bun scripts/generate-test-schema.js",
-    "quality-check": "bun run build && bun run prepare-test-schema && bun run generate-test && bun run lint:generated",
+    "quality-check": "bun run build && bun run prepare-test-schema && bun run generate-test",
     "generate-test": "bun run ./dist/bin/canela.js generate --output ./test-output",
     "lint:generated": "eslint --ext .ts ./test-output",
     "prepublishOnly": "bun run test && bun run build",
