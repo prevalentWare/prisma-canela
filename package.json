@@ -1,6 +1,6 @@
 {
   "name": "@prevalentware/prisma-canela",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Prisma schema to Hono API codegen tool",
   "type": "module",
   "main": "dist/index.js",
@@ -15,7 +15,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "scripts"
   ],
   "scripts": {
     "dev": "bun --watch src/index.ts",
@@ -28,7 +29,8 @@
     "format": "prettier --write ./src",
     "test": "vitest run",
     "test:watch": "vitest",
-    "quality-check": "bun run build && bun run generate-test && bun run lint:generated",
+    "prepare-test-schema": "bun scripts/generate-test-schema.js",
+    "quality-check": "bun run build && bun run prepare-test-schema && bun run generate-test && bun run lint:generated",
     "generate-test": "bun run ./dist/bin/canela.js generate --output ./test-output",
     "lint:generated": "eslint --ext .ts ./test-output",
     "prepublishOnly": "bun run test && bun run build",

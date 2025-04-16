@@ -20,6 +20,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Ensure scripts directory exists
+        run: mkdir -p scripts
+
+      - name: Make scripts executable
+        run: chmod +x scripts/generate-test-schema.js
+
       - name: Run tests
         run: bun run test
 
