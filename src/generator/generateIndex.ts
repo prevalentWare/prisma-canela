@@ -55,7 +55,6 @@ export const generateRegisterRoutesFunction = (
  * @param app The Hono app instance (can be Hono or OpenAPIHono)
  * @param options Configuration options for route registration
  *   - prefix: URL prefix for all routes (e.g., '/api')
- *   - pluralize: Whether to pluralize route paths (default: true)
  * @returns The app instance with routes registered
  */
 export function registerAllRoutes<
@@ -66,12 +65,9 @@ export function registerAllRoutes<
   app: T, 
   options: { 
     prefix?: string;
-    pluralize?: boolean;
   } = {}
 ) {
   const { prefix = '' } = options;
-  // We're not using pluralize yet, so we omit it to avoid linter warnings
-  const _pluralize = options.pluralize ?? true;
   
 ${modelRegistrations}
 
