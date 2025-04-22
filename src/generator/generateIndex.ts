@@ -58,14 +58,20 @@ export const generateRegisterRoutesFunction = (
  *   - pluralize: Whether to pluralize route paths (default: true)
  * @returns The app instance with routes registered
  */
-export function registerAllRoutes(
-  app: Record<string, unknown>, 
+export function registerAllRoutes<
+  T extends {
+    route: <P extends string, H>(path: P, handler: H) => T;
+  }
+>(
+  app: T, 
   options: { 
     prefix?: string;
     pluralize?: boolean;
   } = {}
 ) {
-  const { prefix = '', _pluralize = true } = options;
+  const { prefix = '' } = options;
+  // We're not using pluralize yet, so we omit it to avoid linter warnings
+  const _pluralize = options.pluralize ?? true;
   
 ${modelRegistrations}
 
