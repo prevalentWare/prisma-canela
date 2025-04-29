@@ -190,3 +190,6 @@ prisma/schema.prisma
 
 # Generated test output
 test-output/
+
+# Generated WASM files
+prisma-schema-wasm/

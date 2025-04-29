@@ -1,6 +1,6 @@
 {
   "name": "@prevalentware/prisma-canela",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Prisma schema to Hono API codegen tool",
   "type": "module",
   "main": "dist/index.js",
@@ -16,13 +16,16 @@
     "dist",
     "LICENSE",
     "README.md",
-    "scripts"
+    "scripts",
+    "prisma-schema-wasm"
   ],
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun run clean && bun build ./src/bin/canela.ts --outdir ./dist/bin --target node --external commander --external fs --external path && chmod +x dist/bin/canela.js",
+    "build": "bun run clean && bun build ./src/bin/canela.ts --outdir ./dist/bin --target node --external commander --external fs --external path && chmod +x dist/bin/canela.js && bun run copy-wasm-files && bun run fix-wasm-paths",
+    "copy-wasm-files": "mkdir -p prisma-schema-wasm/src && cp -R node_modules/@prisma/prisma-schema-wasm/src/*.wasm prisma-schema-wasm/src/",
+    "fix-wasm-paths": "bun scripts/fix-wasm-paths.js",
     "build:test": "bun build src/test-cli.ts --outdir ./dist --target node --external commander && chmod +x dist/test-cli.js",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist prisma-schema-wasm",
     "start": "node dist/bin/canela.js",
     "lint": "eslint --ext .ts ./src",
     "lint:fix": "eslint --ext .ts --fix && bun run format",

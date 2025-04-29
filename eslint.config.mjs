@@ -23,6 +23,7 @@ const config = tseslint.config(
       'node_modules/**',
       'jest.config.ts',
       'src/config/prisma.ts', // Prisma client config
+      'scripts/fix-wasm-paths.js',
     ],
     plugins: {
       prettier: prettierPlugin,

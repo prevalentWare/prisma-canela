@@ -32,6 +32,18 @@ The script creates a minimal schema with:
 
 This schema is sufficient for testing code generation features but is not committed to the repository.
 
+## WASM Path Fix
+
+The `fix-wasm-paths.js` script fixes a critical issue related to hardcoded paths in the bundled code. When the package is built using Bun, it sometimes includes absolute paths to WASM files from the local development environment, which breaks when users install the package.
+
+The script:
+
+1. Copies the necessary WASM files from `node_modules/@prisma/prisma-schema-wasm/src/` to a package-local directory
+2. Modifies the bundled code to use dynamic path resolution instead of hardcoded paths
+3. Ensures the package works correctly when installed by end users
+
+This is automatically run as part of the build process.
+
 ## Adding New Scripts
 
 When adding new utility scripts:
