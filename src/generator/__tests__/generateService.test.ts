@@ -90,21 +90,30 @@ const logEntryModel: ParsedModel = {
 };
 
 describe('generateServiceFileContent', () => {
-  it('should generate correct service file content for a User model', () => {
-    const result = generateServiceFileContent(userModel, '@prisma/client');
+  it('should generate correct service file content for a User model', async () => {
+    const result = await generateServiceFileContent(
+      userModel,
+      '@prisma/client'
+    );
     // Use snapshot testing for the generated code string
     expect(result).toMatchSnapshot();
   });
 
-  it('should generate service file content with a custom prisma client path', () => {
-    const result = generateServiceFileContent(userModel, '../../libs/prisma');
+  it('should generate service file content with a custom prisma client path', async () => {
+    const result = await generateServiceFileContent(
+      userModel,
+      '../../libs/prisma'
+    );
     expect(result).toContain("from '../../libs/prisma'");
     // Use snapshot testing for the generated code string
     expect(result).toMatchSnapshot();
   });
 
-  it('should generate service file content for a model without an ID', () => {
-    const result = generateServiceFileContent(logEntryModel, '@prisma/client');
+  it('should generate service file content for a model without an ID', async () => {
+    const result = await generateServiceFileContent(
+      logEntryModel,
+      '@prisma/client'
+    );
     expect(result).toContain('findManyLogEntry');
     expect(result).toContain('createLogEntry');
     // Assert that ID-based functions are NOT present
@@ -114,7 +123,7 @@ describe('generateServiceFileContent', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it('should use number type for ID if the id field type is number', () => {
+  it('should use number type for ID if the id field type is number', async () => {
     const modelWithNumericId: ParsedModel = {
       ...userModel,
       name: 'Product',
@@ -133,7 +142,7 @@ describe('generateServiceFileContent', () => {
         ...userModel.fields.filter((f) => f.name !== 'id'),
       ],
     };
-    const result = generateServiceFileContent(
+    const result = await generateServiceFileContent(
       modelWithNumericId,
       '@prisma/client'
     );

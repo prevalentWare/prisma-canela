@@ -86,7 +86,7 @@ ${zodFields}
 // --- End Mock Implementation ---
 
 describe('Zod Schema Generation', () => {
-  it('should generate correct Zod schema for a simple model', () => {
+  it('should generate correct Zod schema for a simple model', async () => {
     const simpleModel: ParsedModel = {
       name: 'Post',
       dbName: null,
@@ -225,14 +225,17 @@ export const updatePostSchema = PostSchema.partial().omit({ "id": true });
 `;
 
     // Access the content property
-    const { content: generatedContent } = generateZodSchema(simpleModel, []);
+    const { content: generatedContent } = await generateZodSchema(
+      simpleModel,
+      []
+    );
 
     // Normalize whitespace for comparison
     expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 
   // --- Added test case for enums ---
-  it('should generate correct Zod schema for a model with enums', () => {
+  it('should generate correct Zod schema for a model with enums', async () => {
     const enumModel: ParsedModel = {
       name: 'User',
       dbName: null,
@@ -302,12 +305,15 @@ export const createUserSchema = UserSchema.omit({ "id": true, "role": true });
 export const updateUserSchema = UserSchema.partial().omit({ "id": true });
 `;
     // Access the content property
-    const { content: generatedContent } = generateZodSchema(enumModel, enums);
+    const { content: generatedContent } = await generateZodSchema(
+      enumModel,
+      enums
+    );
     expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 
   // --- Added test case for list/array fields ---
-  it('should generate correct Zod schema for a model with list fields', () => {
+  it('should generate correct Zod schema for a model with list fields', async () => {
     const listModel: ParsedModel = {
       name: 'Config',
       dbName: 'configs',
@@ -390,7 +396,10 @@ export const createConfigSchema = ConfigSchema.omit({ "id": true });
 export const updateConfigSchema = ConfigSchema.partial().omit({ "id": true });
 `;
     // Access the content property
-    const { content: generatedContent } = generateZodSchema(listModel, enums);
+    const { content: generatedContent } = await generateZodSchema(
+      listModel,
+      enums
+    );
     expect(generatedContent.trim()).toEqual(expectedSchema.trim());
   });
 });

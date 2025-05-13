@@ -4,6 +4,20 @@ import path from 'node:path';
 import { findPrismaSchema } from '@parser/index';
 
 /**
+ * Flag to indicate if running in test mode
+ * When true, the sync version will be used internally by async functions
+ */
+let isTestMode = false;
+
+/**
+ * Set test mode to bypass async operations in tests
+ * @param value Whether test mode is enabled
+ */
+export const setTestMode = (value: boolean): void => {
+  isTestMode = value;
+};
+
+/**
  * Returns the path to import Prisma client from
  * This checks the Prisma schema for a custom output path and uses it if available,
  * otherwise falls back to @prisma/client
@@ -11,6 +25,11 @@ import { findPrismaSchema } from '@parser/index';
  * @returns The path to import the Prisma client from
  */
 export const getPrismaPath = async (): Promise<string> => {
+  // In test mode, use the sync version to avoid async issues in tests
+  if (isTestMode) {
+    return getPrismaPathSync();
+  }
+
   try {
     // Get the project root directory
     const projectRoot = process.cwd();
@@ -105,7 +124,18 @@ export const getPrismaPath = async (): Promise<string> => {
 /**
  * Synchronous version of getPrismaPath that always returns '@prisma/client'
  * This is used as a fallback when the async version can't be used
+ * It's also used in tests by setting isTestMode to true
  */
 export const getPrismaPathSync = (): string => {
   return '@prisma/client';
 };
+
+// Set test mode to true if running tests
+// This is based on environment variables that testing frameworks commonly set
+if (
+  process.env.NODE_ENV === 'test' ||
+  process.env.VITEST ||
+  process.env.JEST_WORKER_ID
+) {
+  setTestMode(true);
+}

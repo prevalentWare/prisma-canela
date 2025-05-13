@@ -179,8 +179,8 @@ const logEntryServiceNames: ServiceFunctionNames = {
 // --- Test Suite ---
 
 describe('generateControllerFileContent', () => {
-  it('should generate correct controller content for a standard model (User)', () => {
-    const result = generateControllerFileContent(
+  it('should generate correct controller content for a standard model (User)', async () => {
+    const result = await generateControllerFileContent(
       userModel,
       userZodSchemaInfo,
       userServiceNames
@@ -225,8 +225,8 @@ describe('generateControllerFileContent', () => {
     expect(result).toMatchSnapshot(); // Keep snapshot check
   });
 
-  it('should generate correct controller content for a model with numeric ID (Product)', () => {
-    const result = generateControllerFileContent(
+  it('should generate correct controller content for a model with numeric ID (Product)', async () => {
+    const result = await generateControllerFileContent(
       productModel,
       productZodSchemaInfo,
       productServiceNames
@@ -267,8 +267,8 @@ describe('generateControllerFileContent', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it('should generate correct controller content for a model without an ID (LogEntry)', () => {
-    const result = generateControllerFileContent(
+  it('should generate correct controller content for a model without an ID (LogEntry)', async () => {
+    const result = await generateControllerFileContent(
       logEntryModel,
       logEntryZodSchemaInfo,
       logEntryServiceNames

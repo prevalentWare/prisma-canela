@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { generatePrismaMiddlewareFileContent } from '@generator/generatePrismaMiddleware';
 
 describe('generatePrismaMiddlewareFileContent', () => {
-  it('should generate middleware content with correct exports', () => {
-    const result = generatePrismaMiddlewareFileContent();
+  it('should generate middleware content with correct exports', async () => {
+    const result = await generatePrismaMiddlewareFileContent();
 
     // Check necessary imports
     expect(result).toContain("import { PrismaClient } from '@prisma/client'");

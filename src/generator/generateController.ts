@@ -26,13 +26,10 @@ const getValidData = (c: Context, type: 'json' | 'param') => {
   // Import service functions using namespace
   const serviceImports = `import * as service from './service';`;
 
-  return `
-import type { Context } from 'hono';
+  return `import type { Context } from 'hono';
 import { Prisma } from '${prismaClientPath}';
-${zodImports}
-${utilityFunctions}
-${serviceImports}
-`;
+${zodImports}${utilityFunctions}
+${serviceImports}`;
 };
 
 // Helper function to generate handler logic
