@@ -29,8 +29,12 @@ export const generateServiceFileContent = async (
   // Get the actual name of the ID field (e.g., 'id', 'uuid') for where clauses.
   const idFieldName = idField?.name ?? 'id'; // Default to 'id' as a fallback, though unlikely needed if !idField
 
-  // Determine the correct Prisma model accessor (usually camelCase)
-  const prismaModelAccessor = modelNameCamel;
+  // Determine the correct Prisma model accessor
+  // Important: Check if the original model name contains underscores
+  // If it does, preserve the original name format in Prisma calls
+  const prismaModelAccessor = model.name.includes('_')
+    ? model.name.charAt(0).toLowerCase() + model.name.slice(1) // Keep original name with underscores but camelCase first letter
+    : modelNameCamel; // Regular camelCase for models without underscores
 
   // --- Generate Import Statements ---
   const imports = `

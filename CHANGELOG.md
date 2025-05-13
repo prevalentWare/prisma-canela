@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.3] - 2023-08-28
+## [0.1.11] - 2025-05-13
+
+### Fixed
+
+- Properly handle models with underscores in their names in Prisma client calls
+- Service files now preserve original underscore format in Prisma client access
+- This ensures compatibility with model names like `Hist_AuditoriaDesarrollador`
+
+## [0.1.3] - 2025-04-28
 
 ### Added
 
@@ -20,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better formatting of log messages with colors and prefixes
 - Fixed linting issues related to console output
 
-## [0.1.2] - 2023-08-15
+## [0.1.2] - 2025-04-15
 
 ### Added
 
@@ -32,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved error handling for invalid schema directories
 
-## [0.1.1] - 2023-08-01
+## [0.1.1] - 2025-04-01
 
 ### Added
 
@@ -45,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored service layer to extract Prisma client from Hono context
 - Updated context access using `c.get('prisma')` instead of direct property access
 
-## [0.1.0] - 2023-07-15
+## [0.1.0] - 2025-07-15
 
 ### Added
 

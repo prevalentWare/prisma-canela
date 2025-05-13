@@ -393,6 +393,26 @@ For the best results with multi-file schemas:
 - Group related models into domain-specific files
 - Use clear naming conventions for schema files
 
+#### Improved Model Name Handling
+
+Prisma-Canela correctly handles models with underscores in their names:
+
+```prisma
+// In your schema.prisma file
+model Hist_AuditoriaDesarrollador {
+  id String @id @default(cuid())
+  // other fields...
+}
+```
+
+The generator:
+
+1. Preserves underscores in Prisma client calls (e.g., `prisma.hist_AuditoriaDesarrollador.findMany()`)
+2. Uses PascalCase for type names, schema imports, and function names
+3. Works correctly with multiple underscores and mixed naming conventions
+
+This ensures compatibility with any Prisma model naming style while maintaining clean generated code.
+
 ### Upcoming Features
 
 #### Multi-file Prisma Schema Support

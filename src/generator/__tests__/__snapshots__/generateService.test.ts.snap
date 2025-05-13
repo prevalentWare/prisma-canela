@@ -2,9 +2,9 @@
 
 exports[`generateServiceFileContent > should generate correct service file content for a User model 1`] = `
 "
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from 'prisma/schema/generated/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
-import type { User as UserType } from '@prisma/client';
+import type { User as UserType } from 'prisma/schema/generated/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createUserSchema, updateUserSchema } from './schema';
 import { z } from 'zod';
@@ -138,17 +138,17 @@ export const deleteUser = async (
 
 exports[`generateServiceFileContent > should generate service file content for a model without an ID 1`] = `
 "
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from 'prisma/schema/generated/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
-import type { LogEntry as LogEntryType } from '@prisma/client';
+import type { Junction as JunctionType } from 'prisma/schema/generated/client';
 // Import input types from Zod schemas (adjust path if necessary)
-import { createLogEntrySchema, updateLogEntrySchema } from './schema';
+import { createJunctionSchema, updateJunctionSchema } from './schema';
 import { z } from 'zod';
 import type { Context } from 'hono';
 
 // Define types inferred from Zod schemas for input validation
-type CreateLogEntryInput = z.infer<typeof createLogEntrySchema>;
-type UpdateLogEntryInput = z.infer<typeof updateLogEntrySchema>;
+type CreateJunctionInput = z.infer<typeof createJunctionSchema>;
+type UpdateJunctionInput = z.infer<typeof updateJunctionSchema>;
 
 /**
  * Helper function to extract Prisma client from context with error handling
@@ -162,39 +162,39 @@ const getPrismaClient = (c: Context): PrismaClient => {
 };
 
 /**
- * Finds multiple LogEntry records.
+ * Finds multiple Junction records.
  * @param c The Hono context containing the Prisma client.
- * @returns A promise resolving to an array of LogEntry records.
+ * @returns A promise resolving to an array of Junction records.
  */
-export const findManyLogEntry = async (c: Context): Promise<LogEntryType[]> => {
+export const findManyJunction = async (c: Context): Promise<JunctionType[]> => {
   try {
     const prisma = getPrismaClient(c);
-    return await prisma.logEntry.findMany();
+    return await prisma.junction.findMany();
   } catch (error) {
-    console.error('Error fetching LogEntrys:', error);
+    console.error('Error fetching Junctions:', error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not fetch LogEntrys');
+    throw new Error('Could not fetch Junctions');
   }
 };
 
 /**
- * Creates a new LogEntry record.
+ * Creates a new Junction record.
  * @param c The Hono context containing the Prisma client.
- * @param data The data for the new LogEntry.
- * @returns A promise resolving to the created LogEntry record.
+ * @param data The data for the new Junction.
+ * @returns A promise resolving to the created Junction record.
  */
-export const createLogEntry = async (
+export const createJunction = async (
   c: Context, 
-  data: CreateLogEntryInput
-): Promise<LogEntryType> => {
+  data: CreateJunctionInput
+): Promise<JunctionType> => {
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.logEntry.create({ data });
+    return await prisma.junction.create({ data });
   } catch (error) {
-    console.error('Error creating LogEntry:', error);
+    console.error('Error creating Junction:', error);
     // TODO: Implement more specific error handling and logging
-    throw new Error('Could not create LogEntry');
+    throw new Error('Could not create Junction');
   }
 };
 "
@@ -336,11 +336,283 @@ export const deleteUser = async (
 "
 `;
 
+exports[`generateServiceFileContent > should generate service file content with a custom prisma client path 2`] = `
+"
+import type { PrismaClient } from '@prisma/custom-client';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { User as UserType } from '@prisma/custom-client';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createUserSchema, updateUserSchema } from './schema';
+import { z } from 'zod';
+import type { Context } from 'hono';
+
+// Define types inferred from Zod schemas for input validation
+type CreateUserInput = z.infer<typeof createUserSchema>;
+type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+/**
+ * Helper function to extract Prisma client from context with error handling
+ */
+const getPrismaClient = (c: Context): PrismaClient => {
+  const prisma = c.get('prisma');
+  if (!prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return prisma;
+};
+
+/**
+ * Finds multiple User records.
+ * @param c The Hono context containing the Prisma client.
+ * @returns A promise resolving to an array of User records.
+ */
+export const findManyUser = async (c: Context): Promise<UserType[]> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.user.findMany();
+  } catch (error) {
+    console.error('Error fetching Users:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch Users');
+  }
+};
+
+/**
+ * Creates a new User record.
+ * @param c The Hono context containing the Prisma client.
+ * @param data The data for the new User.
+ * @returns A promise resolving to the created User record.
+ */
+export const createUser = async (
+  c: Context, 
+  data: CreateUserInput
+): Promise<UserType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.create({ data });
+  } catch (error) {
+    console.error('Error creating User:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create User');
+  }
+};
+
+/**
+ * Finds a single User record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the User to find.
+ * @returns A promise resolving to the User record or null if not found.
+ */
+export const findUserById = async (
+  c: Context, 
+  id: string
+): Promise<UserType | null> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.user.findUnique({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(\`Error fetching User by ID \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch User by ID');
+  }
+};
+
+/**
+ * Updates a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the User to update.
+ * @param data The data to update the User with.
+ * @returns A promise resolving to the updated User record.
+ */
+export const updateUser = async (
+  c: Context, 
+  id: string, 
+  data: UpdateUserInput
+): Promise<UserType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.user.update({
+      where: { id: id },
+      data,
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error updating User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not update User');
+  }
+};
+
+/**
+ * Deletes a User record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the User to delete.
+ * @returns A promise resolving to the deleted User record.
+ */
+export const deleteUser = async (
+  c: Context, 
+  id: string
+): Promise<UserType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.user.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error deleting User \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not delete User');
+  }
+};
+"
+`;
+
+exports[`generateServiceFileContent > should preserve underscores in model names when generating prisma client access 1`] = `
+"
+import type { PrismaClient } from 'prisma/schema/generated/client';
+// We need to import the actual model type separately when verbatimModuleSyntax is true
+import type { Hist_AuditoriaDesarrollador as HistAuditoriaDesarrolladorType } from 'prisma/schema/generated/client';
+// Import input types from Zod schemas (adjust path if necessary)
+import { createHistAuditoriaDesarrolladorSchema, updateHistAuditoriaDesarrolladorSchema } from './schema';
+import { z } from 'zod';
+import type { Context } from 'hono';
+
+// Define types inferred from Zod schemas for input validation
+type CreateHistAuditoriaDesarrolladorInput = z.infer<typeof createHistAuditoriaDesarrolladorSchema>;
+type UpdateHistAuditoriaDesarrolladorInput = z.infer<typeof updateHistAuditoriaDesarrolladorSchema>;
+
+/**
+ * Helper function to extract Prisma client from context with error handling
+ */
+const getPrismaClient = (c: Context): PrismaClient => {
+  const prisma = c.get('prisma');
+  if (!prisma) {
+    throw new Error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+  }
+  return prisma;
+};
+
+/**
+ * Finds multiple HistAuditoriaDesarrollador records.
+ * @param c The Hono context containing the Prisma client.
+ * @returns A promise resolving to an array of HistAuditoriaDesarrollador records.
+ */
+export const findManyHistAuditoriaDesarrollador = async (c: Context): Promise<HistAuditoriaDesarrolladorType[]> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.hist_AuditoriaDesarrollador.findMany();
+  } catch (error) {
+    console.error('Error fetching HistAuditoriaDesarrolladors:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch HistAuditoriaDesarrolladors');
+  }
+};
+
+/**
+ * Creates a new HistAuditoriaDesarrollador record.
+ * @param c The Hono context containing the Prisma client.
+ * @param data The data for the new HistAuditoriaDesarrollador.
+ * @returns A promise resolving to the created HistAuditoriaDesarrollador record.
+ */
+export const createHistAuditoriaDesarrollador = async (
+  c: Context, 
+  data: CreateHistAuditoriaDesarrolladorInput
+): Promise<HistAuditoriaDesarrolladorType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.hist_AuditoriaDesarrollador.create({ data });
+  } catch (error) {
+    console.error('Error creating HistAuditoriaDesarrollador:', error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not create HistAuditoriaDesarrollador');
+  }
+};
+
+/**
+ * Finds a single HistAuditoriaDesarrollador record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the HistAuditoriaDesarrollador to find.
+ * @returns A promise resolving to the HistAuditoriaDesarrollador record or null if not found.
+ */
+export const findHistAuditoriaDesarrolladorById = async (
+  c: Context, 
+  id: string
+): Promise<HistAuditoriaDesarrolladorType | null> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.hist_AuditoriaDesarrollador.findUnique({
+      where: { id: id },
+    });
+  } catch (error) {
+    console.error(\`Error fetching HistAuditoriaDesarrollador by ID \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not fetch HistAuditoriaDesarrollador by ID');
+  }
+};
+
+/**
+ * Updates a HistAuditoriaDesarrollador record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the HistAuditoriaDesarrollador to update.
+ * @param data The data to update the HistAuditoriaDesarrollador with.
+ * @returns A promise resolving to the updated HistAuditoriaDesarrollador record.
+ */
+export const updateHistAuditoriaDesarrollador = async (
+  c: Context, 
+  id: string, 
+  data: UpdateHistAuditoriaDesarrolladorInput
+): Promise<HistAuditoriaDesarrolladorType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    // Input data is assumed to be validated by Zod schema in the route handler
+    return await prisma.hist_AuditoriaDesarrollador.update({
+      where: { id: id },
+      data,
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error updating HistAuditoriaDesarrollador \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not update HistAuditoriaDesarrollador');
+  }
+};
+
+/**
+ * Deletes a HistAuditoriaDesarrollador record by its ID.
+ * @param c The Hono context containing the Prisma client.
+ * @param id The ID of the HistAuditoriaDesarrollador to delete.
+ * @returns A promise resolving to the deleted HistAuditoriaDesarrollador record.
+ */
+export const deleteHistAuditoriaDesarrollador = async (
+  c: Context, 
+  id: string
+): Promise<HistAuditoriaDesarrolladorType> => {
+  try {
+    const prisma = getPrismaClient(c);
+    return await prisma.hist_AuditoriaDesarrollador.delete({
+      where: { id: id },
+    });
+  } catch (error) {
+    // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
+    console.error(\`Error deleting HistAuditoriaDesarrollador \${id}:\`, error);
+    // TODO: Implement more specific error handling and logging
+    throw new Error('Could not delete HistAuditoriaDesarrollador');
+  }
+};
+"
+`;
+
 exports[`generateServiceFileContent > should use number type for ID if the id field type is number 1`] = `
 "
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from 'prisma/schema/generated/client';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
-import type { Product as ProductType } from '@prisma/client';
+import type { Product as ProductType } from 'prisma/schema/generated/client';
 // Import input types from Zod schemas (adjust path if necessary)
 import { createProductSchema, updateProductSchema } from './schema';
 import { z } from 'zod';
