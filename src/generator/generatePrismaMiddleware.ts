@@ -6,8 +6,10 @@ import { getPrismaPath } from './getPrismaPath';
  *
  * @returns The content of the middleware file as a string.
  */
-export const generatePrismaMiddlewareFileContent = (): string => {
-  return `import { PrismaClient } from '${getPrismaPath()}';
+export const generatePrismaMiddlewareFileContent =
+  async (): Promise<string> => {
+    const prismaClientPath = await getPrismaPath();
+    return `import { PrismaClient } from '${prismaClientPath}';
 import type { Context, Next } from 'hono';
 
 // Extend Hono Context to include the Prisma client
@@ -49,4 +51,4 @@ export const disconnectPrisma = async (): Promise<void> => {
   await prisma.$disconnect();
 };
 `;
-};
+  };

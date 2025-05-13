@@ -12,10 +12,13 @@ import { getPrismaPath } from './getPrismaPath';
  * @param prismaClientImportPath Optional path for Prisma Client import.
  * @returns The generated TypeScript code for the service file as a string.
  */
-export const generateServiceFileContent = (
+export const generateServiceFileContent = async (
   model: ParsedModel,
-  prismaClientImportPath: string = getPrismaPath()
-): string => {
+  prismaClientImportPath?: string
+): Promise<string> => {
+  // Use provided import path or get it from schema
+  const clientPath = prismaClientImportPath || (await getPrismaPath());
+
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);
   const idField = model.fields.find((f) => f.isId);
@@ -31,9 +34,9 @@ export const generateServiceFileContent = (
 
   // --- Generate Import Statements ---
   const imports = `
-import type { PrismaClient } from '${prismaClientImportPath}';
+import type { PrismaClient } from '${clientPath}';
 // We need to import the actual model type separately when verbatimModuleSyntax is true
-import type { ${model.name} as ${modelNamePascal}Type } from '${prismaClientImportPath}';
+import type { ${model.name} as ${modelNamePascal}Type } from '${clientPath}';
 // Import input types from Zod schemas (adjust path if necessary)
 import { create${modelNamePascal}Schema, update${modelNamePascal}Schema } from './schema';
 import { z } from 'zod';

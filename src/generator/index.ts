@@ -61,7 +61,7 @@ export const generateApi = async (
 
     // Generate Prisma middleware
     log.debug(`Generating Prisma middleware: prismaMiddleware.ts`);
-    const prismaMiddlewareContent = generatePrismaMiddlewareFileContent();
+    const prismaMiddlewareContent = await generatePrismaMiddlewareFileContent();
     const prismaMiddlewareFilePath = path.join(
       middlewareDir,
       'prismaMiddleware.ts'
@@ -85,7 +85,7 @@ export const generateApi = async (
       // Generate Zod schema with simplified name
       log.debug(`Generating Zod schema: schema.ts`);
       const { content: zodSchemaContent, imports: zodSchemaImports } =
-        generateZodSchema(model, parsedSchema.enums);
+        await generateZodSchema(model, parsedSchema.enums);
       const schemaFilePath = path.join(modelDir, 'schema.ts');
       await fs.writeFile(schemaFilePath, zodSchemaContent);
 
@@ -122,13 +122,13 @@ export const generateApi = async (
 
       // Generate service file
       log.debug(`Generating service file: service.ts`);
-      const serviceContent = generateServiceFileContent(model);
+      const serviceContent = await generateServiceFileContent(model);
       const serviceFilePath = path.join(modelDir, 'service.ts');
       await fs.writeFile(serviceFilePath, serviceContent);
 
       // Generate controller file
       log.debug(`Generating controller file: controller.ts`);
-      const controllerContent = generateControllerFileContent(
+      const controllerContent = await generateControllerFileContent(
         model,
         zodSchemaInfo,
         serviceFunctionNames

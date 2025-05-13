@@ -10,10 +10,13 @@ import { getPrismaPath } from './getPrismaPath';
  * @param enums List of parsed enums (used to find names).
  * @returns An object containing the schema content string and any required imports.
  */
-export const generateZodSchema = (
+export const generateZodSchema = async (
   model: ParsedModel,
   enums: ParsedEnum[]
-): { content: string; imports: string[] } => {
+): Promise<{ content: string; imports: string[] }> => {
+  // Get the Prisma client path
+  const prismaClientPath = await getPrismaPath();
+
   // Return content and imports
   const { name, fields } = model;
   const modelNamePascal = pascalCase(name); // Use pascalCase for schema names
@@ -38,7 +41,7 @@ export const generateZodSchema = (
   // Generate enum import statement if needed
   const enumImportStatement =
     usedEnumNames.size > 0
-      ? `import { ${[...usedEnumNames].join(', ')} } from '${getPrismaPath()}';` // Assume enums are available from @prisma/client
+      ? `import { ${[...usedEnumNames].join(', ')} } from '${prismaClientPath}';` // Assume enums are available from @prisma/client
       : null;
   if (enumImportStatement) {
     requiredImports.push(enumImportStatement);
