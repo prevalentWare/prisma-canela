@@ -1,6 +1,7 @@
 import type { ParsedModel } from '@parser/types';
 import { pascalCase } from '@utils/pascalCase';
 import { camelCase } from '@utils/camelCase';
+import { getPrismaPath } from './getPrismaPath';
 
 /**
  * Generates the content for a model-specific service file (service.ts).
@@ -13,7 +14,7 @@ import { camelCase } from '@utils/camelCase';
  */
 export const generateServiceFileContent = (
   model: ParsedModel,
-  prismaClientImportPath: string = '@prisma/client'
+  prismaClientImportPath: string = getPrismaPath()
 ): string => {
   const modelNamePascal = pascalCase(model.name);
   const modelNameCamel = camelCase(model.name);

@@ -1,3 +1,5 @@
+import { getPrismaPath } from './getPrismaPath';
+
 /**
  * Generates a middleware file that injects the Prisma client into the Hono context.
  * This is used to provide the Prisma client to all route handlers.
@@ -5,7 +7,7 @@
  * @returns The content of the middleware file as a string.
  */
 export const generatePrismaMiddlewareFileContent = (): string => {
-  return `import { PrismaClient } from '@prisma/client';
+  return `import { PrismaClient } from '${getPrismaPath()}';
 import type { Context, Next } from 'hono';
 
 // Extend Hono Context to include the Prisma client

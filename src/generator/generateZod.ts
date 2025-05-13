@@ -1,6 +1,7 @@
 import type { ParsedModel, ParsedField, ParsedEnum } from '@parser/types';
 import { pascalCase } from '@utils/pascalCase';
 import { camelCase } from '@utils/camelCase';
+import { getPrismaPath } from './getPrismaPath';
 
 /**
  * Generates the Zod schema string for a given model.
@@ -37,7 +38,7 @@ export const generateZodSchema = (
   // Generate enum import statement if needed
   const enumImportStatement =
     usedEnumNames.size > 0
-      ? `import { ${[...usedEnumNames].join(', ')} } from '@prisma/client';` // Assume enums are available from @prisma/client
+      ? `import { ${[...usedEnumNames].join(', ')} } from '${getPrismaPath()}';` // Assume enums are available from @prisma/client
       : null;
   if (enumImportStatement) {
     requiredImports.push(enumImportStatement);
