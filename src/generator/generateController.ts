@@ -1,7 +1,6 @@
 import type { ParsedModel } from '@parser/types';
 import { pascalCase } from '@utils/pascalCase';
 import type { ServiceFunctionNames, ZodSchemaDetails } from './types';
-import { getPrismaPath } from './getPrismaPath';
 
 // Helper function to generate controller imports
 export const generateControllerImports = async (
@@ -9,8 +8,6 @@ export const generateControllerImports = async (
   _zodSchemaInfo: ZodSchemaDetails
 ): Promise<string> => {
   const _modelNamePascal = pascalCase(model.name);
-  // Get the Prisma client path
-  const prismaClientPath = await getPrismaPath();
 
   // Remove Zod and schema imports, as they are not used in the controller
   const zodImports = '';
@@ -27,7 +24,7 @@ const getValidData = (c: Context, type: 'json' | 'param') => {
   const serviceImports = `import * as service from './service';`;
 
   return `import type { Context } from 'hono';
-import { Prisma } from '${prismaClientPath}';
+import { Prisma } from '@prisma/client';
 ${zodImports}${utilityFunctions}
 ${serviceImports}`;
 };
