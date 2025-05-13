@@ -35,6 +35,7 @@ import {
   ${zodSchemaInfo.updateSchemaName},
 } from './schema';
 import * as controller from './controller'; // Import controller
+import type { Handler } from 'hono';
 
 // Define ErrorSchema locally for OpenAPI responses
 const ErrorSchema = z.object({
@@ -276,21 +277,23 @@ const delete${modelNamePascal}Route = createRoute({
 });`);
   }
 
-  // --- Hono App Setup using app.openapi() --- (Refactored)
+  // --- Hono App Setup using app.openapi()
   const honoSetup = `
 // --- Hono App Setup ---
 const ${modelNameCamel}Routes = new OpenAPIHono();
 
 // Register routes using app.openapi()
-${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, controller.list${modelNamePascal});
-${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, controller.create${modelNamePascal});
+// We need to use type casting to ensure compatibility between the OpenAPI route definitions
+// and the actual controller responses, especially for fields like JSON that can have various formats
+${modelNameCamel}Routes.openapi(list${modelNamePascal}Route, controller.list${modelNamePascal} as Handler);
+${modelNameCamel}Routes.openapi(create${modelNamePascal}Route, controller.create${modelNamePascal} as Handler);
 `;
 
   const idRoutesSetup = idField
     ? `
-${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, controller.get${modelNamePascal}ById);
-${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, controller.update${modelNamePascal});
-${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, controller.delete${modelNamePascal});
+${modelNameCamel}Routes.openapi(get${modelNamePascal}ByIdRoute, controller.get${modelNamePascal}ById as Handler);
+${modelNameCamel}Routes.openapi(update${modelNamePascal}Route, controller.update${modelNamePascal} as Handler);
+${modelNameCamel}Routes.openapi(delete${modelNamePascal}Route, controller.delete${modelNamePascal} as Handler);
 `
     : '';
 
