@@ -367,3 +367,371 @@ export const deleteUser = async (c: Context) => {
 };
 "
 `;
+
+exports[`generateControllerFileContent should generate correct controller content for a standard model (User) 1`] = `
+"import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+
+// Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
+const getValidData = (c: Context, type: 'json' | 'param') => {
+  // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
+  return c.req.valid(type);
+};
+import * as service from './service';
+/**
+ * List all User records.
+ */
+export const listUser = async (c: Context) => {
+  
+  try {
+    const item = await service.findManyUsers(c); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error list usering User: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list User\` }, 500);
+  }
+};
+
+/**
+ * Create a new User.
+ */
+export const createUser = async (c: Context) => {
+  const data = getValidData(c, 'json');
+  try {
+    const item = await service.createUser(c, data); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error create usering User: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create User\` }, 500);
+  }
+};
+
+/**
+ * Get a User by ID.
+ */
+export const getUserById = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  try {
+    const item = await service.findUserById(c, id); // Pass context first, then other args
+    
+    if (!item) {
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error get user by iding User \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error get user by iding User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to get User\` }, 500);
+  }
+};
+
+/**
+ * Update a User by ID.
+ */
+export const updateUser = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  const data = getValidData(c, 'json');
+  try {
+    const item = await service.updateUser(c, id, data); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error update usering User \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error update usering User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to update User\` }, 500);
+  }
+};
+
+/**
+ * Delete a User by ID.
+ */
+export const deleteUser = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  try {
+    const item = await service.deleteUser(c, id); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error delete usering User \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'User not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error delete usering User \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to delete User\` }, 500);
+  }
+};
+"
+`;
+
+exports[`generateControllerFileContent should generate correct controller content for a model with numeric ID (Product) 1`] = `
+"import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+
+// Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
+const getValidData = (c: Context, type: 'json' | 'param') => {
+  // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
+  return c.req.valid(type);
+};
+import * as service from './service';
+/**
+ * List all Product records.
+ */
+export const listProduct = async (c: Context) => {
+  
+  try {
+    const item = await service.findManyProducts(c); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error list producting Product: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list Product\` }, 500);
+  }
+};
+
+/**
+ * Create a new Product.
+ */
+export const createProduct = async (c: Context) => {
+  const data = getValidData(c, 'json');
+  try {
+    const item = await service.createProduct(c, data); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error create producting Product: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create Product\` }, 500);
+  }
+};
+
+/**
+ * Get a Product by ID.
+ */
+export const getProductById = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  try {
+    const item = await service.findProductById(c, id); // Pass context first, then other args
+    
+    if (!item) {
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error get product by iding Product \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error get product by iding Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to get Product\` }, 500);
+  }
+};
+
+/**
+ * Update a Product by ID.
+ */
+export const updateProduct = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  const data = getValidData(c, 'json');
+  try {
+    const item = await service.updateProduct(c, id, data); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error update producting Product \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error update producting Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to update Product\` }, 500);
+  }
+};
+
+/**
+ * Delete a Product by ID.
+ */
+export const deleteProduct = async (c: Context) => {
+  const { id } = getValidData(c, 'param');
+  try {
+    const item = await service.deleteProduct(c, id); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Use the specific ID in the error message if available
+      const message = \`Error delete producting Product \${id}: Record not found\`;
+      console.error(message, error);
+      return c.json({ error: 'Product not found' }, 404);
+    }
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error delete producting Product \${id}: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to delete Product\` }, 500);
+  }
+};
+"
+`;
+
+exports[`generateControllerFileContent should generate correct controller content for a model without an ID (LogEntry) 1`] = `
+"import type { Context } from 'hono';
+import { Prisma } from '@prisma/client';
+
+// Helper to safely cast validation results - this avoids TypeScript errors with c.req.valid()
+const getValidData = (c: Context, type: 'json' | 'param') => {
+  // @ts-ignore - The Hono validation is properly set up by middleware, but TypeScript doesn't recognize it
+  return c.req.valid(type);
+};
+import * as service from './service';
+/**
+ * List all LogEntry records.
+ */
+export const listLogEntry = async (c: Context) => {
+  
+  try {
+    const item = await service.findManyLogEntries(c); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 200);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error list log entrying LogEntry: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to list LogEntry\` }, 500);
+  }
+};
+
+/**
+ * Create a new LogEntry.
+ */
+export const createLogEntry = async (c: Context) => {
+  const data = getValidData(c, 'json');
+  try {
+    const item = await service.createLogEntry(c, data); // Pass context first, then other args
+    
+    // Always return status code explicitly for better type matching with openapi()
+    return c.json(item, 201);
+  } catch (error: unknown) {
+    // Check for Prisma client not found in context
+    if (error instanceof Error && error.message.includes('Prisma client not found in context')) {
+      console.error('Prisma client not found in context. Make sure to use the prismaMiddleware.');
+      return c.json({ error: 'Database connection error. Please try again later.' }, 500);
+    }
+    
+    // Generic error handling for other cases
+    const message = \`Error create log entrying LogEntry: \${error instanceof Error ? error.message : 'Unknown error'}\`;
+    console.error(message, error); // Log the detailed error
+    return c.json({ error: \`Failed to create LogEntry\` }, 500);
+  }
+};
+"
+`;

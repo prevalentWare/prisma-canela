@@ -18,6 +18,27 @@ export const setTestMode = (value: boolean): void => {
 };
 
 /**
+ * Joins path segments with forward slashes regardless of platform
+ * This is used for import statements which always need forward slashes
+ * @param segments Path segments to join
+ * @returns Joined path with forward slashes
+ */
+export const joinPathForImport = (...segments: string[]): string => {
+  return segments.join('/');
+};
+
+/**
+ * Normalizes a path to use forward slashes regardless of platform
+ * This is essential for JavaScript imports which always use forward slashes
+ * @param inputPath The path to normalize
+ * @returns Path with forward slashes
+ */
+export const normalizePath = (inputPath: string): string => {
+  // Handle both Windows and Unix paths by replacing all backslashes with forward slashes
+  return inputPath.replace(/\\/g, '/');
+};
+
+/**
  * Returns the path to import Prisma client from
  * This checks the Prisma schema for a custom output path and uses it if available,
  * otherwise falls back to @prisma/client
@@ -103,12 +124,16 @@ export const getPrismaPath = async (): Promise<string> => {
 
         // Return the path suitable for imports
         // If it's already a node_modules path (like @prisma/client), return as is
-        if (relativePath.startsWith('@') || !relativePath.includes('/')) {
+        if (relativePath.startsWith('@') || !relativePath.includes(path.sep)) {
           return relativePath;
         }
 
-        // Otherwise, return a relative path from project root with /client appended
-        return path.join(relativePath, 'client');
+        // Normalize the path to use forward slashes for imports
+        // This ensures consistent path format regardless of platform
+        const normalizedImportPath = normalizePath(relativePath);
+
+        // Return the normalized path with /client appended
+        return joinPathForImport(normalizedImportPath, 'client');
       }
     }
 
