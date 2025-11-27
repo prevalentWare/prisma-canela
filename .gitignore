@@ -193,3 +193,5 @@ test-output/
 
 # Generated WASM files
 prisma-schema-wasm/
+prisma.config.ts
+/src/generated/prisma

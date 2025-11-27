@@ -9,7 +9,7 @@
     "allowJs": true,
 
     // Bundler mode
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "verbatimModuleSyntax": true,
 
     // Output directory

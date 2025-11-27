@@ -18,6 +18,7 @@ const config = tseslint.config(
     // We need to keep these ignores minimal as generated code should follow linting rules
     ignores: [
       'prisma/schema/**',
+      'prisma.config.ts',
       'eslint.config.mjs',
       'dist/**',
       'node_modules/**',
