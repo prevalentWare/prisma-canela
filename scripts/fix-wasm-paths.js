@@ -28,17 +28,19 @@ if (content.startsWith('#!/usr/bin/env node')) {
 // Add a resolver function that will reliably find WASM files in different environments
 const wasmResolverFunction = `
 // WASM file resolver function
+import { fileURLToPath } from 'url';
+const __canela_filename = fileURLToPath(import.meta.url);
+const __canela_dirname = path.dirname(__canela_filename);
+
 function resolveWasmPath(filename) {
   // Try to find the WASM file in different possible locations
   const possiblePaths = [
+    // Relative to the package itself (dist/bin/canela.js -> prisma-schema-wasm/src/)
+    path.join(__canela_dirname, '..', '..', 'prisma-schema-wasm', 'src', filename),
     // Package installed as dependency (node_modules path)
     path.join(process.cwd(), 'node_modules', '@prevalentware', 'prisma-canela', 'prisma-schema-wasm', 'src', filename),
     // Local development path
     path.join(process.cwd(), 'prisma-schema-wasm', 'src', filename),
-    // Relative to the current file (ESM)
-    path.join(path.dirname(import.meta.url.replace('file:', '')), '..', 'prisma-schema-wasm', 'src', filename),
-    // Fallback to direct path
-    path.join(process.cwd(), filename)
   ];
 
   for (const possiblePath of possiblePaths) {
@@ -69,6 +71,18 @@ content = content.replace(
 content = content.replace(
   /readFileSync\(".*?prisma_schema_build_bg\.wasm"\)/g,
   'readFileSync(resolveWasmPath("prisma_schema_build_bg.wasm"))'
+);
+
+// Fix template literal wasmPath references
+content = content.replace(
+  /var wasmPath = `\$\{__dirname\}\/prisma_schema_build_bg\.wasm`;/g,
+  'var wasmPath = resolveWasmPath("prisma_schema_build_bg.wasm");'
+);
+
+// Fix any other template literal path references
+content = content.replace(
+  /`\$\{__dirname\}\/prisma_schema_build_bg\.wasm`/g,
+  'resolveWasmPath("prisma_schema_build_bg.wasm")'
 );
 
 // Add imports for path and fs
