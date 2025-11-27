@@ -6,7 +6,7 @@ describe('generatePrismaMiddlewareFileContent', () => {
     const result = await generatePrismaMiddlewareFileContent();
 
     // Check necessary imports
-    expect(result).toContain("import { PrismaClient }");
+    expect(result).toContain('import { PrismaClient }');
     expect(result).toContain("import type { Context, Next } from 'hono'");
     expect(result).toContain("import { PrismaPg } from '@prisma/adapter-pg'");
     expect(result).toContain("import { Pool } from 'pg'");
@@ -16,7 +16,9 @@ describe('generatePrismaMiddlewareFileContent', () => {
     expect(result).toContain('interface ContextVariableMap');
 
     // Check connection pool setup
-    expect(result).toContain('const pool = new Pool({ connectionString: process.env.DATABASE_URL })');
+    expect(result).toContain(
+      'const pool = new Pool({ connectionString: process.env.DATABASE_URL })'
+    );
 
     // Check shared Prisma instance with adapter
     expect(result).toContain('export const prisma = new PrismaClient({');
@@ -40,7 +42,9 @@ describe('generatePrismaMiddlewareFileContent', () => {
 
     // Check createPrismaClient helper
     expect(result).toContain('createPrismaClient = (connectionString: string)');
-    expect(result).toContain('const customPool = new Pool({ connectionString })');
+    expect(result).toContain(
+      'const customPool = new Pool({ connectionString })'
+    );
 
     // Check disconnect function with pool cleanup
     expect(result).toContain('await prisma.$disconnect()');
