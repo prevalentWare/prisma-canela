@@ -54,7 +54,8 @@ export const createUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.user.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.user.create({ data: data as any });
   } catch (error) {
     console.error('Error creating User:', error);
     // TODO: Implement more specific error handling and logging
@@ -99,9 +100,10 @@ export const updateUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.user.update({
       where: { id: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
@@ -190,7 +192,8 @@ export const createJunction = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.junction.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.junction.create({ data: data as any });
   } catch (error) {
     console.error('Error creating Junction:', error);
     // TODO: Implement more specific error handling and logging
@@ -254,7 +257,8 @@ export const createUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.user.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.user.create({ data: data as any });
   } catch (error) {
     console.error('Error creating User:', error);
     // TODO: Implement more specific error handling and logging
@@ -299,9 +303,10 @@ export const updateUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.user.update({
       where: { id: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
@@ -390,7 +395,8 @@ export const createUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.user.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.user.create({ data: data as any });
   } catch (error) {
     console.error('Error creating User:', error);
     // TODO: Implement more specific error handling and logging
@@ -435,9 +441,10 @@ export const updateUser = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.user.update({
       where: { id: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
@@ -526,7 +533,8 @@ export const createHistAuditoriaDesarrollador = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.hist_AuditoriaDesarrollador.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.hist_AuditoriaDesarrollador.create({ data: data as any });
   } catch (error) {
     console.error('Error creating HistAuditoriaDesarrollador:', error);
     // TODO: Implement more specific error handling and logging
@@ -571,9 +579,10 @@ export const updateHistAuditoriaDesarrollador = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.hist_AuditoriaDesarrollador.update({
       where: { id: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
@@ -662,7 +671,8 @@ export const createProduct = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.product.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.product.create({ data: data as any });
   } catch (error) {
     console.error('Error creating Product:', error);
     // TODO: Implement more specific error handling and logging
@@ -707,9 +717,10 @@ export const updateProduct = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.product.update({
       where: { id: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors

@@ -94,7 +94,8 @@ export const create${modelNamePascal} = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
-    return await prisma.${prismaModelAccessor}.create({ data });
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
+    return await prisma.${prismaModelAccessor}.create({ data: data as any });
   } catch (error) {
     console.error('Error creating ${modelNamePascal}:', error);
     // TODO: Implement more specific error handling and logging
@@ -144,9 +145,10 @@ export const update${modelNamePascal} = async (
   try {
     const prisma = getPrismaClient(c);
     // Input data is assumed to be validated by Zod schema in the route handler
+    // Cast to any to handle Zod's unknown type for JSON fields - data is already validated
     return await prisma.${prismaModelAccessor}.update({
       where: { ${idFieldName}: id },
-      data,
+      data: data as any,
     });
   } catch (error) {
     // TODO: Differentiate between Prisma's P2025 error (Record not found) and other errors
