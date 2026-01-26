@@ -48,7 +48,7 @@ const mapFieldTypeToZodType_Test = (
     case 'date':
       return 'z.date()';
     case 'json':
-      return 'z.any()';
+      return 'z.unknown()';
     default:
       return 'z.any()';
   }
@@ -211,7 +211,7 @@ export const PostSchema = z.object({
   content: z.string().optional().nullable(),
   likes: z.number(),
   published: z.boolean(),
-  meta: z.any().optional().nullable(),
+  meta: z.unknown().optional().nullable(),
   publishedAt: z.coerce.date().optional().nullable()
 });
 

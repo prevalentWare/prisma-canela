@@ -171,10 +171,12 @@ export const mapFieldTypeToZodType = (field: ParsedField): string => {
       // Use coerce.date() for flexibility with date strings/objects
       return 'z.coerce.date()';
     case 'json':
-      // JSON fields in Prisma can be any valid JSON value
-      // Using z.any() is more flexible than z.record() and better accommodates what Prisma actually returns
-      // This can include primitives like strings and numbers, not just objects
-      return 'z.any()';
+      // JSON fields in Prisma can be any valid JSON value (objects, arrays, primitives)
+      // Using z.unknown() instead of z.any() for better TypeScript inference:
+      // - z.any() results in 'any' type which TypeScript may treat as optional
+      // - z.unknown() properly enforces the field as required when not marked optional
+      // This ensures compatibility with Prisma's InputJsonValue type
+      return 'z.unknown()';
     // Relations are filtered out before calling the parent function
     // Enums are handled above by kind
     case 'unsupported':

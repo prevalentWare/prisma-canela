@@ -1,7 +1,7 @@
 {
   "name": "@prevalentware/prisma-canela",
   "type": "module",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Prisma schema to Hono API codegen tool",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
