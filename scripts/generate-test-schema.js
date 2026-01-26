@@ -12,9 +12,10 @@ const BASIC_SCHEMA = `
 // This is a temporary test schema used for CI
 // It contains a minimal set of models for testing the code generator
 
+// Note: Prisma 7+ no longer supports 'url' in datasource blocks
+// Connection URLs are now configured via prisma.config.ts or PrismaClient constructor
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
